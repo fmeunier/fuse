@@ -1,6 +1,8 @@
 2018-09-??  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
         * Miscellaneous improvements:
+          * "Save binary" command can now save 65536 bytes again (regression
+            introduced in 1.5.6; thanks, thrice) (Philip Kendall).
           * Remove gcc 8 string overflow warnings (Philip Kendall).
 
 2018-08-06  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
