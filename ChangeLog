@@ -1,9 +1,11 @@
 2018-09-??  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
         * Miscellaneous improvements:
+          * Remove gcc 8 string overflow warnings (Philip Kendall).
           * "Save binary" command can now save 65536 bytes again (regression
             introduced in 1.5.6; thanks, thrice) (Philip Kendall).
-          * Remove gcc 8 string overflow warnings (Philip Kendall).
+          * Improve Fuse's behaviour under Wayland; still not right, but
+            better than it was before (Sergio Baldoví).
 
 2018-08-06  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
