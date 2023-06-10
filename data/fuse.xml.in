@@ -44,11 +44,6 @@
     <generic-icon name="application-x-spectrum"/>
     <glob pattern="*.hdf"/>
   </mime-type>
-  <mime-type type="application/x-spectrum-img">
-    <comment>ZX Spectrum disk</comment>
-    <generic-icon name="application-x-spectrum"/>
-    <glob pattern="*.img"/>
-  </mime-type>
   <mime-type type="application/x-spectrum-ltp">
     <comment>ZX Spectrum tape</comment>
     <generic-icon name="application-x-spectrum"/>
@@ -86,19 +81,6 @@
     </magic>
     <generic-icon name="application-x-spectrum"/>
     <glob pattern="*.pzx"/>
-  </mime-type>
-  <mime-type type="application/x-spectrum-raw">
-    <comment>ZX Spectrum tape</comment>
-    <magic>
-      <match type="string" offset="0" value="\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0Raw tape sample"/>
-    </magic>
-    <generic-icon name="application-x-spectrum"/>
-    <glob pattern="*.raw"/>
-  </mime-type>
-  <mime-type type="application/x-spectrum-rom">
-    <comment>ZX Spectrum cartridge</comment>
-    <generic-icon name="application-x-spectrum"/>
-    <glob pattern="*.rom"/>
   </mime-type>
   <mime-type type="application/x-spectrum-rzx">
     <comment>ZX Spectrum action replay</comment>
