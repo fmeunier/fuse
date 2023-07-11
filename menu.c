@@ -294,6 +294,7 @@ MENU_CALLBACK_WITH_ACTION( menu_options_selectroms_peripheral_select )
   case 10: menu_select_peripheral_roms( "SpeccyBoot",      9, 1 ); return;
   case 11: menu_select_peripheral_roms( "TTX2000S",       10, 1 ); return;
   case 12: menu_select_peripheral_roms( "uSource",        11, 1 ); return;
+  case 13: menu_select_peripheral_roms( "uSpeech",        12, 1 ); return;
 
   }
 

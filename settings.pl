@@ -591,6 +591,7 @@ settings_get_rom_setting( settings_info *settings, size_t which,
     case  9: return &( settings->rom_speccyboot );
     case 10: return &( settings->rom_ttx2000s );
     case 11: return &( settings->rom_usource );
+    case 12: return &( settings->rom_uspeech );
     default: return NULL;
     }
   }

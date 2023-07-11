@@ -42,6 +42,7 @@
 #include "memory_pages.h"
 #include "module.h"
 #include "peripherals/disk/opus.h"
+#include "peripherals/sound/uspeech.h"
 #include "peripherals/spectranet.h"
 #include "peripherals/ttx2000s.h"
 #include "peripherals/ula.h"
@@ -404,6 +405,9 @@ readbyte( libspectrum_word address )
 
     if( ttx2000s_paged && address >= 0x2000 )
         return ttx2000s_sram_read( address );
+
+    if( uspeech_available && address == 0x1000 )
+      return uspeech_busy();
   }
 
   return mapping->page[ address & MEMORY_PAGE_SIZE_MASK ];
@@ -516,6 +520,10 @@ writebyte_internal( libspectrum_word address, libspectrum_byte b )
     memory_display_dirty( address, b );
 
     memory[ offset ] = b;
+  } else if( uspeech_available ) {
+    if( address == 0x1000 || ( address & 0xfffe ) == 0x3000 ) {
+      uspeech_write( address, b );
+    }
   }
 }
 

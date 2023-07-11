@@ -1276,6 +1276,9 @@ are not.
 .br
 .B \-\-rom\-usource
 .I file
+.br
+.B \-\-rom\-uspeech
+.I file
 .RS
 Specify the file to be used for ROM(s) used for each peripheral. The
 options respectively refer to
@@ -1302,7 +1305,9 @@ the SpeccyBoot ROM
 the TTX2000S ROM
 .RI ( ttx2000s.rom ),
 and the \(mcSource ROM
-.RI ( usource.rom ).
+.RI ( usource.rom ),
+the \(mcSpeech ROM
+.RI ( uspeech.rom ).
 .PP
 The names in brackets denote the defaults. Note that not all these ROMs
 are supplied with Fuse \(em you must supply your own copies of those which
@@ -1916,6 +1921,13 @@ failed tests.
 .RS
 Emulate a \(mcSource interface. Same as the General Peripherals Options dialog's
 .I "\(mcSource"
+option.
+.RE
+.PP
+.B \-\-uspeech
+.RS
+Emulate a \(mcSpeech interface. Same as the Sound Peripherals Options dialog's
+.I "\(mcSpeech"
 option.
 .RE
 .PP
@@ -2669,6 +2681,11 @@ Sets the relative volume of the Covox from a range of 0\(en100%.
 .RS
 Sets the relative volume of the SpecDrum from a range of 0\(en100%.
 .RE
+.PP
+.I "uSpeech volume"
+.RS
+Sets the relative volume of the \(mcSpeech from a range of 0\(en100%.
+.RE
 .RE
 .PP
 .I "Options, Peripherals, General..."
@@ -2865,6 +2882,14 @@ interface.  See the World of Spectrum Infoseek web page at
 .I http://www.worldofspectrum.org/infoseekid.cgi?id=1000062
 for manuals, software and more. This emulation is only available for
 the 48k, 128k and TC2048 machines.
+.RE
+.PP
+.I "\(mcSpeech"
+.RS
+If this option is selected, Fuse will emulate a Currah \(mcSpeech interface.
+See the World of Spectrum Infoseek web page at
+.I http://www.worldofspectrum.org/infoseekid.cgi?id=1000081
+for the manual, software and more.
 .RE
 .RE
 .PP

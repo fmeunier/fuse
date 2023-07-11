@@ -1,0 +1,236 @@
+/* uspeech.c: Routines for handling the Currah uSpeech interface
+   Copyright (c) 2007-2011 Stuart Brady
+
+   $Id$
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+   Author contact information:
+
+   Philip: philip-fuse@shadowmagic.org.uk
+
+   Stuart: stuart.brady@gmail.com
+
+*/
+
+#include "config.h"
+
+#include "libspectrum.h"
+
+#include "compat.h"
+#include "infrastructure/startup_manager.h"
+#include "machine.h"
+#include "memory.h"
+#include "module.h"
+#include "periph.h"
+#include "settings.h"
+#include "sp0256.h"
+#include "unittests/unittests.h"
+#include "uspeech.h"
+
+/* A 2 KiB memory chunk accessible by the Z80 when /ROMCS is low
+ * (mirrored when active) */
+static memory_page uspeech_memory_map_romcs[ MEMORY_PAGES_IN_2K ];
+static int uspeech_memory_source;
+
+int uspeech_active = 0;
+int uspeech_available = 0;
+
+static void uspeech_toggle_write( libspectrum_word port,
+				  libspectrum_byte val );
+static libspectrum_byte uspeech_toggle_read( libspectrum_word port,
+					     libspectrum_byte *attached );
+
+static void uspeech_reset( int hard_reset );
+static void uspeech_memory_map( void );
+
+static module_info_t uspeech_module_info = {
+
+  uspeech_reset,
+  uspeech_memory_map,
+  NULL, /* enabled_snapshot */
+  NULL, /* from_snapshot */
+  NULL, /* to_snapshot */
+
+};
+
+static const periph_port_t uspeech_ports[] = {
+  /* Really?! This conflicts with the ULA! */
+  /* ---- ---- 0111 1000 */
+  { 0xffff, 0x0038, uspeech_toggle_read, uspeech_toggle_write },
+
+  { 0, 0, NULL, NULL }
+};
+
+static const periph_t uspeech_periph = {
+  /* .option = */ &settings_current.uspeech,
+  /* .ports = */ uspeech_ports,
+  /* .hard_reset = */ 1,
+  /* .activate = */ NULL
+};
+
+static int
+uspeech_init( void *context )
+{
+  int uspeech_source;
+  int i;
+
+  sp0256_init();
+
+  module_register( &uspeech_module_info );
+
+  uspeech_source = memory_source_register( "uSpeech" );
+  for( i = 0; i < MEMORY_PAGES_IN_2K; i++ )
+    uspeech_memory_map_romcs[ i ].source = uspeech_source;
+
+  periph_register( PERIPH_TYPE_USPEECH, &uspeech_periph );
+
+  return 0;
+}
+
+static void
+uspeech_end( void )
+{
+  uspeech_available = 0;
+}
+
+void
+uspeech_register_startup( void )
+{
+  startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_MEMORY,
+    STARTUP_MANAGER_MODULE_SETUID,
+  };
+  startup_manager_register( STARTUP_MANAGER_MODULE_USPEECH, dependencies,
+                            ARRAY_SIZE( dependencies ), uspeech_init, NULL,
+                            uspeech_end );
+}
+
+
+static void
+uspeech_reset( int hard_reset GCC_UNUSED )
+{
+  uspeech_active = 0;
+  uspeech_available = 0;
+
+  sp0256_reset();
+
+  if( !periph_is_active( PERIPH_TYPE_USPEECH ) )
+    return;
+
+  if( machine_load_rom_bank( uspeech_memory_map_romcs, 0,
+			     settings_current.rom_uspeech,
+			     settings_default.rom_uspeech, 0x0800 ) ) {
+    settings_current.uspeech = 0;
+    periph_activate_type( PERIPH_TYPE_USPEECH, 0 );
+    return;
+  }
+
+  machine_current->ram.romcs = 0;
+
+  uspeech_available = 1;
+}
+
+void
+uspeech_toggle( void )
+{
+  uspeech_active = !uspeech_active;
+  machine_current->ram.romcs = uspeech_active;
+  machine_current->memory_map();
+}
+
+static void
+uspeech_memory_map( void )
+{
+  if( !uspeech_active ) return;
+
+  memory_map_romcs_2k( 0x0000, uspeech_memory_map_romcs );
+  memory_map_romcs_2k( 0x0800, uspeech_memory_map_romcs );
+  memory_map_romcs_2k( 0x1000, uspeech_memory_map_romcs );
+  memory_map_romcs_2k( 0x1800, uspeech_memory_map_romcs );
+  memory_map_romcs_2k( 0x2000, uspeech_memory_map_romcs );
+  memory_map_romcs_2k( 0x2800, uspeech_memory_map_romcs );
+  memory_map_romcs_2k( 0x3000, uspeech_memory_map_romcs );
+  memory_map_romcs_2k( 0x3800, uspeech_memory_map_romcs );
+}
+
+static libspectrum_byte
+uspeech_toggle_read( libspectrum_word port GCC_UNUSED,
+		     libspectrum_byte *attached GCC_UNUSED )
+{
+  if( !uspeech_available ) return 0xff;
+
+  uspeech_toggle();
+
+  return 0xff;
+}
+
+static void
+uspeech_toggle_write( libspectrum_word port GCC_UNUSED, libspectrum_byte val )
+{
+  if( !uspeech_available ) return;
+
+  uspeech_toggle();
+}
+
+void
+uspeech_write( libspectrum_word address, libspectrum_byte b )
+{
+  switch( address ) {
+  case 0x1000:
+    sp0256_play( b & 0x3f );
+    break;
+  case 0x3000:
+    sp0256_set_intonation( 0 );
+    break;
+  case 0x3001:
+    sp0256_set_intonation( 1 );
+    break;
+  }
+}
+
+libspectrum_byte
+uspeech_busy( void )
+{
+  return sp0256_busy();
+}
+
+int
+uspeech_unittest( void )
+{
+  int r = 0;
+
+  uspeech_active = 1;
+  uspeech_memory_map();
+
+  r += unittests_assert_2k_page( 0x0000, uspeech_memory_source, 0 );
+  r += unittests_assert_2k_page( 0x0800, uspeech_memory_source, 0 );
+  r += unittests_assert_2k_page( 0x1000, uspeech_memory_source, 0 );
+  r += unittests_assert_2k_page( 0x1800, uspeech_memory_source, 0 );
+  r += unittests_assert_2k_page( 0x2000, uspeech_memory_source, 0 );
+  r += unittests_assert_2k_page( 0x2800, uspeech_memory_source, 0 );
+  r += unittests_assert_2k_page( 0x3000, uspeech_memory_source, 0 );
+  r += unittests_assert_2k_page( 0x3800, uspeech_memory_source, 0 );
+  r += unittests_assert_16k_ram_page( 0x4000, 5 );
+  r += unittests_assert_16k_ram_page( 0x8000, 2 );
+  r += unittests_assert_16k_ram_page( 0xc000, 0 );
+
+  uspeech_active = 0;
+  machine_current->memory_map();
+
+  r += unittests_paging_test_48( 2 );
+
+  return r;
+}
