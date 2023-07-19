@@ -406,8 +406,12 @@ readbyte( libspectrum_word address )
     if( ttx2000s_paged && address >= 0x2000 )
         return ttx2000s_sram_read( address );
 
-    if( uspeech_available && address == 0x1000 )
-      return uspeech_busy();
+    if( uspeech_available ) {
+      if( address == 0x0038 )
+        uspeech_toggle(); /* and return whatever is the "normal" value later */
+      else if( uspeech_active && ( address == 0x1000 ) )
+        return uspeech_busy();
+    }
   }
 
   return mapping->page[ address & MEMORY_PAGE_SIZE_MASK ];
@@ -521,7 +525,9 @@ writebyte_internal( libspectrum_word address, libspectrum_byte b )
 
     memory[ offset ] = b;
   } else if( uspeech_available ) {
-    if( address == 0x1000 || ( address & 0xfffe ) == 0x3000 ) {
+    if( address == 0x0038 )
+      uspeech_toggle();
+    else if( uspeech_active && ( address == 0x1000 || ( address & 0xfffe ) == 0x3000 ) ) {
       uspeech_write( address, b );
     }
   }

@@ -224,14 +224,19 @@ uspeech_memory_map( void )
 {
   if( !uspeech_active ) return;
 
+  /* https://maziac.github.io/currah_uspeech_tests/
+     says only the lower 4k should be mapped
+     "mem holes test" yields strange results, though */
   memory_map_romcs_2k( 0x0000, uspeech_memory_map_romcs );
   memory_map_romcs_2k( 0x0800, uspeech_memory_map_romcs );
+  /*
   memory_map_romcs_2k( 0x1000, uspeech_memory_map_romcs );
   memory_map_romcs_2k( 0x1800, uspeech_memory_map_romcs );
   memory_map_romcs_2k( 0x2000, uspeech_memory_map_romcs );
   memory_map_romcs_2k( 0x2800, uspeech_memory_map_romcs );
   memory_map_romcs_2k( 0x3000, uspeech_memory_map_romcs );
   memory_map_romcs_2k( 0x3800, uspeech_memory_map_romcs );
+  */
 }
 
 static libspectrum_byte
