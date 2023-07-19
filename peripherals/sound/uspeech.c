@@ -37,13 +37,19 @@
 #include "periph.h"
 #include "settings.h"
 #include "sp0256.h"
+#include "ui/ui.h"
 #include "unittests/unittests.h"
 #include "uspeech.h"
+#include "utils.h"
+
+#define SP0256_ROM_SIZE 2048
 
 /* A 2 KiB memory chunk accessible by the Z80 when /ROMCS is low
  * (mirrored when active) */
 static memory_page uspeech_memory_map_romcs[ MEMORY_PAGES_IN_2K ];
 static int uspeech_memory_source;
+
+static uint8_t *sp0256rom = NULL;
 
 int uspeech_active = 0;
 int uspeech_available = 0;
@@ -87,8 +93,6 @@ uspeech_init( void *context )
   int uspeech_source;
   int i;
 
-  sp0256_init();
-
   module_register( &uspeech_module_info );
 
   uspeech_source = memory_source_register( "uSpeech" );
@@ -104,6 +108,10 @@ static void
 uspeech_end( void )
 {
   uspeech_available = 0;
+  sp0256_end();
+  if( sp0256rom ) {
+    libspectrum_free( sp0256rom );
+  }
 }
 
 void
@@ -118,6 +126,62 @@ uspeech_register_startup( void )
                             uspeech_end );
 }
 
+static int
+uspeech_load_sp0256_rom()
+{
+  int error;
+  char *filename;
+  utils_file rom;
+
+  filename = settings_current.rom_sp0256;
+  error = utils_read_auxiliary_file( filename, &rom, UTILS_AUXILIARY_ROM );
+  if( error ) {
+    filename = settings_default.rom_sp0256;
+    error = utils_read_auxiliary_file( filename, &rom, UTILS_AUXILIARY_ROM );
+    if( error ) {
+      ui_error( UI_ERROR_ERROR, "couldn't find ROM '%s'", filename );
+      return -1;
+    }
+  }
+
+  if( rom.length != SP0256_ROM_SIZE ) {
+    ui_error( UI_ERROR_ERROR,
+              "ROM '%s' is %ld bytes long; expected %ld bytes",
+              filename, (unsigned long)rom.length,
+              (unsigned long)SP0256_ROM_SIZE );
+    utils_close_file( &rom );
+    return -1;
+  }
+
+  sp0256rom = libspectrum_new( uint8_t, SP0256_ROM_SIZE * 2 );
+
+  if( !sp0256rom ) {
+    utils_close_file( &rom );
+    ui_error( UI_ERROR_ERROR, "SP0256: Out of memory in rdrom" );
+    return -1;
+  }
+
+  memcpy( sp0256rom, rom.buffer, SP0256_ROM_SIZE );
+  memcpy( sp0256rom + SP0256_ROM_SIZE, rom.buffer, SP0256_ROM_SIZE );
+
+  utils_close_file( &rom );
+
+  return 0;
+}
+
+static int
+uspeech_sp0256_reset()
+{
+  if( !sp0256rom && uspeech_load_sp0256_rom() ) {
+    return -1;
+  }
+
+  if( sp0256_reset( sp0256rom ) ) {
+    return -1;
+  }
+
+  return 0;
+}
 
 static void
 uspeech_reset( int hard_reset GCC_UNUSED )
@@ -125,14 +189,18 @@ uspeech_reset( int hard_reset GCC_UNUSED )
   uspeech_active = 0;
   uspeech_available = 0;
 
-  sp0256_reset();
-
   if( !periph_is_active( PERIPH_TYPE_USPEECH ) )
     return;
 
   if( machine_load_rom_bank( uspeech_memory_map_romcs, 0,
 			     settings_current.rom_uspeech,
 			     settings_default.rom_uspeech, 0x0800 ) ) {
+    settings_current.uspeech = 0;
+    periph_activate_type( PERIPH_TYPE_USPEECH, 0 );
+    return;
+  }
+
+  if( uspeech_sp0256_reset()) {
     settings_current.uspeech = 0;
     periph_activate_type( PERIPH_TYPE_USPEECH, 0 );
     return;

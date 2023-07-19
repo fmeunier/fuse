@@ -70,6 +70,7 @@
 #define debug_printf(x)
 #define jzp_printf(x, ...)
 
+#define DEBUG_USPEECH_ALLOPHONE
 #define HIGH_QUALITY
 #define SCBUF_SIZE   (4096)             /* Must be power of 2 */
 #define SCBUF_MASK   (SCBUF_SIZE - 1)
@@ -142,7 +143,7 @@ static void sp0256_write_ald(sp0256_t *s, uint32_t data);
 /* ======================================================================== */
 /*  sp0256_do_init -- Makes a new SP0256.                                   */
 /* ======================================================================== */
-static int sp0256_do_init( sp0256_t *s );
+static int sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom );
 
 static int factor = 358;
 
@@ -1116,60 +1117,6 @@ sp0256_micro(sp0256_t *s)
 }
 
 /* ======================================================================== */
-/*  sp0256_rdrom -- Tries to read a ROM file in the current directory.      */
-/* ======================================================================== */
-static int
-sp0256_rdrom(sp0256_t *s, int page)
-{
-  uint8_t *rom;
-  char buf[32];
-  FILE *f;
-
-  /* -------------------------------------------------------------------- */
-  /*  Generate a file name, and then see if it exists.                    */
-  /* -------------------------------------------------------------------- */
-  sprintf(buf, "sp0256_%.1X.bin", page);
-
-  f = fopen(buf, "rb");
-  if (!f) return 0;
-
-  printf("SDB: sp0256_rdrom() %.1X\n", page);
-
-  /* -------------------------------------------------------------------- */
-  /*  Allocate 4K worth of space to the ROM image.                        */
-  /* -------------------------------------------------------------------- */
-  rom = calloc(4096, 1);
-  if (!rom) {
-    fprintf(stderr, "SP0256: Out of memory in rdrom\n");
-    return -1;
-  }
-
-  /* -------------------------------------------------------------------- */
-  /*  Read in the ROM image and then bit-reverse it.                      */
-  /* -------------------------------------------------------------------- */
-  int l=fread(rom, 1, 4096, f); // FIXME: check length
-  fclose(f);
-
-  if( l == 2048 ) {
-    memcpy( rom + 2048, rom, 2048);
-  } else {
-    free(rom);
-    fprintf(stderr, "SP0256 %.1X ROM has %d bytes, expected 2048\n", page, l);
-    return -1;
-  }
-
-  /* -------------------------------------------------------------------- */
-  /*  Set this as our ROM page, and we're all set.                        */
-  /* -------------------------------------------------------------------- */
-  s->rom[page] = rom;
-
-  jzp_printf("SP0256: added %s at SP0256 address $%.4X.0\n", buf, page << 12);
-
-  return 0;
-}
-
-
-/* ======================================================================== */
 /*  sp0256_run   -- Where the magic happens.  Generate voice data for       */
 /*                  our good friend, the SP0256.                            */
 /* ======================================================================== */
@@ -1326,10 +1273,8 @@ sp0256_do_reset(sp0256_t *s)
 /*  sp0256_do_init -- Makes a new SP0256.                                   */
 /* ======================================================================== */
 static int
-sp0256_do_init( sp0256_t *s )
+sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom )
 {
-  int i;
-
   /* -------------------------------------------------------------------- */
   /*  First, lets zero out the structure to be safe.                      */
   /* -------------------------------------------------------------------- */
@@ -1363,15 +1308,17 @@ sp0256_do_init( sp0256_t *s )
   /*  you're going to have multiple SP0256's in a system, or use ROMs     */
   /*  from various places, but it'll do for the moment.                   */
   /* -------------------------------------------------------------------- */
-  for (i = 0; i < 16; i++)
-    if (sp0256_rdrom(s, i))
-      return -1;
+
+  /* Original code was iterating over 16 "pages", but we always provided
+     ROM for "page" 1 only */
+  s->rom[1] = sp0256rom;
 
   return 0;
 }
 
 static int current_intonation = 0;
 
+#ifdef DEBUG_USPEECH_ALLOPHONE
 struct allophone_t {
   const char *name;
   int length;
@@ -1448,20 +1395,38 @@ static const struct allophone_t al2_allophones[ 64 ] = {
   { "/BB2/",  50 }, /* (bb) */
 
 };
+#endif /* #ifdef DEBUG_USPEECH_ALLOPHONE */
 
 static sp0256_t sp0256;
 
-void
-sp0256_init( void )
+int
+sp0256_init( uint8_t *sp0256rom )
 {
-  sp0256_do_init(&sp0256);
+  return sp0256_do_init(&sp0256, sp0256rom);
+}
+
+int
+sp0256_reset( uint8_t *sp0256rom )
+{
+  debug_printf("sp0256_reset\n");
+  /* Lazy init, if necessary */
+  if( !sp0256.scratch ) {
+    if( sp0256_do_init( &sp0256, sp0256rom ) ) {
+      return -1;
+    }
+  } else {
+    sp0256_do_reset( &sp0256 );
+  }
+  return 0;
 }
 
 void
-sp0256_reset( void )
+sp0256_end()
 {
-  printf("sp0256_reset\n");
-  sp0256_do_reset(&sp0256);
+  if( sp0256.scratch ) {
+    free( sp0256.scratch );
+  }
+  memset( &sp0256, 0, sizeof(sp0256) );
 }
 
 static void
@@ -1485,6 +1450,8 @@ sp0256_run_to(sp0256_t *s, uint64_t t )
 void
 sp0256_do_frame( void )
 {
+  /* No op if it wasn't initialised yet */
+  if( !sp0256.scratch ) return;
   sp0256_run_to( &sp0256, machine_current->timings.tstates_per_frame );
   sp0256_tstates -= machine_current->timings.tstates_per_frame;
 }
@@ -1492,6 +1459,7 @@ sp0256_do_frame( void )
 void
 sp0256_play( int a )
 {
+#ifdef DEBUG_USPEECH_ALLOPHONE
   if( a >= 5 && a < 64 ) {
     if( al2_allophones[ a ].name ) {
       printf( "sp0256: allophone written: 0x%02x, %s\n", a, al2_allophones[ a ].name );
@@ -1500,6 +1468,7 @@ sp0256_play( int a )
     }
     fflush( stdout );
   }
+#endif /* #ifdef DEBUG_USPEECH_ALLOPHONE */
 
   sp0256_run_to(&sp0256, tstates);
   sp0256_write_ald(&sp0256, a);
@@ -1510,7 +1479,7 @@ sp0256_set_intonation( int intonation )
 {
   if( intonation != current_intonation ) {
     sp0256_run_to(&sp0256, tstates);
-    printf("sp0256: intonation %s\n", intonation ? "high" : "normal" );
+    debug_printf( ("sp0256: intonation %s\n", intonation ? "high" : "normal") );
     current_intonation = intonation;
     /* 358 - 1/8th = 314 */
     factor = intonation ? 314 : 358;

@@ -29,8 +29,9 @@
 #ifndef FUSE_SP0256_H
 #define FUSE_SP0256_H
 
-void sp0256_init( void );
-void sp0256_reset( void );
+int sp0256_init( uint8_t *sp0256rom );
+int sp0256_reset( uint8_t *sp0256rom );
+void sp0256_end( void );
 
 void sp0256_play( int allophone );
 void sp0256_set_intonation( int intonation );
