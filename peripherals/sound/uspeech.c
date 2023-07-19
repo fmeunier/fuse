@@ -62,13 +62,17 @@ static libspectrum_byte uspeech_toggle_read( libspectrum_word port,
 static void uspeech_reset( int hard_reset );
 static void uspeech_memory_map( void );
 
+static void uspeech_enabled_snapshot( libspectrum_snap *snap );
+static void uspeech_from_snapshot( libspectrum_snap *snap );
+static void uspeech_to_snapshot( libspectrum_snap *snap );
+
 static module_info_t uspeech_module_info = {
 
   uspeech_reset,
   uspeech_memory_map,
-  NULL, /* enabled_snapshot */
-  NULL, /* from_snapshot */
-  NULL, /* to_snapshot */
+  uspeech_enabled_snapshot,
+  uspeech_from_snapshot,
+  uspeech_to_snapshot,
 
 };
 
@@ -306,4 +310,30 @@ uspeech_unittest( void )
   r += unittests_paging_test_48( 2 );
 
   return r;
+}
+
+static void
+uspeech_enabled_snapshot( libspectrum_snap *snap )
+{
+  settings_current.uspeech = libspectrum_snap_uspeech_active( snap );
+}
+
+static void
+uspeech_from_snapshot( libspectrum_snap *snap )
+{
+  if( !libspectrum_snap_uspeech_active( snap ) ) return;
+
+  if( libspectrum_snap_uspeech_paged( snap ) ) {
+    uspeech_active = 0; /* Will be toggled to active next */
+    uspeech_toggle();
+  }
+}
+
+static void
+uspeech_to_snapshot( libspectrum_snap *snap )
+{
+  if( !periph_is_active( PERIPH_TYPE_USPEECH ) ) return;
+
+  libspectrum_snap_set_uspeech_active( snap, 1 );
+  libspectrum_snap_set_uspeech_paged ( snap, uspeech_active );
 }
