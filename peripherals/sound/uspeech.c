@@ -59,6 +59,14 @@ static void uspeech_toggle_write( libspectrum_word port,
 				  libspectrum_byte val );
 static libspectrum_byte uspeech_toggle_read( libspectrum_word port,
 					     libspectrum_byte *attached );
+static libspectrum_byte uspeech_port_play_read( libspectrum_word port,
+                                                libspectrum_byte *attached );
+static void uspeech_port_play_write( libspectrum_word port,
+                                     libspectrum_byte data );
+static void uspeech_port_intonation_normal( libspectrum_word port,
+                                            libspectrum_byte data );
+static void uspeech_port_intonation_high( libspectrum_word port,
+                                          libspectrum_byte data );
 
 static void uspeech_reset( int hard_reset );
 static void uspeech_memory_map( void );
@@ -81,6 +89,9 @@ static const periph_port_t uspeech_ports[] = {
   /* Really?! This conflicts with the ULA! */
   /* ---- ---- 0111 1000 */
   { 0xffff, 0x0038, uspeech_toggle_read, uspeech_toggle_write },
+  { 0xffff, 0x1000, uspeech_port_play_read, uspeech_port_play_write },
+  { 0xffff, 0x3000, NULL, uspeech_port_intonation_normal },
+  { 0xffff, 0x3001, NULL, uspeech_port_intonation_high },
 
   { 0, 0, NULL, NULL }
 };
@@ -91,6 +102,44 @@ static const periph_t uspeech_periph = {
   /* .hard_reset = */ 1,
   /* .activate = */ NULL
 };
+
+static libspectrum_byte
+uspeech_port_play_read( libspectrum_word port, libspectrum_byte *attached )
+{
+  if( !uspeech_active ) return 0xff;
+
+  /* TODO: check if this value should be set to 0xff */
+  *attached = 0xff;
+
+  return sp0256_busy();
+}
+
+static void
+uspeech_port_play_write( libspectrum_word port, libspectrum_byte data )
+{
+  if( !uspeech_active ) return;
+
+  /* Address 0x1000 can also be accessed via I/O (read and write) */
+  sp0256_play( data & 0x3f );
+}
+
+static void
+uspeech_port_intonation_normal( libspectrum_word port, libspectrum_byte data )
+{
+  if( !uspeech_active ) return;
+
+  /* Address 0x3000 can also be accessed via I/O (only write) */
+  sp0256_set_intonation( 0 );
+}
+
+static void
+uspeech_port_intonation_high( libspectrum_word port, libspectrum_byte data )
+{
+  if( !uspeech_active ) return;
+
+  /* Address 0x3001 can also be accessed via I/O (only write) */
+  sp0256_set_intonation( 1 );
+}
 
 static void
 ensure_empty_mapping( void )
@@ -286,12 +335,15 @@ uspeech_write( libspectrum_word address, libspectrum_byte b )
 {
   switch( address ) {
   case 0x1000:
+    /* This address is mirrored at 0011XXXX XXXXXXXX */
     sp0256_play( b & 0x3f );
     break;
   case 0x3000:
+    /* This address is mirrored at 0011XXXX XXXXXXX0 */
     sp0256_set_intonation( 0 );
     break;
   case 0x3001:
+    /* This address is mirrored at 0011XXXX XXXXXXX1 */
     sp0256_set_intonation( 1 );
     break;
   }
@@ -300,6 +352,13 @@ uspeech_write( libspectrum_word address, libspectrum_byte b )
 libspectrum_byte
 uspeech_busy( void )
 {
+  /* Thomas Busse tests claims:
+     - The bits are not floating, there seems to be some deterministic behaviour.
+     - Bits 0, 1 and 5 contain different values.
+     - Bits 2, 3 and 4 might be equal and bit 6 and 7 might be equal.
+     We only return/known bit 0 (busy), though.
+  */
+
   return sp0256_busy();
 }
 
