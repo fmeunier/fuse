@@ -311,6 +311,9 @@ lpc12_update(lpc12_t *f, int num_samp, int16_t *out, uint32_t *optr)
       f->z_data[j][0] = samp;
     }
 
+    /* Sergio: low quality samples sound louder as can be scaled closer to
+       the limit of a signed 16 bits sample */
+
 #ifdef HIGH_QUALITY /* Higher quality than the original, but who cares? */
     out[oidx++ & SCBUF_MASK] = limit(samp) << 2;
 #else
@@ -1199,7 +1202,7 @@ sp0256_run(sp0256_t *s, uint32_t len)
       int i;
       for( i = 0; i < did_samp; i++ ) {
         sound_sp0256_write( sp0256_tstates + ((n + i) * factor),
-			    (s->scratch[(i + old_idx) & SCBUF_MASK]) >> 8 );
+                            s->scratch[(i + old_idx) & SCBUF_MASK] );
       }
       n += did_samp;
     }

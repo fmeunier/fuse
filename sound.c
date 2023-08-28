@@ -711,14 +711,14 @@ sound_covox_write( libspectrum_word port GCC_UNUSED, libspectrum_byte val )
  * as the output is already a digitized waveform
  */
 void
-sound_sp0256_write( uint32_t f, libspectrum_byte val )
+sound_sp0256_write( libspectrum_dword at_tstates, libspectrum_signed_word val )
 {
   if( !sound_enabled )
     return;
 
-  blip_synth_update( left_sp0256_synth, f, ( val - 128) * 128);
+  blip_synth_update( left_sp0256_synth, at_tstates, val );
   if( right_sp0256_synth ) {
-    blip_synth_update( right_sp0256_synth, f, ( val - 128) * 128);
+    blip_synth_update( right_sp0256_synth, at_tstates, val );
   }
 }
 
