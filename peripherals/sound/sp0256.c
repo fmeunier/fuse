@@ -218,7 +218,7 @@ amp_decode(uint8_t a)
   /* -------------------------------------------------------------------- */
 #if 0
   if (mant & 1)
-    ampl |= (1 << expn) - 1;
+    ampl |= (1u << expn) - 1;
 #endif
 
   return ampl;
@@ -315,9 +315,9 @@ lpc12_update(lpc12_t *f, int num_samp, int16_t *out, uint32_t *optr)
        the limit of a signed 16 bits sample */
 
 #ifdef HIGH_QUALITY /* Higher quality than the original, but who cares? */
-    out[oidx++ & SCBUF_MASK] = limit(samp) << 2;
+    out[oidx++ & SCBUF_MASK] = limit(samp) * 4;
 #else
-    out[oidx++ & SCBUF_MASK] = (limit(samp >> 4) << 8);
+    out[oidx++ & SCBUF_MASK] = (limit(samp >> 4) * 256);
 #endif
   }
 
@@ -407,7 +407,7 @@ static const uint16_t sp0256_datafmt[] = {
   /* -------------------------------------------------------------------- */
   /*  Opcode 0001: LOADALL                                                */
   /* -------------------------------------------------------------------- */
-        /* All modes                */
+        /* Mode modes x1    */
   /*    1 */  CR( 8,  0,  AM, 0,  0,  0,  0),     /*  Amplitude   */
   /*    2 */  CR( 8,  0,  PR, 0,  0,  0,  0),     /*  Period      */
   /*    3 */  CR( 8,  0,  B0, 0,  0,  0,  0),     /*  B0          */
@@ -422,7 +422,6 @@ static const uint16_t sp0256_datafmt[] = {
   /*   12 */  CR( 8,  0,  F4, 0,  0,  0,  0),     /*  F4          */
   /*   13 */  CR( 8,  0,  B5, 0,  0,  0,  0),     /*  B5          */
   /*   14 */  CR( 8,  0,  F5, 0,  0,  0,  0),     /*  F5          */
-        /* Mode 01 and 11 only      */
   /*   15 */  CR( 8,  0,  IA, 0,  0,  0,  0),     /*  Amp Interp  */
   /*   16 */  CR( 8,  0,  IP, 0,  0,  0,  0),     /*  Pit Interp  */
 
@@ -669,6 +668,25 @@ static const uint16_t sp0256_datafmt[] = {
         /* SETMSB_3 only            */
   /*  175 */  CR( 5,  0,  IA, 0,  0,  0,  0),     /*  Ampl. Intr. */
   /*  176 */  CR( 5,  0,  IP, 0,  0,  0,  0),     /*  Per. Intr.  */
+
+  /* -------------------------------------------------------------------- */
+  /*  Opcode 0001: LOADALL                                                */
+  /* -------------------------------------------------------------------- */
+        /* Mode x0    */
+  /*  177 */  CR( 8,  0,  AM, 0,  0,  0,  0),     /*  Amplitude   */
+  /*  178 */  CR( 8,  0,  PR, 0,  0,  0,  0),     /*  Period      */
+  /*  179 */  CR( 8,  0,  B0, 0,  0,  0,  0),     /*  B0          */
+  /*  180 */  CR( 8,  0,  F0, 0,  0,  0,  0),     /*  F0          */
+  /*  181 */  CR( 8,  0,  B1, 0,  0,  0,  0),     /*  B1          */
+  /*  182 */  CR( 8,  0,  F1, 0,  0,  0,  0),     /*  F1          */
+  /*  183 */  CR( 8,  0,  B2, 0,  0,  0,  0),     /*  B2          */
+  /*  184 */  CR( 8,  0,  F2, 0,  0,  0,  0),     /*  F2          */
+  /*  185 */  CR( 8,  0,  B3, 0,  0,  0,  0),     /*  B3          */
+  /*  186 */  CR( 8,  0,  F3, 0,  0,  0,  0),     /*  F3          */
+  /*  187 */  CR( 8,  0,  B4, 0,  0,  0,  0),     /*  B4          */
+  /*  188 */  CR( 8,  0,  F4, 0,  0,  0,  0),     /*  F4          */
+  /*  189 */  CR( 8,  0,  IA, 0,  0,  0,  0),     /*  Amp Interp  */
+  /*  190 */  CR( 8,  0,  IP, 0,  0,  0,  0),     /*  Pit Interp  */
 };
 
 
@@ -682,7 +700,7 @@ static const int16_t sp0256_df_idx[16 * 8] = {
   /*  OPCODE 1010 */      73, 77,     74, 77,     78, 82,     79, 82,
   /*  OPCODE 0110 */      33, 36,     34, 37,     38, 41,     39, 42,
   /*  OPCODE 1110 */      127,128,    127,128,    127,128,    127,128,
-  /*  OPCODE 0001 */      1,  14,     1,  16,     1,  14,     1,  16,
+  /*  OPCODE 0001 */      177,190,    1,  16,     177,190,    1,  16,
   /*  OPCODE 1001 */      45, 56,     45, 58,     59, 70,     59, 72,
   /*  OPCODE 0101 */      161,166,    162,166,    169,174,    170,174,
   /*  OPCODE 1101 */      111,116,    111,118,    119,124,    119,126,
@@ -726,7 +744,7 @@ sp0256_getb(sp0256_t *s, int len)
     data = ((d1 << 10) | d0) >> s->fifo_bitp;
 
 #ifdef DEBUG_FIFO
-    dfprintf(("SP0256: RD_FIFO %.3X %d.%d %d\n", data & ((1 << len) - 1),
+    dfprintf(("SP0256: RD_FIFO %.3X %d.%d %d\n", data & ((1u << len) - 1),
 	      s->fifo_tail, s->fifo_bitp, s->fifo_head));
 #endif
 
@@ -765,7 +783,7 @@ sp0256_getb(sp0256_t *s, int len)
   /* -------------------------------------------------------------------- */
   /*  Mask data to the requested length.                                  */
   /* -------------------------------------------------------------------- */
-  data &= ((1 << len) - 1);
+  data &= ((1u << len) - 1);
 
   return data;
 }
@@ -1036,14 +1054,14 @@ sp0256_micro(sp0256_t *s)
       /*  Sign extend if this is a delta update.                      */
       /* ------------------------------------------------------------ */
       if (delta) { /* Sign extend */
-	if (value & (1 << (len - 1))) value |= -1 << len;
+        if (value & (1u << (len - 1))) value |= -(1u << len);
       }
 
       /* ------------------------------------------------------------ */
       /*  Shift the value to the appropriate precision.               */
       /* ------------------------------------------------------------ */
       if (shf) {
-	value <<= shf;
+        value = value < 0 ? -(-value << shf) : (value << shf);
       }
 
       debug_printf(("v=%.2X (%c%.2X)  ", value & 0xff,
@@ -1059,8 +1077,8 @@ sp0256_micro(sp0256_t *s)
 	debug_printf(("--field-> r[%2d] = %.2X -> ", prm,
 		      s->filt.r[prm]));
 
-	s->filt.r[prm] &= ~(~0 << shf); /* Clear the old bits.     */
-	s->filt.r[prm] |= value;        /* Merge in the new bits.  */
+	s->filt.r[prm] &= ~(~0u << shf); /* Clear the old bits.    */
+	s->filt.r[prm] |= value;         /* Merge in the new bits. */
 
 	debug_printf(("%.2X\n", s->filt.r[prm]));
 
@@ -1153,7 +1171,7 @@ sp0256_run(sp0256_t *s, uint32_t len)
 
     /* ---------------------------------------------------------------- */
     /*  Calculate the number of samples required at ~10kHz.             */
-    /*  (Actually, this is 3579545 / 358, or 9998.73 Hz).               */
+    /*  (Actually, on NTSC this is 3579545 / 358, or 9998.73 Hz).       */
     /* ---------------------------------------------------------------- */
     samples = ((int)(until - s->sound_current + factor - 1)) / factor;
 
