@@ -56,9 +56,9 @@ int uspeech_active = 0;
 int uspeech_available = 0;
 
 static void uspeech_toggle_write( libspectrum_word port,
-				  libspectrum_byte val );
+                                  libspectrum_byte val );
 static libspectrum_byte uspeech_toggle_read( libspectrum_word port,
-					     libspectrum_byte *attached );
+                                             libspectrum_byte *attached );
 static libspectrum_byte uspeech_port_play_read( libspectrum_word port,
                                                 libspectrum_byte *attached );
 static void uspeech_port_play_write( libspectrum_word port,
@@ -271,14 +271,14 @@ uspeech_reset( int hard_reset GCC_UNUSED )
     return;
 
   if( machine_load_rom_bank( uspeech_memory_map_romcs, 0,
-			     settings_current.rom_uspeech,
-			     settings_default.rom_uspeech, 0x0800 ) ) {
+                             settings_current.rom_uspeech,
+                             settings_default.rom_uspeech, 0x0800 ) ) {
     settings_current.uspeech = 0;
     periph_activate_type( PERIPH_TYPE_USPEECH, 0 );
     return;
   }
 
-  if( uspeech_sp0256_reset()) {
+  if( uspeech_sp0256_reset() ) {
     settings_current.uspeech = 0;
     periph_activate_type( PERIPH_TYPE_USPEECH, 0 );
     return;
@@ -313,7 +313,7 @@ uspeech_memory_map( void )
 
 static libspectrum_byte
 uspeech_toggle_read( libspectrum_word port GCC_UNUSED,
-		     libspectrum_byte *attached GCC_UNUSED )
+                     libspectrum_byte *attached GCC_UNUSED )
 {
   if( !uspeech_available ) return 0xff;
 
@@ -409,5 +409,5 @@ uspeech_to_snapshot( libspectrum_snap *snap )
   if( !periph_is_active( PERIPH_TYPE_USPEECH ) ) return;
 
   libspectrum_snap_set_uspeech_active( snap, 1 );
-  libspectrum_snap_set_uspeech_paged ( snap, uspeech_active );
+  libspectrum_snap_set_uspeech_paged( snap, uspeech_active );
 }

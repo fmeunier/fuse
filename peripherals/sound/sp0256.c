@@ -1,8 +1,6 @@
 /* sp0256.c: SP0256 speech synthesis emulation
    Copyright (c) 1998-2000 Jospeh Zbicaik, 2007-2015 Stuart Brady
 
-   $Id$
-
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
@@ -39,9 +37,8 @@
 
 #include "libspectrum.h"
 
+/* from jzintv-config.h */
 #include <assert.h>
-
-// from jzintv-config.h
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -72,55 +69,53 @@
 
 #define DEBUG_USPEECH_ALLOPHONE
 #define HIGH_QUALITY
-#define SCBUF_SIZE   (4096)             /* Must be power of 2 */
-#define SCBUF_MASK   (SCBUF_SIZE - 1)
-#define PER_PAUSE    (64)               /* Equiv timing period for pauses. */
-#define PER_NOISE    (64)               /* Equiv timing period for noise. */
+#define SCBUF_SIZE   ( 4096 )             /* Must be power of 2 */
+#define SCBUF_MASK   ( SCBUF_SIZE - 1 )
+#define PER_PAUSE    ( 64 )               /* Equiv timing period for pauses. */
+#define PER_NOISE    ( 64 )               /* Equiv timing period for noise. */
 
-#define FIFO_ADDR    (0x1800 << 3)      /* SP0256 address of speech FIFO. */
+#define FIFO_ADDR    ( 0x1800 << 3 )      /* SP0256 address of speech FIFO. */
 
 uint64_t sp0256_tstates;
 uint64_t sp0256_now;
 
-typedef struct lpc12_t
-{
-  int     rpt, cnt;       /* Repeat counter, Period down-counter. */
-  uint32_t per, rng; /* Period, Amplitude, Random Number Generator */
-  int     amp;
+typedef struct lpc12_t {
+  int rpt, cnt;         /* Repeat counter, Period down-counter. */
+  uint32_t per, rng;    /* Period, Amplitude, Random Number Generator */
+  int amp;
   int16_t f_coef[6];    /* F0 through F5. */
   int16_t b_coef[6];    /* B0 through B5. */
   int16_t z_data[6][2]; /* Time-delay data for the */
-					/* filter stages. */
-  uint8_t  r[16];          /* The encoded register set. */
-  int     interp;
+                        /* filter stages. */
+  uint8_t r[16];        /* The encoded register set. */
+  int interp;
 } lpc12_t;
 
 
-typedef struct sp0256_t
-{
-  int         silent;     /* Flag: SP0256 is silent. */
+typedef struct sp0256_t {
+  int silent;             /* Flag: SP0256 is silent. */
 
-  int16_t *scratch; /* Scratch buffer for audio. */
-  uint32_t sc_head; /* Head/Tail pointer into scratch circular buf */
-  uint32_t sc_tail; /* Head/Tail pointer into scratch circular buf */
-  uint64_t    sound_current;
+  int16_t *scratch;       /* Scratch buffer for audio. */
+  uint32_t sc_head;       /* Head/Tail pointer into scratch circular buf */
+  uint32_t sc_tail;       /* Head/Tail pointer into scratch circular buf */
+  uint64_t sound_current;
 
-  lpc12_t     filt;       /* 12-pole filter */
-  int         lrq;        /* Load ReQuest.  == 0 if we can accept a load */
-  int         ald;        /* Address LoaD.  < 0 if no command pending. */
-  int         pc;         /* Microcontroller's PC value. */
-  int         stack;      /* Microcontroller's PC stack. */
-  int         fifo_sel;   /* True when executing from FIFO. */
-  int         halted;     /* True when CPU is halted. */
-  uint32_t mode;       /* Mode register. */
-  uint32_t page;       /* Page set by SETPAGE */
+  lpc12_t filt;           /* 12-pole filter */
+  int lrq;                /* Load ReQuest.  == 0 if we can accept a load */
+  int ald;                /* Address LoaD.  < 0 if no command pending. */
+  int pc;                 /* Microcontroller's PC value. */
+  int stack;              /* Microcontroller's PC stack. */
+  int fifo_sel;           /* True when executing from FIFO. */
+  int halted;             /* True when CPU is halted. */
+  uint32_t mode;          /* Mode register. */
+  uint32_t page;          /* Page set by SETPAGE */
 
-  uint32_t fifo_head; /* FIFO head pointer (where new data goes). */
-  uint32_t fifo_tail; /* FIFO tail pointer (where data comes from). */
-  uint32_t fifo_bitp;  /* FIFO bit-pointer (for partial decles). */
-  uint16_t  fifo[64];   /* The 64-decle FIFO. */
+  uint32_t fifo_head;     /* FIFO head pointer (where new data goes). */
+  uint32_t fifo_tail;     /* FIFO tail pointer (where data comes from). */
+  uint32_t fifo_bitp;     /* FIFO bit-pointer (for partial decles). */
+  uint16_t fifo[64];      /* The 64-decle FIFO. */
 
-  const uint8_t *rom[16];  /* 4K ROM pages. */
+  const uint8_t *rom[16]; /* 4K ROM pages. */
 } sp0256_t;
 
 
@@ -128,17 +123,17 @@ typedef struct sp0256_t
 /*  sp0256_run   -- Where the magic happens.  Generate voice data for       */
 /*                  our good friend, the SP0256.                            */
 /* ======================================================================== */
-static uint32_t sp0256_run(sp0256_t *s, uint32_t len);
+static uint32_t sp0256_run( sp0256_t *s, uint32_t len );
 
 /* ======================================================================== */
 /*  sp0256_read_lrq -- Handle reads of the SP0256 LRQ line.                 */
 /* ======================================================================== */
-static uint32_t sp0256_read_lrq(sp0256_t *s);
+static uint32_t sp0256_read_lrq( sp0256_t *s );
 
 /* ======================================================================== */
 /*  sp0256_write_ald -- Handle writes to the SP0256's Address Load FIFO.    */
 /* ======================================================================== */
-static void sp0256_write_ald(sp0256_t *s, uint32_t data);
+static void sp0256_write_ald( sp0256_t *s, uint32_t data );
 
 /* ======================================================================== */
 /*  sp0256_do_init -- Makes a new SP0256.                                   */
@@ -150,12 +145,12 @@ static int factor = 358;
 /* ======================================================================== */
 /*  Internal function prototypes.                                           */
 /* ======================================================================== */
-static inline int16_t limit (int16_t s);
-static inline uint32_t bitrev(uint32_t val);
-static int lpc12_update(lpc12_t *f, int, int16_t *, uint32_t *);
-static void lpc12_regdec(lpc12_t *f);
-static uint32_t sp0256_getb(sp0256_t *s, int len);
-static void sp0256_micro(sp0256_t *s);
+static inline int16_t limit( int16_t s );
+static inline uint32_t bitrev( uint32_t val );
+static int lpc12_update( lpc12_t *f, int, int16_t *, uint32_t * );
+static void lpc12_regdec( lpc12_t *f );
+static uint32_t sp0256_getb( sp0256_t *s, int len );
+static void sp0256_micro( sp0256_t *s );
 
 /* ======================================================================== */
 /*  qtbl  -- Coefficient Quantization Table.  This comes from a             */
@@ -184,14 +179,14 @@ static const int16_t qtbl[128] = {
 /*  limit            -- Limiter function for digital sample output.         */
 /* ======================================================================== */
 static inline int16_t
-limit(int16_t s)
+limit( int16_t s )
 {
 #ifdef HIGH_QUALITY /* Higher quality than the original, but who cares? */
-  if (s >  8191) return  8191;
-  if (s < -8192) return -8192;
+  if( s >  8191 ) return 8191;
+  if( s < -8192 ) return -8192;
 #else
-  if (s >  127) return  127;
-  if (s < -128) return -128;
+  if( s >  127 ) return 127;
+  if( s < -128 ) return -128;
 #endif
   return s;
 }
@@ -200,14 +195,14 @@ limit(int16_t s)
 /*  amp_decode       -- Decode amplitude register                           */
 /* ======================================================================== */
 static int
-amp_decode(uint8_t a)
+amp_decode( uint8_t a )
 {
   /* -------------------------------------------------------------------- */
   /*  Amplitude has 3 bits of exponent and 5 bits of mantissa.  This      */
   /*  contradicts USP 4,296,269 but matches the SP0250 Apps Manual.       */
   /* -------------------------------------------------------------------- */
-  int expn = (a & 0xe0) >> 5;
-  int mant = (a & 0x1f);
+  int expn = ( a & 0xe0 ) >> 5;
+  int mant = ( a & 0x1f );
   int ampl = mant << expn;
 
   /* -------------------------------------------------------------------- */
@@ -217,8 +212,8 @@ amp_decode(uint8_t a)
   /*  this seems dubious.                                                 */
   /* -------------------------------------------------------------------- */
 #if 0
-  if (mant & 1)
-    ampl |= (1u << expn) - 1;
+  if( mant & 1 )
+    ampl |= ( 1u << expn ) - 1;
 #endif
 
   return ampl;
@@ -228,7 +223,7 @@ amp_decode(uint8_t a)
 /*  lpc12_update     -- Update the 12-pole filter, outputting samples.      */
 /* ======================================================================== */
 static int
-lpc12_update(lpc12_t *f, int num_samp, int16_t *out, uint32_t *optr)
+lpc12_update( lpc12_t *f, int num_samp, int16_t *out, uint32_t *optr )
 {
   int i, j;
   int16_t samp;
@@ -239,17 +234,17 @@ lpc12_update(lpc12_t *f, int num_samp, int16_t *out, uint32_t *optr)
   /*  Iterate up to the desired number of samples.  We actually may       */
   /*  break out early if our repeat count expires.                        */
   /* -------------------------------------------------------------------- */
-  for (i = 0; i < num_samp; i++) {
+  for( i = 0; i < num_samp; i++ ) {
     /* ---------------------------------------------------------------- */
     /*  Generate a series of periodic impulses, or random noise.        */
     /* ---------------------------------------------------------------- */
     do_int = 0;
     samp   = 0;
     bit    = f->rng & 1;
-    f->rng = (f->rng >> 1) ^ (bit ? 0x4001 : 0);
+    f->rng = ( f->rng >> 1 ) ^ ( bit ? 0x4001 : 0 );
 
-    if (--f->cnt <= 0) {
-      if (f->rpt-- <= 0) {    /* Stop if we expire the repeat counter */
+    if( --f->cnt <= 0 ) {
+      if( f->rpt-- <= 0 ) {    /* Stop if we expire the repeat counter */
         f->cnt = f->rpt = 0;
         break;
       }
@@ -259,17 +254,17 @@ lpc12_update(lpc12_t *f, int num_samp, int16_t *out, uint32_t *optr)
       do_int = f->interp;
     }
 
-    if (!f->per)
+    if( !f->per )
       samp   = bit ? -f->amp : f->amp;
 
     /* ---------------------------------------------------------------- */
     /*  If we need to, process the interpolation registers.             */
     /* ---------------------------------------------------------------- */
-    if (do_int) {
+    if( do_int ) {
       f->r[0] += f->r[14];
       f->r[1] += f->r[15];
 
-      f->amp   = amp_decode(f->r[0]);
+      f->amp   = amp_decode( f->r[0] );
       f->per   = f->r[1];
 
       do_int   = 0;
@@ -303,9 +298,9 @@ lpc12_update(lpc12_t *f, int num_samp, int16_t *out, uint32_t *optr)
     /*                +-----------[B]<---------+                        */
     /*                                                                  */
     /* ---------------------------------------------------------------- */
-    for (j = 0; j < 6; j++) {
-      samp += (((int)f->b_coef[j] * (int)f->z_data[j][1]) >> 9);
-      samp += (((int)f->f_coef[j] * (int)f->z_data[j][0]) >> 8);
+    for( j = 0; j < 6; j++ ) {
+      samp += ( ( (int)f->b_coef[j] * (int)f->z_data[j][1] ) >> 9 );
+      samp += ( ( (int)f->f_coef[j] * (int)f->z_data[j][0] ) >> 8 );
 
       f->z_data[j][1] = f->z_data[j][0];
       f->z_data[j][0] = samp;
@@ -315,9 +310,9 @@ lpc12_update(lpc12_t *f, int num_samp, int16_t *out, uint32_t *optr)
        the limit of a signed 16 bits sample */
 
 #ifdef HIGH_QUALITY /* Higher quality than the original, but who cares? */
-    out[oidx++ & SCBUF_MASK] = limit(samp) * 4;
+    out[oidx++ & SCBUF_MASK] = limit( samp ) * 4;
 #else
-    out[oidx++ & SCBUF_MASK] = (limit(samp >> 4) * 256);
+    out[oidx++ & SCBUF_MASK] = ( limit( samp >> 4 ) * 256 );
 #endif
   }
 
@@ -335,7 +330,7 @@ static const int stage_map[6] = { 0, 1, 2, 3, 4, 5 };
 /*  lpc12_regdec -- Decode the register set in the filter bank.             */
 /* ======================================================================== */
 static void
-lpc12_regdec(lpc12_t *f)
+lpc12_regdec( lpc12_t *f )
 {
   int i;
 
@@ -343,18 +338,18 @@ lpc12_regdec(lpc12_t *f)
   /*  Decode the Amplitude and Period registers.  Force cnt to 0 to get   */
   /*  the initial impulse.  (Redundant?)                                  */
   /* -------------------------------------------------------------------- */
-  f->amp = amp_decode(f->r[0]);
+  f->amp = amp_decode( f->r[0] );
   f->cnt = 0;
   f->per = f->r[1];
 
   /* -------------------------------------------------------------------- */
   /*  Decode the filter coefficients from the quant table.                */
   /* -------------------------------------------------------------------- */
-  for (i = 0; i < 6; i++) {
-    #define IQ(x) (((x) & 0x80) ? qtbl[0x7f & -(x)] : -qtbl[(x)])
+  for( i = 0; i < 6; i++ ) {
+    #define IQ( x ) ( ( ( x ) & 0x80 ) ? qtbl[0x7f & -( x )] : -qtbl[( x )] )
 
-    f->b_coef[stage_map[i]] = IQ(f->r[2 + 2*i]);
-    f->f_coef[stage_map[i]] = IQ(f->r[3 + 2*i]);
+    f->b_coef[stage_map[i]] = IQ( f->r[2 + 2 * i] );
+    f->f_coef[stage_map[i]] = IQ( f->r[3 + 2 * i] );
   }
 
   /* -------------------------------------------------------------------- */
@@ -377,8 +372,8 @@ lpc12_regdec(lpc12_t *f)
 /*  clrall  1 bit       Clear all before doing this update                  */
 /* ======================================================================== */
 
-#define CR(l,s,p,d,f,c5,ca)         \
-  (                           \
+#define CR(l,s,p,d,f,c5,ca) \
+  (                         \
     (((l)  & 15) <<  0) |   \
     (((s)  & 15) <<  4) |   \
     (((p)  & 15) <<  8) |   \
@@ -689,8 +684,6 @@ static const uint16_t sp0256_datafmt[] = {
   /*  190 */  CR( 8,  0,  IP, 0,  0,  0,  0),     /*  Pit Interp  */
 };
 
-
-
 static const int16_t sp0256_df_idx[16 * 8] = {
   /*  OPCODE 0000 */      -1, -1,     -1, -1,     -1, -1,     -1, -1,
   /*  OPCODE 1000 */      -1, -1,     -1, -1,     -1, -1,     -1, -1,
@@ -714,13 +707,13 @@ static const int16_t sp0256_df_idx[16 * 8] = {
 /*  bitrev       -- Bit-reverse a 32-bit number.                            */
 /* ======================================================================== */
 static inline uint32_t
-bitrev(uint32_t val)
+bitrev( uint32_t val )
 {
-  val = ((val & 0xffff0000) >> 16) | ((val & 0x0000ffff) << 16);
-  val = ((val & 0xff00ff00) >>  8) | ((val & 0x00ff00ff) <<  8);
-  val = ((val & 0xf0f0f0f0) >>  4) | ((val & 0x0f0f0f0f) <<  4);
-  val = ((val & 0xcccccccc) >>  2) | ((val & 0x33333333) <<  2);
-  val = ((val & 0xaaaaaaaa) >>  1) | ((val & 0x55555555) <<  1);
+  val = ( ( val & 0xffff0000 ) >> 16 ) | ( ( val & 0x0000ffff ) << 16 );
+  val = ( ( val & 0xff00ff00 ) >>  8 ) | ( ( val & 0x00ff00ff ) <<  8 );
+  val = ( ( val & 0xf0f0f0f0 ) >>  4 ) | ( ( val & 0x0f0f0f0f ) <<  4 );
+  val = ( ( val & 0xcccccccc ) >>  2 ) | ( ( val & 0x33333333 ) <<  2 );
+  val = ( ( val & 0xaaaaaaaa ) >>  1 ) | ( ( val & 0x55555555 ) <<  1 );
 
   return val;
 }
@@ -729,7 +722,7 @@ bitrev(uint32_t val)
 /*  sp0256_getb  -- Get up to 8 bits at the current PC.                     */
 /* ======================================================================== */
 static uint32_t
-sp0256_getb(sp0256_t *s, int len)
+sp0256_getb( sp0256_t *s, int len )
 {
   uint32_t data = 0;
   uint32_t d0, d1;
@@ -737,15 +730,15 @@ sp0256_getb(sp0256_t *s, int len)
   /* -------------------------------------------------------------------- */
   /*  Fetch data from the FIFO or from the MASK                           */
   /* -------------------------------------------------------------------- */
-  if (s->fifo_sel) {
-    d0 = s->fifo[(s->fifo_tail    ) & 63];
-    d1 = s->fifo[(s->fifo_tail + 1) & 63];
+  if( s->fifo_sel ) {
+    d0 = s->fifo[( s->fifo_tail    ) & 63];
+    d1 = s->fifo[( s->fifo_tail + 1 ) & 63];
 
-    data = ((d1 << 10) | d0) >> s->fifo_bitp;
+    data = ( ( d1 << 10 ) | d0 ) >> s->fifo_bitp;
 
 #ifdef DEBUG_FIFO
-    dfprintf(("SP0256: RD_FIFO %.3X %d.%d %d\n", data & ((1u << len) - 1),
-	      s->fifo_tail, s->fifo_bitp, s->fifo_head));
+    dfprintf( ( "SP0256: RD_FIFO %.3X %d.%d %d\n", data & ( ( 1u << len ) - 1 ),
+                s->fifo_tail, s->fifo_bitp, s->fifo_head ) );
 #endif
 
     /* ---------------------------------------------------------------- */
@@ -754,7 +747,7 @@ sp0256_getb(sp0256_t *s, int len)
     /*  what happens, but that's roughly how it behaves.)               */
     /* ---------------------------------------------------------------- */
     s->fifo_bitp += len;
-    if (s->fifo_bitp >= 10) {
+    if( s->fifo_bitp >= 10 ) {
       s->fifo_tail++;
       s->fifo_bitp -= 10;
     }
@@ -764,18 +757,18 @@ sp0256_getb(sp0256_t *s, int len)
     /*  adjacent bytes.  The byte we're interested in is extracted      */
     /*  from the appropriate bit-boundary between them.                 */
     /* ---------------------------------------------------------------- */
-    int idx0 = (s->pc    ) >> 3, page0 = idx0 >> 12;
-    int idx1 = (s->pc + 8) >> 3, page1 = idx1 >> 12;
+    int idx0 = ( s->pc     ) >> 3, page0 = idx0 >> 12;
+    int idx1 = ( s->pc + 8 ) >> 3, page1 = idx1 >> 12;
 
     idx0 &= 0xfff;
     idx1 &= 0xfff;
 
     d0 = d1 = 0;
 
-    if (s->rom[page0]) d0 = s->rom[page0][idx0];
-    if (s->rom[page1]) d1 = s->rom[page1][idx1];
+    if( s->rom[page0] ) d0 = s->rom[page0][idx0];
+    if( s->rom[page1] ) d1 = s->rom[page1][idx1];
 
-    data = ((d1 << 8) | d0) >> (s->pc & 7);
+    data = ( ( d1 << 8 ) | d0 ) >> ( s->pc & 7 );
 
     s->pc += len;
   }
@@ -783,7 +776,7 @@ sp0256_getb(sp0256_t *s, int len)
   /* -------------------------------------------------------------------- */
   /*  Mask data to the requested length.                                  */
   /* -------------------------------------------------------------------- */
-  data &= ((1u << len) - 1);
+  data &= ( ( 1u << len ) - 1 );
 
   return data;
 }
@@ -794,43 +787,43 @@ sp0256_getb(sp0256_t *s, int len)
 /*                  the sequencer gets halted by a RTS to 0.                */
 /* ======================================================================== */
 static void
-sp0256_micro(sp0256_t *s)
+sp0256_micro( sp0256_t *s )
 {
-  uint8_t  immed4;
-  uint8_t  opcode;
+  uint8_t immed4;
+  uint8_t opcode;
   uint16_t cr;
-  int     ctrl_xfer = 0;
-  int     repeat    = 0;
-  int     i, idx0, idx1;
+  int ctrl_xfer = 0;
+  int repeat    = 0;
+  int i, idx0, idx1;
 
   /* -------------------------------------------------------------------- */
   /*  Only execute instructions while the filter is not busy.             */
   /* -------------------------------------------------------------------- */
-  while (s->filt.rpt <= 0 && s->filt.cnt <= 0) {
+  while( s->filt.rpt <= 0 && s->filt.cnt <= 0 ) {
     /* ---------------------------------------------------------------- */
     /*  If the CPU is halted, see if we have a new command pending      */
     /*  in the Address LoaD buffer.                                     */
     /* ---------------------------------------------------------------- */
-    if (s->halted && !s->lrq) {
-      s->pc       = s->ald | (0x1000 << 3);
+    if( s->halted && !s->lrq ) {
+      s->pc       = s->ald | ( 0x1000 << 3 );
       s->fifo_sel = 0;
       s->halted   = 0;
       s->lrq      = 1;
       s->ald      = 0;
-/*      for (i = 0; i < 16; i++)*/
-/*	s->filt.r[i] = 0;*/
+      /* for( i = 0; i < 16; i++ ) */
+      /*   s->filt.r[i] = 0; */
     }
 
     /* ---------------------------------------------------------------- */
     /*  If we're still halted, do nothing.                              */
     /* ---------------------------------------------------------------- */
-    if (s->halted) {
+    if( s->halted ) {
       s->filt.rpt = 1;
       s->filt.cnt = 0;
       s->lrq      = 1;
       s->ald      = 0;
-/*      for (i = 0; i < 16; i++)*/
-/*	s->filt.r[i] = 0;*/
+      /* for( i = 0; i < 16; i++ ) */
+      /*   s->filt.r[i] = 0; */
       return;
     }
 
@@ -838,21 +831,21 @@ sp0256_micro(sp0256_t *s)
     /*  Fetch the first 8 bits of the opcode, which are always in the   */
     /*  same approximate format -- immed4 followed by opcode.           */
     /* ---------------------------------------------------------------- */
-    immed4 = sp0256_getb(s, 4);
-    opcode = sp0256_getb(s, 4);
+    immed4 = sp0256_getb( s, 4 );
+    opcode = sp0256_getb( s, 4 );
     repeat = 0;
     ctrl_xfer = 0;
 
-    debug_printf(("$%.4X.%.1X: OPCODE %d%d%d%d.%d%d\n",
-		  (s->pc >> 3) - 1, s->pc & 7,
-		  !!(opcode & 1), !!(opcode & 2),
-		  !!(opcode & 4), !!(opcode & 8),
-		  !!(s->mode&4), !!(s->mode&2)));
+    debug_printf( ( "$%.4X.%.1X: OPCODE %d%d%d%d.%d%d\n",
+                    ( s->pc >> 3 ) - 1, s->pc & 7,
+                    !!( opcode & 1 ), !!( opcode & 2 ),
+                    !!( opcode & 4 ), !!( opcode & 8 ),
+                    !!( s->mode & 4 ), !!( s->mode & 2 ) ) );
 
     /* ---------------------------------------------------------------- */
     /*  Handle the special cases for specific opcodes.                  */
     /* ---------------------------------------------------------------- */
-    switch (opcode) {
+    switch( opcode ) {
     /* ------------------------------------------------------------ */
     /*  OPCODE 0000:  RTS / SETPAGE                                 */
     /* ------------------------------------------------------------ */
@@ -860,33 +853,33 @@ sp0256_micro(sp0256_t *s)
       /* -------------------------------------------------------- */
       /*  If immed4 != 0, then this is a SETPAGE instruction.     */
       /* -------------------------------------------------------- */
-      if (immed4) {   /* SETPAGE */
-	s->page = bitrev(immed4) >> 13;
+      if( immed4 ) {   /* SETPAGE */
+        s->page = bitrev( immed4 ) >> 13;
       } else {
-      /* -------------------------------------------------------- */
-      /*  Otherwise, this is an RTS / HLT.                        */
-      /* -------------------------------------------------------- */
-	uint32_t btrg;
+        /* -------------------------------------------------------- */
+        /*  Otherwise, this is an RTS / HLT.                        */
+        /* -------------------------------------------------------- */
+        uint32_t btrg;
 
-	/* ---------------------------------------------------- */
-	/*  Figure out our branch target.                       */
-	/* ---------------------------------------------------- */
-	btrg = s->stack;
+        /* ---------------------------------------------------- */
+        /*  Figure out our branch target.                       */
+        /* ---------------------------------------------------- */
+        btrg = s->stack;
 
-	s->stack = 0;
+        s->stack = 0;
 
-	/* ---------------------------------------------------- */
-	/*  If the branch target is zero, this is a HLT.        */
-	/*  Otherwise, it's an RTS, so set the PC.              */
-	/* ---------------------------------------------------- */
-	if (!btrg) {
-	  s->halted = 1;
-	  s->pc     = 0;
-	  ctrl_xfer  = 1;
-	} else {
-	  s->pc    = btrg;
-	  ctrl_xfer = 1;
-	}
+        /* ---------------------------------------------------- */
+        /*  If the branch target is zero, this is a HLT.        */
+        /*  Otherwise, it's an RTS, so set the PC.              */
+        /* ---------------------------------------------------- */
+        if( !btrg ) {
+          s->halted = 1;
+          s->pc     = 0;
+          ctrl_xfer  = 1;
+        } else {
+          s->pc    = btrg;
+          ctrl_xfer = 1;
+        }
       }
 
       break;
@@ -904,16 +897,16 @@ sp0256_micro(sp0256_t *s)
       /*  Figure out our branch target.                           */
       /* -------------------------------------------------------- */
       btrg = s->page                           |
-	(bitrev(immed4)            >> 17) |
-	(bitrev(sp0256_getb(s, 8)) >> 21);
+             ( bitrev( immed4 )            >> 17 ) |
+             ( bitrev( sp0256_getb( s, 8 ) ) >> 21 );
       ctrl_xfer = 1;
 
       /* -------------------------------------------------------- */
       /*  If this is a JSR, push our return address on the        */
       /*  stack.  Make sure it's byte aligned.                    */
       /* -------------------------------------------------------- */
-      if (opcode == 0xd)
-	s->stack = (s->pc + 7) & ~7;
+      if( opcode == 0xd )
+        s->stack = ( s->pc + 7 ) & ~7;
 
       /* -------------------------------------------------------- */
       /*  Jump to the new location!                               */
@@ -926,8 +919,8 @@ sp0256_micro(sp0256_t *s)
     /*  OPCODE 1000:  SETMODE      Set the Mode and Repeat MSBs     */
     /* ------------------------------------------------------------ */
     case 0x1:
-      s->mode = ((immed4 & 8) >> 2) | (immed4 & 4) |
-		 ((immed4 & 3) << 4);
+      s->mode = ( ( immed4 & 8 ) >> 2 ) | ( immed4 & 4 ) |
+                ( ( immed4 & 3 ) << 4 );
       break;
 
     /* ------------------------------------------------------------ */
@@ -945,17 +938,17 @@ sp0256_micro(sp0256_t *s)
     /*  OPCODE 1111:  PAUSE        Silent pause                     */
     /* ------------------------------------------------------------ */
     default:
-      repeat = immed4 | (s->mode & 0x30);
+      repeat = immed4 | ( s->mode & 0x30 );
       break;
     }
-    if (opcode != 1) s->mode &= 0xf;
+    if( opcode != 1 ) s->mode &= 0xf;
 
     /* ---------------------------------------------------------------- */
     /*  If this was a control transfer, handle setting "fifo_sel"       */
     /*  and all that ugliness.                                          */
     /* ---------------------------------------------------------------- */
-    if (ctrl_xfer) {
-      debug_printf(("jumping to $%.4X.%.1X: ", s->pc >> 3, s->pc & 7));
+    if( ctrl_xfer ) {
+      debug_printf( ( "jumping to $%.4X.%.1X: ", s->pc >> 3, s->pc & 7 ) );
 
       /* ------------------------------------------------------------ */
       /*  Set our "FIFO Selected" flag based on whether we're going   */
@@ -963,21 +956,21 @@ sp0256_micro(sp0256_t *s)
       /* ------------------------------------------------------------ */
       s->fifo_sel = s->pc == FIFO_ADDR;
 
-      debug_printf(("%s ", s->fifo_sel ? "FIFO" : "ROM"));
+      debug_printf( ( "%s ", s->fifo_sel ? "FIFO" : "ROM" ) );
 
       /* ------------------------------------------------------------ */
       /*  Control transfers to the FIFO cause it to discard the       */
       /*  partial decle that's at the front of the FIFO.              */
       /* ------------------------------------------------------------ */
-      if (s->fifo_sel && s->fifo_bitp) {
-	debug_printf(("bitp = %d -> Flush", s->fifo_bitp));
+      if( s->fifo_sel && s->fifo_bitp ) {
+        debug_printf( ( "bitp = %d -> Flush", s->fifo_bitp ) );
 
-	/* Discard partially-read decle. */
-	if (s->fifo_tail < s->fifo_head) s->fifo_tail++;
-	s->fifo_bitp = 0;
+        /* Discard partially-read decle. */
+        if( s->fifo_tail < s->fifo_head ) s->fifo_tail++;
+        s->fifo_bitp = 0;
       }
 
-      debug_printf(("\n"));
+      debug_printf( ( "\n" ) );
 
       continue;
     }
@@ -986,32 +979,32 @@ sp0256_micro(sp0256_t *s)
     /*  Otherwise, if we have a repeat count, then go grab the data     */
     /*  block and feed it to the filter.                                */
     /* ---------------------------------------------------------------- */
-    if (!repeat) continue;
+    if( !repeat ) continue;
 
     s->filt.rpt = repeat;
-    debug_printf(("repeat = %d\n", repeat));
+    debug_printf( ( "repeat = %d\n", repeat ) );
 
     /* clear delay line on new opcode */
-    for (i = 0; i < 6; i++)
+    for( i = 0; i < 6; i++ )
       s->filt.z_data[i][0] = s->filt.z_data[i][1] = 0;
 
-    i = (opcode << 3) | (s->mode & 6);
+    i = ( opcode << 3 ) | ( s->mode & 6 );
     idx0 = sp0256_df_idx[i++];
     idx1 = sp0256_df_idx[i  ];
 
-    assert(idx0 >= 0 && idx1 >= 0 && idx1 >= idx0);
+    assert( idx0 >= 0 && idx1 >= 0 && idx1 >= idx0 );
 
     /* ---------------------------------------------------------------- */
     /*  If we're in one of the 10-pole modes (x0), clear F5/B5.         */
     /* ---------------------------------------------------------------- */
-    if ((s->mode & 2) == 0)
+    if( ( s->mode & 2 ) == 0 )
       s->filt.r[F5] = s->filt.r[B5] = 0;
 
 
     /* ---------------------------------------------------------------- */
     /*  Step through control words in the description for data block.   */
     /* ---------------------------------------------------------------- */
-    for (i = idx0; i <= idx1; i++) {
+    for( i = idx0; i <= idx1; i++ ) {
       int len, shf, delta, field, prm, clrL;
       libspectrum_signed_byte value;
 
@@ -1020,21 +1013,21 @@ sp0256_micro(sp0256_t *s)
       /* ------------------------------------------------------------ */
       cr = sp0256_datafmt[i];
 
-      len   = CR_LEN(cr);
-      shf   = CR_SHF(cr);
-      prm   = CR_PRM(cr);
+      len   = CR_LEN( cr );
+      shf   = CR_SHF( cr );
+      prm   = CR_PRM( cr );
       clrL  = cr & CR_CLRL;
       delta = cr & CR_DELTA;
       field = cr & CR_FIELD;
       value = 0;
 
-      debug_printf(("$%.4X.%.1X: len=%2d shf=%2d prm=%2d d=%d f=%d ",
-		    s->pc >> 3, s->pc & 7, len, shf, prm, !!delta, !!field));
+      debug_printf( ( "$%.4X.%.1X: len=%2d shf=%2d prm=%2d d=%d f=%d ",
+                      s->pc >> 3, s->pc & 7, len, shf, prm, !!delta,
+                      !!field ) );
       /* ------------------------------------------------------------ */
       /*  Clear any registers that were requested to be cleared.      */
       /* ------------------------------------------------------------ */
-      if (clrL)
-      {
+      if( clrL ) {
         s->filt.r[F0] = s->filt.r[B0] = 0;
         s->filt.r[F1] = s->filt.r[B1] = 0;
         s->filt.r[F2] = s->filt.r[B2] = 0;
@@ -1043,74 +1036,73 @@ sp0256_micro(sp0256_t *s)
       /* ------------------------------------------------------------ */
       /*  If this entry has a bitfield with it, grab the bitfield.    */
       /* ------------------------------------------------------------ */
-      if (len) {
-	value = sp0256_getb(s, len);
+      if( len ) {
+        value = sp0256_getb( s, len );
       } else {
-	debug_printf((" (no update)\n"));
-	continue;
+        debug_printf( ( " (no update)\n" ) );
+        continue;
       }
 
       /* ------------------------------------------------------------ */
       /*  Sign extend if this is a delta update.                      */
       /* ------------------------------------------------------------ */
-      if (delta) { /* Sign extend */
-        if (value & (1u << (len - 1))) value |= -(1u << len);
+      if( delta ) { /* Sign extend */
+        if( value & ( 1u << ( len - 1 ) ) ) value |= -( 1u << len );
       }
 
       /* ------------------------------------------------------------ */
       /*  Shift the value to the appropriate precision.               */
       /* ------------------------------------------------------------ */
-      if (shf) {
-        value = value < 0 ? -(-value << shf) : (value << shf);
+      if( shf ) {
+        value = value < 0 ? -( -value << shf ) : ( value << shf );
       }
 
-      debug_printf(("v=%.2X (%c%.2X)  ", value & 0xff,
-		    value & 0x80 ? '-' : '+',
-		    0xff & (value & 0x80 ? -value : value)));
+      debug_printf( ( "v=%.2X (%c%.2X)  ", value & 0xff,
+                      value & 0x80 ? '-' : '+',
+                      0xff & ( value & 0x80 ? -value : value ) ) );
 
       s->silent = 0;
 
       /* ------------------------------------------------------------ */
       /*  If this is a field-replace, insert the field.               */
       /* ------------------------------------------------------------ */
-      if (field) {
-	debug_printf(("--field-> r[%2d] = %.2X -> ", prm,
-		      s->filt.r[prm]));
+      if( field ) {
+        debug_printf( ( "--field-> r[%2d] = %.2X -> ", prm,
+                        s->filt.r[prm] ) );
 
-	s->filt.r[prm] &= ~(~0u << shf); /* Clear the old bits.    */
-	s->filt.r[prm] |= value;         /* Merge in the new bits. */
+        s->filt.r[prm] &= ~( ~0u << shf ); /* Clear the old bits.     */
+        s->filt.r[prm] |= value;           /* Merge in the new bits.  */
 
-	debug_printf(("%.2X\n", s->filt.r[prm]));
+        debug_printf( ( "%.2X\n", s->filt.r[prm] ) );
 
-	continue;
+        continue;
       }
 
       /* ------------------------------------------------------------ */
       /*  If this is a delta update, add to the appropriate field.    */
       /* ------------------------------------------------------------ */
-      if (delta) {
-	debug_printf(("--delta-> r[%2d] = %.2X -> ", prm,
-		      s->filt.r[prm]));
+      if( delta ) {
+        debug_printf( ( "--delta-> r[%2d] = %.2X -> ", prm,
+                        s->filt.r[prm] ) );
 
-	s->filt.r[prm] += value;
+        s->filt.r[prm] += value;
 
-	debug_printf(("%.2X\n", s->filt.r[prm]));
+        debug_printf( ( "%.2X\n", s->filt.r[prm] ) );
 
-	continue;
+        continue;
       }
 
       /* ------------------------------------------------------------ */
       /*  Otherwise, just write the new value.                        */
       /* ------------------------------------------------------------ */
       s->filt.r[prm] = value;
-      debug_printf(("--value-> r[%2d] = %.2X\n", prm, s->filt.r[prm]));
+      debug_printf( ( "--value-> r[%2d] = %.2X\n", prm, s->filt.r[prm] ) );
     }
 
     /* ---------------------------------------------------------------- */
     /*  Most opcodes clear IA, IP.                                      */
     /* ---------------------------------------------------------------- */
-    if (opcode != 0x1 && opcode != 0x2 && opcode != 0x3)
-    {
+    if( opcode != 0x1 && opcode != 0x2 && opcode != 0x3 ) {
       s->filt.r[IA] = 0;
       s->filt.r[IP] = 0;
     }
@@ -1118,8 +1110,7 @@ sp0256_micro(sp0256_t *s)
     /* ---------------------------------------------------------------- */
     /*  Special case:  Set PAUSE's equivalent period.                   */
     /* ---------------------------------------------------------------- */
-    if (opcode == 0xf)
-    {
+    if( opcode == 0xf ) {
       s->silent     = 1;
       s->filt.r[AM] = 0;
       s->filt.r[PR] = PER_PAUSE;
@@ -1128,7 +1119,7 @@ sp0256_micro(sp0256_t *s)
     /* ---------------------------------------------------------------- */
     /*  Now that we've updated the registers, go decode them.           */
     /* ---------------------------------------------------------------- */
-    lpc12_regdec(&s->filt);
+    lpc12_regdec( &s->filt );
 
     /* ---------------------------------------------------------------- */
     /*  Break out since we now have a repeat count.                     */
@@ -1142,7 +1133,7 @@ sp0256_micro(sp0256_t *s)
 /*                  our good friend, the SP0256.                            */
 /* ======================================================================== */
 static uint32_t
-sp0256_run(sp0256_t *s, uint32_t len)
+sp0256_run( sp0256_t *s, uint32_t len )
 {
   /* TODO: use 32-bit types only */
   uint64_t until = sp0256_now + len;
@@ -1152,17 +1143,17 @@ sp0256_run(sp0256_t *s, uint32_t len)
   /* -------------------------------------------------------------------- */
   /*  If the rest of the machine hasn't caught up to us, just return.     */
   /* -------------------------------------------------------------------- */
-  if (until <= s->sound_current)
+  if( until <= s->sound_current )
     return 0;
 
   /* -------------------------------------------------------------------- */
   /*  Iterate the sound engine.                                           */
   /* -------------------------------------------------------------------- */
-  while (s->sound_current < until) {
+  while( s->sound_current < until ) {
     /* ---------------------------------------------------------------- */
     /*  Renormalize our sc_head and sc_tail.                            */
     /* ---------------------------------------------------------------- */
-    while (s->sc_head > SCBUF_SIZE && s->sc_tail > SCBUF_SIZE) {
+    while( s->sc_head > SCBUF_SIZE && s->sc_tail > SCBUF_SIZE ) {
       s->sc_head -= SCBUF_SIZE;
       s->sc_tail -= SCBUF_SIZE;
     }
@@ -1173,7 +1164,7 @@ sp0256_run(sp0256_t *s, uint32_t len)
     /*  Calculate the number of samples required at ~10kHz.             */
     /*  (Actually, on NTSC this is 3579545 / 358, or 9998.73 Hz).       */
     /* ---------------------------------------------------------------- */
-    samples = ((int)(until - s->sound_current + factor - 1)) / factor;
+    samples = ( (int)( until - s->sound_current + factor - 1 ) ) / factor;
 
     /* ---------------------------------------------------------------- */
     /*  Process the current set of filter coefficients as long as the   */
@@ -1181,46 +1172,46 @@ sp0256_run(sp0256_t *s, uint32_t len)
     /* ---------------------------------------------------------------- */
     did_samp = 0;
     old_idx  = s->sc_head;
-    if (samples > 0) {
+    if( samples > 0 ) {
       do {
-	int do_samp;
+        int do_samp;
 
-	/* ------------------------------------------------------------ */
-	/*  If our repeat count expired, emulate the microsequencer.    */
-	/* ------------------------------------------------------------ */
-	if (s->filt.rpt <= 0 && s->filt.cnt <= 0)
-	  sp0256_micro(s);
+        /* ------------------------------------------------------------ */
+        /*  If our repeat count expired, emulate the microsequencer.    */
+        /* ------------------------------------------------------------ */
+        if( s->filt.rpt <= 0 && s->filt.cnt <= 0 )
+          sp0256_micro( s );
 
-	/* ------------------------------------------------------------ */
-	/*  Do as many samples as we can.                               */
-	/* ------------------------------------------------------------ */
-	do_samp = samples - did_samp;
-	if (s->sc_head + do_samp - s->sc_tail > SCBUF_SIZE)
-	  do_samp = s->sc_tail + SCBUF_SIZE - s->sc_head;
+        /* ------------------------------------------------------------ */
+        /*  Do as many samples as we can.                               */
+        /* ------------------------------------------------------------ */
+        do_samp = samples - did_samp;
+        if( s->sc_head + do_samp - s->sc_tail > SCBUF_SIZE )
+          do_samp = s->sc_tail + SCBUF_SIZE - s->sc_head;
 
-	if (do_samp == 0) break;
+        if( do_samp == 0 ) break;
 
-	if (s->silent &&
-            s->filt.rpt <= 0 && s->filt.cnt <= 0) {
-	  int x, y = s->sc_head;
+        if( s->silent &&
+            s->filt.rpt <= 0 && s->filt.cnt <= 0 ) {
+          int x, y = s->sc_head;
 
-	  for (x = 0; x < do_samp; x++)
-	    s->scratch[y++ & SCBUF_MASK] = 0;
-	  s->sc_head += do_samp;
-	  did_samp        += do_samp;
-	} else {
-	  did_samp += lpc12_update(&s->filt, do_samp,
-				   s->scratch, &s->sc_head);
-	}
-      } while ((s->filt.rpt > 0 || s->filt.cnt > 0) &&
-        samples > did_samp);
+          for( x = 0; x < do_samp; x++ )
+            s->scratch[y++ & SCBUF_MASK] = 0;
+          s->sc_head += do_samp;
+          did_samp        += do_samp;
+        } else {
+          did_samp += lpc12_update( &s->filt, do_samp,
+                                    s->scratch, &s->sc_head );
+        }
+      } while ( ( s->filt.rpt > 0 || s->filt.cnt > 0 ) &&
+                samples > did_samp );
     }
 
-    if (did_samp) {
+    if( did_samp ) {
       int i;
       for( i = 0; i < did_samp; i++ ) {
-        sound_sp0256_write( sp0256_tstates + ((n + i) * factor),
-                            s->scratch[(i + old_idx) & SCBUF_MASK] );
+        sound_sp0256_write( sp0256_tstates + ( ( n + i ) * factor ),
+                            s->scratch[( i + old_idx ) & SCBUF_MASK] );
       }
       n += did_samp;
     }
@@ -1228,7 +1219,7 @@ sp0256_run(sp0256_t *s, uint32_t len)
     s->sound_current += did_samp * factor;
   }
 
-  if (s->sound_current < sp0256_now) {
+  if( s->sound_current < sp0256_now ) {
     return 0;
   }
 
@@ -1240,7 +1231,7 @@ sp0256_run(sp0256_t *s, uint32_t len)
 /*  sp0256_read_lrq -- Handle reads from the SP0256.                        */
 /* ======================================================================== */
 static uint32_t
-sp0256_read_lrq(sp0256_t *s)
+sp0256_read_lrq( sp0256_t *s )
 {
   return s->lrq;
 }
@@ -1249,9 +1240,9 @@ sp0256_read_lrq(sp0256_t *s)
 /*  sp0256_write_ald -- Handle writes to the SP0256's Address LoaD FIFO.    */
 /* ======================================================================== */
 static void
-sp0256_write_ald(sp0256_t *s, uint32_t data)
+sp0256_write_ald( sp0256_t *s, uint32_t data )
 {
-  if (!s->lrq)
+  if( !s->lrq )
     return;
 
   /* ---------------------------------------------------------------- */
@@ -1260,7 +1251,7 @@ sp0256_write_ald(sp0256_t *s, uint32_t data)
   /*  get the new PC address.                                         */
   /* ---------------------------------------------------------------- */
   s->lrq = 0;
-  s->ald = (0xff & data) << 4;
+  s->ald = ( 0xff & data ) << 4;
 
   return;
 }
@@ -1269,14 +1260,14 @@ sp0256_write_ald(sp0256_t *s, uint32_t data)
 /*  sp0256_reset -- Resets the SP0256.                                      */
 /* ======================================================================== */
 static void
-sp0256_do_reset(sp0256_t *s)
+sp0256_do_reset( sp0256_t *s )
 {
   /* -------------------------------------------------------------------- */
   /*  Do a software-style reset of the SP0256.                            */
   /* -------------------------------------------------------------------- */
   s->fifo_head = s->fifo_tail = s->fifo_bitp = 0;
 
-  memset(&s->filt, 0, sizeof(s->filt));
+  memset( &s->filt, 0, sizeof( s->filt ) );
   s->halted   = 1;
   s->filt.rpt = -1;
   s->filt.rng = 1;
@@ -1299,7 +1290,7 @@ sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom )
   /* -------------------------------------------------------------------- */
   /*  First, lets zero out the structure to be safe.                      */
   /* -------------------------------------------------------------------- */
-  memset(s, 0, sizeof(*s));
+  memset( s, 0, sizeof( *s ) );
 
   /* -------------------------------------------------------------------- */
   /*  Configure our internal variables.                                   */
@@ -1309,10 +1300,10 @@ sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom )
   /* -------------------------------------------------------------------- */
   /*  Allocate a scratch buffer for generating 10kHz samples.             */
   /* -------------------------------------------------------------------- */
-  s->scratch = calloc(SCBUF_SIZE, sizeof(int16_t));
+  s->scratch = calloc( SCBUF_SIZE, sizeof( int16_t ) );
   s->sc_head = s->sc_tail = 0;
 
-  if (!s->scratch)
+  if( !s->scratch )
     return -1;
 
   /* -------------------------------------------------------------------- */
@@ -1423,13 +1414,13 @@ static sp0256_t sp0256;
 int
 sp0256_init( uint8_t *sp0256rom )
 {
-  return sp0256_do_init(&sp0256, sp0256rom);
+  return sp0256_do_init( &sp0256, sp0256rom );
 }
 
 int
 sp0256_reset( uint8_t *sp0256rom )
 {
-  debug_printf("sp0256_reset\n");
+  debug_printf( "sp0256_reset\n" );
   /* Lazy init, if necessary */
   if( !sp0256.scratch ) {
     if( sp0256_do_init( &sp0256, sp0256rom ) ) {
@@ -1447,22 +1438,22 @@ sp0256_end()
   if( sp0256.scratch ) {
     free( sp0256.scratch );
   }
-  memset( &sp0256, 0, sizeof(sp0256) );
+  memset( &sp0256, 0, sizeof( sp0256 ) );
 }
 
 static void
-sp0256_run_to(sp0256_t *s, uint64_t t )
+sp0256_run_to( sp0256_t *s, uint64_t t )
 {
   int64_t periph_step;
 
-  while ( sp0256_tstates < t ) {
+  while( sp0256_tstates < t ) {
     int64_t n = t - sp0256_tstates;
     if( n > 14934 ) n = 14934;
 
-    periph_step = sp0256_run(s, n);
-    sp0256_tstates += abs(periph_step);
-    sp0256_now += abs(periph_step);
-    if (!periph_step) {
+    periph_step = sp0256_run( s, n );
+    sp0256_tstates += abs( periph_step );
+    sp0256_now += abs( periph_step );
+    if( !periph_step ) {
       return;
     }
   }
@@ -1483,7 +1474,8 @@ sp0256_play( int a )
 #ifdef DEBUG_USPEECH_ALLOPHONE
   if( a >= 5 && a < 64 ) {
     if( al2_allophones[ a ].name ) {
-      printf( "sp0256: allophone written: 0x%02x, %s\n", a, al2_allophones[ a ].name );
+      printf( "sp0256: allophone written: 0x%02x, %s\n", a,
+              al2_allophones[a].name );
     } else {
       printf( "sp0256: allophone written: 0x%02x\n", a );
     }
@@ -1491,16 +1483,17 @@ sp0256_play( int a )
   }
 #endif /* #ifdef DEBUG_USPEECH_ALLOPHONE */
 
-  sp0256_run_to(&sp0256, tstates);
-  sp0256_write_ald(&sp0256, a);
+  sp0256_run_to( &sp0256, tstates );
+  sp0256_write_ald( &sp0256, a );
 }
 
 void
 sp0256_set_intonation( int intonation )
 {
   if( intonation != current_intonation ) {
-    sp0256_run_to(&sp0256, tstates);
-    debug_printf( ("sp0256: intonation %s\n", intonation ? "high" : "normal") );
+    sp0256_run_to( &sp0256, tstates );
+    debug_printf( ( "sp0256: intonation %s\n",
+                    intonation ? "high" : "normal" ) );
     current_intonation = intonation;
     /* 358 - 1/8th = 314 */
     factor = intonation ? 314 : 358;
@@ -1510,6 +1503,6 @@ sp0256_set_intonation( int intonation )
 int
 sp0256_busy( void )
 {
-  sp0256_run_to(&sp0256, tstates);
-  return !sp0256_read_lrq(&sp0256);
+  sp0256_run_to( &sp0256, tstates );
+  return !sp0256_read_lrq( &sp0256 );
 }
