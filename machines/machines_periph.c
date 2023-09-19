@@ -205,7 +205,6 @@ base_peripherals_48_128( void )
   periph_set_present( PERIPH_TYPE_PLUSD, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_SPECDRUM, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_USOURCE, PERIPH_PRESENT_OPTIONAL );
-  periph_set_present( PERIPH_TYPE_USPEECH, PERIPH_PRESENT_OPTIONAL );
 }
 
 /* The set of peripherals available on the 48K and similar machines */
@@ -220,6 +219,7 @@ machines_periph_48( void )
   periph_set_present( PERIPH_TYPE_ZXPRINTER, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_DIDAKTIK80, PERIPH_PRESENT_OPTIONAL );
   periph_set_present( PERIPH_TYPE_DISCIPLE, PERIPH_PRESENT_OPTIONAL );
+  periph_set_present( PERIPH_TYPE_USPEECH, PERIPH_PRESENT_OPTIONAL );
 }
 
 /* The set of peripherals available on the 128K and similar machines */
