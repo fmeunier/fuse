@@ -28,6 +28,7 @@
 #include "libspectrum.h"
 
 #include "compat.h"
+#include "debugger/debugger.h"
 #include "infrastructure/startup_manager.h"
 #include "machine.h"
 #include "memory.h"
@@ -102,6 +103,10 @@ static const periph_t uspeech_periph = {
   /* .hard_reset = */ 1,
   /* .activate = */ NULL
 };
+
+/* Debugger events */
+static const char * const event_type_string = "uspeech";
+static int page_event, unpage_event;
 
 static libspectrum_byte
 uspeech_port_play_read( libspectrum_word port, libspectrum_byte *attached )
@@ -179,6 +184,9 @@ uspeech_init( void *context )
 
   periph_register( PERIPH_TYPE_USPEECH, &uspeech_periph );
 
+  periph_register_paging_events( event_type_string, &page_event,
+                                 &unpage_event );
+
   return 0;
 }
 
@@ -196,6 +204,7 @@ void
 uspeech_register_startup( void )
 {
   startup_manager_module dependencies[] = {
+    STARTUP_MANAGER_MODULE_DEBUGGER,
     STARTUP_MANAGER_MODULE_MEMORY,
     STARTUP_MANAGER_MODULE_SETUID,
   };
@@ -295,6 +304,11 @@ uspeech_toggle( void )
   uspeech_active = !uspeech_active;
   machine_current->ram.romcs = uspeech_active;
   machine_current->memory_map();
+
+  if( uspeech_active )
+    debugger_event( page_event );
+  else
+    debugger_event( unpage_event );
 }
 
 static void
