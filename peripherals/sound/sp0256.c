@@ -116,6 +116,9 @@ typedef struct sp0256_t {
   uint16_t fifo[64];      /* The 64-decle FIFO. */
 
   const uint8_t *rom[16]; /* 4K ROM pages. */
+
+  uint32_t clock;              /* Clock - crystal frequency */
+  unsigned int clock_per_samp; /* Sample duration in Z80 tstates */
 } sp0256_t;
 
 
@@ -139,8 +142,6 @@ static void sp0256_write_ald( sp0256_t *s, uint32_t data );
 /*  sp0256_do_init -- Makes a new SP0256.                                   */
 /* ======================================================================== */
 static int sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom );
-
-static int factor = 358;
 
 /* ======================================================================== */
 /*  Internal function prototypes.                                           */
@@ -1164,7 +1165,8 @@ sp0256_run( sp0256_t *s, uint32_t len )
     /*  Calculate the number of samples required at ~10kHz.             */
     /*  (Actually, on NTSC this is 3579545 / 358, or 9998.73 Hz).       */
     /* ---------------------------------------------------------------- */
-    samples = ( (int)( until - s->sound_current + factor - 1 ) ) / factor;
+    samples = ( (int)( until - s->sound_current + s->clock_per_samp - 1 ) )
+            / s->clock_per_samp;
 
     /* ---------------------------------------------------------------- */
     /*  Process the current set of filter coefficients as long as the   */
@@ -1210,13 +1212,13 @@ sp0256_run( sp0256_t *s, uint32_t len )
     if( did_samp ) {
       int i;
       for( i = 0; i < did_samp; i++ ) {
-        sound_sp0256_write( sp0256_tstates + ( ( n + i ) * factor ),
+        sound_sp0256_write( sp0256_tstates + ( ( n + i ) * s->clock_per_samp ),
                             s->scratch[( i + old_idx ) & SCBUF_MASK] );
       }
       n += did_samp;
     }
 
-    s->sound_current += did_samp * factor;
+    s->sound_current += did_samp * s->clock_per_samp;
   }
 
   if( s->sound_current < sp0256_now ) {
@@ -1325,10 +1327,14 @@ sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom )
      ROM for "page" 1 only */
   s->rom[1] = sp0256rom;
 
+  /* Set nominal crystal clock at 3.12 MHz */
+  s->clock = 3120000;
+
+  /* Nominal sample duration of 350 tstates on a Z80 3.50 MHz */
+  s->clock_per_samp = 350;
+
   return 0;
 }
-
-static int current_intonation = 0;
 
 #ifdef DEBUG_USPEECH_ALLOPHONE
 struct allophone_t {
@@ -1488,15 +1494,44 @@ sp0256_play( int a )
 }
 
 void
-sp0256_set_intonation( int intonation )
+sp0256_set_clock( uint32_t clock )
 {
-  if( intonation != current_intonation ) {
+  unsigned int samples;
+  libspectrum_dword processor_speed;
+
+  /* CPC wiki states:
+     The SP0256 is (usually) driven by a 3.12MHz oscillator, and it uses
+     7bit PWM output, which is clocked at 3.12MHz/2, to obtain a 10kHz
+     sample rate, the chip issues some dummy steps with constant LOW level
+     additionally to the 128 steps needed for 7bit PWM, making it a total
+     number of 156 steps per sample.
+  */
+  sp0256.clock = clock;
+
+  /* SP0256 sample rate:
+     A nominal 3.12 MHz XTAL would produce 10000 samples (10 kHz).
+     With uSpeech (normal intonation), a 3.05 MHz XTAL would produce 9775 samples.
+     With uSpeech (high intonation), a 3.26 MHz XTAL would produce 10448 samples.
+   */
+  samples = sp0256.clock / 312.0;
+
+  processor_speed = ( machine_current == NULL ) ? 3500000 :
+                    machine_current->timings.processor_speed;
+
+  /* Z80 sample rate (examples with Z80 clocked at 3.5 MHz):
+     - A SP0256 sample at 3.12 MHz would last 350 (Z80) t-states.
+     - A SP0256 sample at 3.05 MHz would last 358 (Z80) t-states.
+     - A SP0256 sample at 3.26 MHz would last 334 (Z80) t-states.
+   */
+  sp0256.clock_per_samp = processor_speed / samples;
+}
+
+void
+sp0256_change_clock( uint32_t clock )
+{
+  if( sp0256.clock != clock ) {
     sp0256_run_to( &sp0256, tstates );
-    debug_printf( ( "sp0256: intonation %s\n",
-                    intonation ? "high" : "normal" ) );
-    current_intonation = intonation;
-    /* 358 - 1/8th = 314 */
-    factor = intonation ? 314 : 358;
+    sp0256_set_clock( clock );
   }
 }
 

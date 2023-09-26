@@ -43,6 +43,11 @@
 
 #define SP0256_ROM_SIZE 2048
 
+/* Intonation on uSpeech changes SP0256 clock/oscillator frequency.
+   These values are based on a Kio's simulation and Thomas Busse tests. */
+#define SP0256_XTAL_NORMAL 3050000
+#define SP0256_XTAL_HIGH   3260000
+
 /* A 2 KiB memory chunk accessible by the Z80 when /ROMCS is low
  * (mirrored when active) */
 static memory_page uspeech_memory_map_romcs[ MEMORY_PAGES_IN_2K ];
@@ -134,7 +139,7 @@ uspeech_port_intonation_normal( libspectrum_word port, libspectrum_byte data )
   if( !uspeech_active ) return;
 
   /* Address 0x3000 can also be accessed via I/O (only write) */
-  sp0256_set_intonation( 0 );
+  sp0256_change_clock( SP0256_XTAL_NORMAL );
 }
 
 static void
@@ -143,7 +148,7 @@ uspeech_port_intonation_high( libspectrum_word port, libspectrum_byte data )
   if( !uspeech_active ) return;
 
   /* Address 0x3001 can also be accessed via I/O (only write) */
-  sp0256_set_intonation( 1 );
+  sp0256_change_clock( SP0256_XTAL_HIGH );
 }
 
 static void
@@ -186,6 +191,8 @@ uspeech_init( void *context )
 
   periph_register_paging_events( event_type_string, &page_event,
                                  &unpage_event );
+
+  sp0256_set_clock( SP0256_XTAL_NORMAL );
 
   return 0;
 }
@@ -293,6 +300,8 @@ uspeech_reset( int hard_reset GCC_UNUSED )
     return;
   }
 
+  sp0256_set_clock( SP0256_XTAL_NORMAL );
+
   machine_current->ram.romcs = 0;
 
   uspeech_available = 1;
@@ -354,11 +363,11 @@ uspeech_write( libspectrum_word address, libspectrum_byte b )
     break;
   case 0x3000:
     /* This address is mirrored at 0011XXXX XXXXXXX0 */
-    sp0256_set_intonation( 0 );
+    sp0256_change_clock( SP0256_XTAL_NORMAL );
     break;
   case 0x3001:
     /* This address is mirrored at 0011XXXX XXXXXXX1 */
-    sp0256_set_intonation( 1 );
+    sp0256_change_clock( SP0256_XTAL_HIGH );
     break;
   }
 }

@@ -32,7 +32,8 @@ int sp0256_reset( uint8_t *sp0256rom );
 void sp0256_end( void );
 
 void sp0256_play( int allophone );
-void sp0256_set_intonation( int intonation );
+void sp0256_set_clock( uint32_t clock );
+void sp0256_change_clock( uint32_t clock );
 int sp0256_busy( void );
 void sp0256_do_frame( void );
 
