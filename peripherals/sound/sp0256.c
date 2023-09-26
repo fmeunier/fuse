@@ -76,9 +76,6 @@
 
 #define FIFO_ADDR    ( 0x1800 << 3 )      /* SP0256 address of speech FIFO. */
 
-uint64_t sp0256_tstates;
-uint64_t sp0256_now;
-
 typedef struct lpc12_t {
   int rpt, cnt;         /* Repeat counter, Period down-counter. */
   uint32_t per, rng;    /* Period, Amplitude, Random Number Generator */
@@ -98,7 +95,7 @@ typedef struct sp0256_t {
   int16_t *scratch;       /* Scratch buffer for audio. */
   uint32_t sc_head;       /* Head/Tail pointer into scratch circular buf */
   uint32_t sc_tail;       /* Head/Tail pointer into scratch circular buf */
-  uint64_t sound_current;
+  int32_t sound_current;
 
   lpc12_t filt;           /* 12-pole filter */
   int lrq;                /* Load ReQuest.  == 0 if we can accept a load */
@@ -1136,10 +1133,9 @@ sp0256_micro( sp0256_t *s )
 static uint32_t
 sp0256_run( sp0256_t *s, uint32_t len )
 {
-  /* TODO: use 32-bit types only */
-  uint64_t until = sp0256_now + len;
+  int32_t sp0256_now = s->sound_current;
+  int32_t until = sp0256_now + len;
   int samples, did_samp, old_idx;
-  int n = 0;
 
   /* -------------------------------------------------------------------- */
   /*  If the rest of the machine hasn't caught up to us, just return.     */
@@ -1212,10 +1208,9 @@ sp0256_run( sp0256_t *s, uint32_t len )
     if( did_samp ) {
       int i;
       for( i = 0; i < did_samp; i++ ) {
-        sound_sp0256_write( sp0256_tstates + ( ( n + i ) * s->clock_per_samp ),
+        sound_sp0256_write( s->sound_current + ( i * s->clock_per_samp ),
                             s->scratch[( i + old_idx ) & SCBUF_MASK] );
       }
-      n += did_samp;
     }
 
     s->sound_current += did_samp * s->clock_per_samp;
@@ -1448,17 +1443,16 @@ sp0256_end()
 }
 
 static void
-sp0256_run_to( sp0256_t *s, uint64_t t )
+sp0256_run_to( sp0256_t *s, libspectrum_dword t )
 {
-  int64_t periph_step;
+  uint32_t periph_step;
 
-  while( sp0256_tstates < t ) {
-    int64_t n = t - sp0256_tstates;
-    if( n > 14934 ) n = 14934;
+  while( s->sound_current < (int32_t) t ) {
+    int32_t len = t - s->sound_current;
+    if( len > 14934 ) len = 14934;
 
-    periph_step = sp0256_run( s, n );
-    sp0256_tstates += abs( periph_step );
-    sp0256_now += abs( periph_step );
+    periph_step = sp0256_run( s, len );
+
     if( !periph_step ) {
       return;
     }
@@ -1471,7 +1465,8 @@ sp0256_do_frame( void )
   /* No op if it wasn't initialised yet */
   if( !sp0256.scratch ) return;
   sp0256_run_to( &sp0256, machine_current->timings.tstates_per_frame );
-  sp0256_tstates -= machine_current->timings.tstates_per_frame;
+
+  sp0256.sound_current -= machine_current->timings.tstates_per_frame;
 }
 
 void
