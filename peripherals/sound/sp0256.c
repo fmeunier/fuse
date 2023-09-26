@@ -63,11 +63,16 @@
  *  system view from the SP0256's perspective is documented elsewhere.
  */
 
-#define dfprintf(x)
-#define debug_printf(x)
-#define jzp_printf(x, ...)
+#undef DEBUG_AL2_ALLOPHONE
+#undef DEBUG_SP0256
+#undef DEBUG_FIFO
 
-#define DEBUG_USPEECH_ALLOPHONE
+#ifdef DEBUG_SP0256
+#define debug_printf(x) printf x ; fflush(stdout)
+#else
+#define debug_printf(x)
+#endif /* #ifdef DEBUG_SP0256 */
+
 #define HIGH_QUALITY
 #define SCBUF_SIZE   ( 4096 )             /* Must be power of 2 */
 #define SCBUF_MASK   ( SCBUF_SIZE - 1 )
@@ -735,7 +740,7 @@ sp0256_getb( sp0256_t *s, int len )
     data = ( ( d1 << 10 ) | d0 ) >> s->fifo_bitp;
 
 #ifdef DEBUG_FIFO
-    dfprintf( ( "SP0256: RD_FIFO %.3X %d.%d %d\n", data & ( ( 1u << len ) - 1 ),
+    debug_printf( ( "SP0256: RD_FIFO %.3X %d.%d %d\n", data & ( ( 1u << len ) - 1 ),
                 s->fifo_tail, s->fifo_bitp, s->fifo_head ) );
 #endif
 
@@ -1331,7 +1336,7 @@ sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom )
   return 0;
 }
 
-#ifdef DEBUG_USPEECH_ALLOPHONE
+#ifdef DEBUG_AL2_ALLOPHONE
 struct allophone_t {
   const char *name;
   int length;
@@ -1408,7 +1413,7 @@ static const struct allophone_t al2_allophones[ 64 ] = {
   { "/BB2/",  50 }, /* (bb) */
 
 };
-#endif /* #ifdef DEBUG_USPEECH_ALLOPHONE */
+#endif /* #ifdef DEBUG_AL2_ALLOPHONE */
 
 static sp0256_t sp0256;
 
@@ -1421,7 +1426,6 @@ sp0256_init( uint8_t *sp0256rom )
 int
 sp0256_reset( uint8_t *sp0256rom )
 {
-  debug_printf( "sp0256_reset\n" );
   /* Lazy init, if necessary */
   if( !sp0256.scratch ) {
     if( sp0256_do_init( &sp0256, sp0256rom ) ) {
@@ -1472,7 +1476,7 @@ sp0256_do_frame( void )
 void
 sp0256_play( int a )
 {
-#ifdef DEBUG_USPEECH_ALLOPHONE
+#ifdef DEBUG_AL2_ALLOPHONE
   if( a >= 5 && a < 64 ) {
     if( al2_allophones[ a ].name ) {
       printf( "sp0256: allophone written: 0x%02x, %s\n", a,
@@ -1482,7 +1486,7 @@ sp0256_play( int a )
     }
     fflush( stdout );
   }
-#endif /* #ifdef DEBUG_USPEECH_ALLOPHONE */
+#endif /* #ifdef DEBUG_AL2_ALLOPHONE */
 
   sp0256_run_to( &sp0256, tstates );
   sp0256_write_ald( &sp0256, a );
