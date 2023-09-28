@@ -74,6 +74,8 @@ static void uspeech_port_intonation_normal( libspectrum_word port,
 static void uspeech_port_intonation_high( libspectrum_word port,
                                           libspectrum_byte data );
 
+static int uspeech_load_sp0256_rom( void );
+static int uspeech_sp0256_reset( void );
 static void uspeech_reset( int hard_reset );
 static void uspeech_memory_map( void );
 
@@ -114,7 +116,8 @@ static const char * const event_type_string = "uspeech";
 static int page_event, unpage_event;
 
 static libspectrum_byte
-uspeech_port_play_read( libspectrum_word port, libspectrum_byte *attached )
+uspeech_port_play_read( libspectrum_word port GCC_UNUSED,
+                        libspectrum_byte *attached )
 {
   if( !uspeech_active ) return 0xff;
 
@@ -125,7 +128,8 @@ uspeech_port_play_read( libspectrum_word port, libspectrum_byte *attached )
 }
 
 static void
-uspeech_port_play_write( libspectrum_word port, libspectrum_byte data )
+uspeech_port_play_write( libspectrum_word port GCC_UNUSED,
+                         libspectrum_byte data )
 {
   if( !uspeech_active ) return;
 
@@ -134,7 +138,8 @@ uspeech_port_play_write( libspectrum_word port, libspectrum_byte data )
 }
 
 static void
-uspeech_port_intonation_normal( libspectrum_word port, libspectrum_byte data )
+uspeech_port_intonation_normal( libspectrum_word port GCC_UNUSED,
+                                libspectrum_byte data GCC_UNUSED )
 {
   if( !uspeech_active ) return;
 
@@ -143,7 +148,8 @@ uspeech_port_intonation_normal( libspectrum_word port, libspectrum_byte data )
 }
 
 static void
-uspeech_port_intonation_high( libspectrum_word port, libspectrum_byte data )
+uspeech_port_intonation_high( libspectrum_word port GCC_UNUSED,
+                              libspectrum_byte data GCC_UNUSED )
 {
   if( !uspeech_active ) return;
 
@@ -175,7 +181,7 @@ ensure_empty_mapping( void )
 }
 
 static int
-uspeech_init( void *context )
+uspeech_init( void *context GCC_UNUSED )
 {
   int i;
 
@@ -221,7 +227,7 @@ uspeech_register_startup( void )
 }
 
 static int
-uspeech_load_sp0256_rom()
+uspeech_load_sp0256_rom( void )
 {
   int error;
   char *filename;
@@ -264,7 +270,7 @@ uspeech_load_sp0256_rom()
 }
 
 static int
-uspeech_sp0256_reset()
+uspeech_sp0256_reset( void )
 {
   if( !sp0256rom && uspeech_load_sp0256_rom() ) {
     return -1;
@@ -346,7 +352,8 @@ uspeech_toggle_read( libspectrum_word port GCC_UNUSED,
 }
 
 static void
-uspeech_toggle_write( libspectrum_word port GCC_UNUSED, libspectrum_byte val )
+uspeech_toggle_write( libspectrum_word port GCC_UNUSED,
+                      libspectrum_byte val GCC_UNUSED )
 {
   if( !uspeech_available ) return;
 
