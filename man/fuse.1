@@ -5397,6 +5397,19 @@ section for more details on supported disk file formats.
 .\"
 .\"------------------------------------------------------------------
 .\"
+.SH CURRAH \(mcSPEECH
+.PP
+Currah \(mcSpeech interface is an allophone speech synthesiser.
+This interface use a SP0256-AL2 chip that has an internal ROM with
+commands to make english allophones. Fuse needs this ROM named as
+sp0256-al2.rom in your ROMs directory and its CRC-32 is b504ac15.
+.PP
+An alternative authorised ROM is distributed by Joe Zbiciak with
+CRC-32 df8de0b0. In this case, bit ordering in data bytes is reversed
+and need to be adjusted.
+.\"
+.\"------------------------------------------------------------------
+.\"
 .SH OPUS DISCOVERY EMULATION
 .PP
 By default, Fuse emulates the Opus Discovery interface with the optional 2k RAM
