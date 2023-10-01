@@ -82,25 +82,25 @@
 #define FIFO_ADDR    ( 0x1800 << 3 )      /* SP0256 address of speech FIFO. */
 
 typedef struct lpc12_t {
-  int rpt, cnt;         /* Repeat counter, Period down-counter. */
-  uint32_t per, rng;    /* Period, Amplitude, Random Number Generator */
+  int rpt, cnt;                 /* Repeat counter, Period down-counter. */
+  libspectrum_dword per, rng;   /* Period, Amplitude, Random Number Generator */
   int amp;
-  int16_t f_coef[6];    /* F0 through F5. */
-  int16_t b_coef[6];    /* B0 through B5. */
-  int16_t z_data[6][2]; /* Time-delay data for the */
-                        /* filter stages. */
-  uint8_t r[16];        /* The encoded register set. */
+  libspectrum_signed_word f_coef[6];    /* F0 through F5. */
+  libspectrum_signed_word b_coef[6];    /* B0 through B5. */
+  libspectrum_signed_word z_data[6][2]; /* Time-delay data for the */
+                                        /* filter stages. */
+  libspectrum_byte r[16];               /* The encoded register set. */
   int interp;
 } lpc12_t;
 
 
 typedef struct sp0256_t {
-  int silent;             /* Flag: SP0256 is silent. */
+  int silent;                       /* Flag: SP0256 is silent. */
 
-  int16_t *scratch;       /* Scratch buffer for audio. */
-  uint32_t sc_head;       /* Head/Tail pointer into scratch circular buf */
-  uint32_t sc_tail;       /* Head/Tail pointer into scratch circular buf */
-  int32_t sound_current;
+  libspectrum_signed_word *scratch; /* Scratch buffer for audio. */
+  libspectrum_dword sc_head;        /* Head/Tail pointer into scratch circular buf */
+  libspectrum_dword sc_tail;        /* Head/Tail pointer into scratch circular buf */
+  libspectrum_signed_dword sound_current;
 
   lpc12_t filt;           /* 12-pole filter */
   int lrq;                /* Load ReQuest.  == 0 if we can accept a load */
@@ -109,18 +109,18 @@ typedef struct sp0256_t {
   int stack;              /* Microcontroller's PC stack. */
   int fifo_sel;           /* True when executing from FIFO. */
   int halted;             /* True when CPU is halted. */
-  uint32_t mode;          /* Mode register. */
-  uint32_t page;          /* Page set by SETPAGE */
+  libspectrum_dword mode;          /* Mode register. */
+  libspectrum_dword page;          /* Page set by SETPAGE */
 
-  uint32_t fifo_head;     /* FIFO head pointer (where new data goes). */
-  uint32_t fifo_tail;     /* FIFO tail pointer (where data comes from). */
-  uint32_t fifo_bitp;     /* FIFO bit-pointer (for partial decles). */
-  uint16_t fifo[64];      /* The 64-decle FIFO. */
+  libspectrum_dword fifo_head;  /* FIFO head pointer (where new data goes). */
+  libspectrum_dword fifo_tail;  /* FIFO tail pointer (where data comes from). */
+  libspectrum_dword fifo_bitp;  /* FIFO bit-pointer (for partial decles). */
+  libspectrum_word fifo[64];    /* The 64-decle FIFO. */
 
-  const uint8_t *rom[16]; /* 4K ROM pages. */
+  const libspectrum_byte *rom[16]; /* 4K ROM pages. */
 
-  uint32_t clock;              /* Clock - crystal frequency */
-  unsigned int clock_per_samp; /* Sample duration in Z80 tstates */
+  libspectrum_dword clock;         /* Clock - crystal frequency */
+  unsigned int clock_per_samp;     /* Sample duration in Z80 tstates */
 } sp0256_t;
 
 
@@ -128,38 +128,39 @@ typedef struct sp0256_t {
 /*  sp0256_run   -- Where the magic happens.  Generate voice data for       */
 /*                  our good friend, the SP0256.                            */
 /* ======================================================================== */
-static uint32_t sp0256_run( sp0256_t *s, uint32_t len );
+static libspectrum_dword sp0256_run( sp0256_t *s, libspectrum_dword len );
 
 /* ======================================================================== */
 /*  sp0256_read_lrq -- Handle reads of the SP0256 LRQ line.                 */
 /* ======================================================================== */
-static uint32_t sp0256_read_lrq( sp0256_t *s );
+static libspectrum_dword sp0256_read_lrq( sp0256_t *s );
 
 /* ======================================================================== */
 /*  sp0256_write_ald -- Handle writes to the SP0256's Address Load FIFO.    */
 /* ======================================================================== */
-static void sp0256_write_ald( sp0256_t *s, uint32_t data );
+static void sp0256_write_ald( sp0256_t *s, libspectrum_dword data );
 
 /* ======================================================================== */
 /*  sp0256_do_init -- Makes a new SP0256.                                   */
 /* ======================================================================== */
-static int sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom );
+static int sp0256_do_init( sp0256_t *s, libspectrum_byte *sp0256rom );
 
 /* ======================================================================== */
 /*  Internal function prototypes.                                           */
 /* ======================================================================== */
-static inline int16_t limit( int16_t s );
-static inline uint32_t bitrev( uint32_t val );
-static int lpc12_update( lpc12_t *f, int, int16_t *, uint32_t * );
+static inline libspectrum_signed_word limit( libspectrum_signed_word s );
+static inline libspectrum_dword bitrev( libspectrum_dword val );
+static int lpc12_update( lpc12_t *f, int, libspectrum_signed_word *,
+                         libspectrum_dword * );
 static void lpc12_regdec( lpc12_t *f );
-static uint32_t sp0256_getb( sp0256_t *s, int len );
+static libspectrum_dword sp0256_getb( sp0256_t *s, int len );
 static void sp0256_micro( sp0256_t *s );
 
 /* ======================================================================== */
 /*  qtbl  -- Coefficient Quantization Table.  This comes from a             */
 /*           SP0250 data sheet, and should be correct for SP0256.           */
 /* ======================================================================== */
-static const int16_t qtbl[128] = {
+static const libspectrum_signed_word qtbl[128] = {
   0,      9,      17,     25,     33,     41,     49,     57,
   65,     73,     81,     89,     97,     105,    113,    121,
   129,    137,    145,    153,    161,    169,    177,    185,
@@ -181,8 +182,8 @@ static const int16_t qtbl[128] = {
 /* ======================================================================== */
 /*  limit            -- Limiter function for digital sample output.         */
 /* ======================================================================== */
-static inline int16_t
-limit( int16_t s )
+static inline libspectrum_signed_word
+limit( libspectrum_signed_word s )
 {
 #ifdef HIGH_QUALITY /* Higher quality than the original, but who cares? */
   if( s >  8191 ) return 8191;
@@ -198,7 +199,7 @@ limit( int16_t s )
 /*  amp_decode       -- Decode amplitude register                           */
 /* ======================================================================== */
 static int
-amp_decode( uint8_t a )
+amp_decode( libspectrum_byte a )
 {
   /* -------------------------------------------------------------------- */
   /*  Amplitude has 3 bits of exponent and 5 bits of mantissa.  This      */
@@ -226,10 +227,11 @@ amp_decode( uint8_t a )
 /*  lpc12_update     -- Update the 12-pole filter, outputting samples.      */
 /* ======================================================================== */
 static int
-lpc12_update( lpc12_t *f, int num_samp, int16_t *out, uint32_t *optr )
+lpc12_update( lpc12_t *f, int num_samp, libspectrum_signed_word *out,
+              libspectrum_dword *optr )
 {
   int i, j;
-  int16_t samp;
+  libspectrum_signed_word samp;
   int do_int, bit;
   int oidx = *optr;
 
@@ -396,7 +398,7 @@ lpc12_regdec( lpc12_t *f )
 
 enum { AM = 0, PR, B0, F0, B1, F1, B2, F2, B3, F3, B4, F4, B5, F5, IA, IP };
 
-static const uint16_t sp0256_datafmt[] = {
+static const libspectrum_word sp0256_datafmt[] = {
   /* -------------------------------------------------------------------- */
   /*  OPCODE 1111: PAUSE                                                  */
   /* -------------------------------------------------------------------- */
@@ -687,7 +689,7 @@ static const uint16_t sp0256_datafmt[] = {
   /*  190 */  CR( 8,  0,  IP, 0,  0,  0,  0),     /*  Pit Interp  */
 };
 
-static const int16_t sp0256_df_idx[16 * 8] = {
+static const libspectrum_signed_word sp0256_df_idx[16 * 8] = {
   /*  OPCODE 0000 */      -1, -1,     -1, -1,     -1, -1,     -1, -1,
   /*  OPCODE 1000 */      -1, -1,     -1, -1,     -1, -1,     -1, -1,
   /*  OPCODE 0100 */      17, 22,     17, 24,     25, 30,     25, 32,
@@ -709,8 +711,8 @@ static const int16_t sp0256_df_idx[16 * 8] = {
 /* ======================================================================== */
 /*  bitrev       -- Bit-reverse a 32-bit number.                            */
 /* ======================================================================== */
-static inline uint32_t
-bitrev( uint32_t val )
+static inline libspectrum_dword
+bitrev( libspectrum_dword val )
 {
   val = ( ( val & 0xffff0000 ) >> 16 ) | ( ( val & 0x0000ffff ) << 16 );
   val = ( ( val & 0xff00ff00 ) >>  8 ) | ( ( val & 0x00ff00ff ) <<  8 );
@@ -724,11 +726,11 @@ bitrev( uint32_t val )
 /* ======================================================================== */
 /*  sp0256_getb  -- Get up to 8 bits at the current PC.                     */
 /* ======================================================================== */
-static uint32_t
+static libspectrum_dword
 sp0256_getb( sp0256_t *s, int len )
 {
-  uint32_t data = 0;
-  uint32_t d0, d1;
+  libspectrum_dword data = 0;
+  libspectrum_dword d0, d1;
 
   /* -------------------------------------------------------------------- */
   /*  Fetch data from the FIFO or from the MASK                           */
@@ -792,9 +794,9 @@ sp0256_getb( sp0256_t *s, int len )
 static void
 sp0256_micro( sp0256_t *s )
 {
-  uint8_t immed4;
-  uint8_t opcode;
-  uint16_t cr;
+  libspectrum_byte immed4;
+  libspectrum_byte opcode;
+  libspectrum_word cr;
   int ctrl_xfer = 0;
   int repeat    = 0;
   int i, idx0, idx1;
@@ -862,7 +864,7 @@ sp0256_micro( sp0256_t *s )
         /* -------------------------------------------------------- */
         /*  Otherwise, this is an RTS / HLT.                        */
         /* -------------------------------------------------------- */
-        uint32_t btrg;
+        libspectrum_dword btrg;
 
         /* ---------------------------------------------------- */
         /*  Figure out our branch target.                       */
@@ -1135,11 +1137,11 @@ sp0256_micro( sp0256_t *s )
 /*  sp0256_run   -- Where the magic happens.  Generate voice data for       */
 /*                  our good friend, the SP0256.                            */
 /* ======================================================================== */
-static uint32_t
-sp0256_run( sp0256_t *s, uint32_t len )
+static libspectrum_dword
+sp0256_run( sp0256_t *s, libspectrum_dword len )
 {
-  int32_t sp0256_now = s->sound_current;
-  int32_t until = sp0256_now + len;
+  libspectrum_signed_dword sp0256_now = s->sound_current;
+  libspectrum_signed_dword until = sp0256_now + len;
   int samples, did_samp, old_idx;
 
   /* -------------------------------------------------------------------- */
@@ -1232,7 +1234,7 @@ sp0256_run( sp0256_t *s, uint32_t len )
 /* ======================================================================== */
 /*  sp0256_read_lrq -- Handle reads from the SP0256.                        */
 /* ======================================================================== */
-static uint32_t
+static libspectrum_dword
 sp0256_read_lrq( sp0256_t *s )
 {
   return s->lrq;
@@ -1242,7 +1244,7 @@ sp0256_read_lrq( sp0256_t *s )
 /*  sp0256_write_ald -- Handle writes to the SP0256's Address LoaD FIFO.    */
 /* ======================================================================== */
 static void
-sp0256_write_ald( sp0256_t *s, uint32_t data )
+sp0256_write_ald( sp0256_t *s, libspectrum_dword data )
 {
   if( !s->lrq )
     return;
@@ -1287,7 +1289,7 @@ sp0256_do_reset( sp0256_t *s )
 /*  sp0256_do_init -- Makes a new SP0256.                                   */
 /* ======================================================================== */
 static int
-sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom )
+sp0256_do_init( sp0256_t *s, libspectrum_byte *sp0256rom )
 {
   /* -------------------------------------------------------------------- */
   /*  First, lets zero out the structure to be safe.                      */
@@ -1302,7 +1304,7 @@ sp0256_do_init( sp0256_t *s, uint8_t *sp0256rom )
   /* -------------------------------------------------------------------- */
   /*  Allocate a scratch buffer for generating 10kHz samples.             */
   /* -------------------------------------------------------------------- */
-  s->scratch = calloc( SCBUF_SIZE, sizeof( int16_t ) );
+  s->scratch = calloc( SCBUF_SIZE, sizeof( libspectrum_signed_word ) );
   s->sc_head = s->sc_tail = 0;
 
   if( !s->scratch )
@@ -1418,13 +1420,13 @@ static const struct allophone_t al2_allophones[ 64 ] = {
 static sp0256_t sp0256;
 
 int
-sp0256_init( uint8_t *sp0256rom )
+sp0256_init( libspectrum_byte *sp0256rom )
 {
   return sp0256_do_init( &sp0256, sp0256rom );
 }
 
 int
-sp0256_reset( uint8_t *sp0256rom )
+sp0256_reset( libspectrum_byte *sp0256rom )
 {
   /* Lazy init, if necessary */
   if( !sp0256.scratch ) {
@@ -1449,10 +1451,10 @@ sp0256_end()
 static void
 sp0256_run_to( sp0256_t *s, libspectrum_dword t )
 {
-  uint32_t periph_step;
+  libspectrum_dword periph_step;
 
-  while( s->sound_current < (int32_t) t ) {
-    int32_t len = t - s->sound_current;
+  while( s->sound_current < (libspectrum_signed_dword) t ) {
+    libspectrum_signed_dword len = t - s->sound_current;
     if( len > 14934 ) len = 14934;
 
     periph_step = sp0256_run( s, len );
@@ -1493,7 +1495,7 @@ sp0256_play( int a )
 }
 
 void
-sp0256_set_clock( uint32_t clock )
+sp0256_set_clock( libspectrum_dword clock )
 {
   unsigned int samples;
   libspectrum_dword processor_speed;
@@ -1526,7 +1528,7 @@ sp0256_set_clock( uint32_t clock )
 }
 
 void
-sp0256_change_clock( uint32_t clock )
+sp0256_change_clock( libspectrum_dword clock )
 {
   if( sp0256.clock != clock ) {
     sp0256_run_to( &sp0256, tstates );

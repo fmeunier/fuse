@@ -27,13 +27,15 @@
 #ifndef FUSE_SP0256_H
 #define FUSE_SP0256_H
 
-int sp0256_init( uint8_t *sp0256rom );
-int sp0256_reset( uint8_t *sp0256rom );
+#include "libspectrum.h"
+
+int sp0256_init( libspectrum_byte *sp0256rom );
+int sp0256_reset( libspectrum_byte *sp0256rom );
 void sp0256_end( void );
 
 void sp0256_play( int allophone );
-void sp0256_set_clock( uint32_t clock );
-void sp0256_change_clock( uint32_t clock );
+void sp0256_set_clock( libspectrum_dword clock );
+void sp0256_change_clock( libspectrum_dword clock );
 int sp0256_busy( void );
 void sp0256_do_frame( void );
 

@@ -56,7 +56,7 @@ static int empty_mapping_allocated = 0;
 
 static int uspeech_memory_source;
 
-static uint8_t *sp0256rom = NULL;
+static libspectrum_byte *sp0256rom = NULL;
 
 int uspeech_active = 0;
 int uspeech_available = 0;
@@ -253,7 +253,7 @@ uspeech_load_sp0256_rom( void )
     return -1;
   }
 
-  sp0256rom = libspectrum_new( uint8_t, SP0256_ROM_SIZE * 2 );
+  sp0256rom = libspectrum_new( libspectrum_byte, SP0256_ROM_SIZE * 2 );
 
   if( !sp0256rom ) {
     utils_close_file( &rom );
