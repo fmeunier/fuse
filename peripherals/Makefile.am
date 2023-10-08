@@ -90,7 +90,9 @@ noinst_HEADERS += \
                   peripherals/sound/covox.h \
                   peripherals/sound/fuller.h \
                   peripherals/sound/melodik.h \
+                  peripherals/sound/sp0256.h \
                   peripherals/sound/specdrum.h \
+                  peripherals/sound/uspeech.h \
                   peripherals/disk/beta.h \
                   peripherals/disk/crc.h \
                   peripherals/disk/didaktik.h \
