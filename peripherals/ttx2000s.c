@@ -354,7 +354,7 @@ ttx2000s_field_event( libspectrum_dword last_tstates GCC_UNUSED, int event,
   if( teletext_socket != compat_socket_invalid && ttx2000s_connected ) {
     u_long n;
     /* try to determine the amount of data available in socket read buffer */
-    if( ioctlsocket( teletext_socket, FIONREAD, &n ) == -1) {
+    if( compat_socket_get_fionread( teletext_socket, &n ) == -1) {
       ui_error( UI_ERROR_ERROR,
                 "ttx2000s: FIONREAD failed with errno %d: %s\n", errno,
                 compat_socket_get_strerror() );
