@@ -21,9 +21,7 @@
 
 */
 
-#include "config.h"
-
-#include "gtkinternals.h"
+#error "This file is used to generate ui/xlib/xpixmaps.c and is not meant to be compiled"
 
 const char *gtkpixmap_tape_inactive[] = {
 "27 17 13 1",

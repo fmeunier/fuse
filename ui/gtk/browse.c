@@ -155,7 +155,7 @@ create_dialog( void )
   gtk_box_pack_start( GTK_BOX( content_area ), scrolled_window, TRUE, TRUE, 0 );
 
   /* The tape marker pixbuf */
-  tape_marker_pixbuf = gdk_pixbuf_new_from_xpm_data( gtkpixmap_tape_marker );
+  tape_marker_pixbuf = gdk_pixbuf_new_from_resource( ICON_TAPE_MARKER, NULL );
   /* FIXME: unref this at exit */
 
   /* And the list itself */

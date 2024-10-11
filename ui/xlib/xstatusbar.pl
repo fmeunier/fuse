@@ -13,7 +13,7 @@ my $check_mask = '';
 
 my $do_icon = 0;
 
-print "/*\n This file generated from ../gtk/pixmaps.c with xstatusbar.pl\n" .
+print "/*\n This file generated from xpixmaps.c.in with xstatusbar.pl\n" .
       "*/\n\n";
 
 my $pixmaps = shift;
