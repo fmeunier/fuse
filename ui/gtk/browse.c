@@ -156,7 +156,7 @@ create_dialog( void )
 
   /* The tape marker pixbuf */
   tape_marker_pixbuf = gdk_pixbuf_new_from_resource( ICON_TAPE_MARKER, NULL );
-  /* FIXME: unref this at exit */
+  g_object_weak_ref( G_OBJECT( dialog ), (GWeakNotify) g_clear_object, &tape_marker_pixbuf );
 
   /* And the list itself */
   blocks = create_block_list();
