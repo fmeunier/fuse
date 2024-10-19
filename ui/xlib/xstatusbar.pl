@@ -174,7 +174,6 @@ sub xpm_read() {
         next if($var_name =~ /tape_marker/);
         next if($var_name =~ /pause/);
         next if($var_name =~ /mouse/);
-        $var_name =~ s/gtkpixmap/pixmap/;
         %colors = ();
         $def = '';
         $col = 'AA';
