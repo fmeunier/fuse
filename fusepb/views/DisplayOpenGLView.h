@@ -83,6 +83,7 @@
 -(IBAction) zoom:(id)sender;
 
 -(void) createTexture:(Cocoa_Texture*)newScreen;
+-(void) createTextureWithValue:(NSValue*)newScreenValue;
 -(void) destroyTexture;
 -(void) blitIcon:(Texture*)iconTexture;
 

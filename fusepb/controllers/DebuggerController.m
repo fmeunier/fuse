@@ -59,7 +59,17 @@ static DebuggerController *singleton = nil;
    
 + (DebuggerController *)singleton 
 {  
-  return singleton ? singleton : [[self alloc] init];
+  if( singleton ) return singleton;
+
+  if( [NSThread isMainThread] ) {
+    [[self alloc] init];
+  } else {
+    dispatch_sync( dispatch_get_main_queue(), ^{
+      [[self alloc] init];
+    });
+  }
+
+  return singleton;
 }
    
 - (id)init
@@ -175,12 +185,12 @@ static DebuggerController *singleton = nil;
   [NSApp runModalForWindow:[self window]];
 }
 
-- (void)debugger_deactivate:(int)interruptable
+- (void)debugger_deactivate:(NSNumber *)interruptable
 {
   if( debugger_active ) deactivate_debugger();
 
-  [continueButton setEnabled:!interruptable ? YES : NO];
-  [breakButton setEnabled:interruptable ? YES : NO];
+  [continueButton setEnabled:![interruptable intValue] ? YES : NO];
+  [breakButton setEnabled:[interruptable intValue] ? YES : NO];
 }
  
 - (void)debugger_update_breakpoints
@@ -507,9 +517,9 @@ static DebuggerController *singleton = nil;
   [eventsContents addObject:@{@"time": event_time, @"type": event_type}];
 }
 
-- (void)debugger_disassemble:(libspectrum_word)address
+- (void)debugger_disassemble:(NSNumber *)addressNumber
 {
-  disassembly_top = address;
+  disassembly_top = (libspectrum_word)[addressNumber unsignedShortValue];
 }
 
 - (IBAction)debugger_cmd_evaluate:(id)sender
@@ -624,7 +634,10 @@ ui_debugger_activate( void )
 int
 ui_debugger_deactivate( int interruptable )
 {
-  [[DebuggerController singleton] debugger_deactivate:interruptable];
+  [[DebuggerController singleton]
+      performSelectorOnMainThread:@selector(debugger_deactivate:)
+                       withObject:[NSNumber numberWithInt:interruptable]
+                    waitUntilDone:YES];
 
   return 0;
 }
@@ -633,7 +646,10 @@ ui_debugger_deactivate( int interruptable )
 int
 ui_debugger_update( void )
 {
-  [[DebuggerController singleton] debugger_update:nil];
+  [[DebuggerController singleton]
+      performSelectorOnMainThread:@selector(debugger_update:)
+                       withObject:nil
+                    waitUntilDone:YES];
 
   return 0;
 }
@@ -641,14 +657,20 @@ ui_debugger_update( void )
 void
 ui_breakpoints_updated( void )
 {
-  [[DebuggerController singleton] debugger_update_breakpoints];
+  [[DebuggerController singleton]
+      performSelectorOnMainThread:@selector(debugger_update_breakpoints)
+                       withObject:nil
+                    waitUntilDone:YES];
 }
 
 /* Set the disassembly to start at 'address' */
 int
 ui_debugger_disassemble( libspectrum_word address )
 {
-  [[DebuggerController singleton] debugger_disassemble:address];
+  [[DebuggerController singleton]
+      performSelectorOnMainThread:@selector(debugger_disassemble:)
+                       withObject:[NSNumber numberWithUnsignedShort:address]
+                    waitUntilDone:YES];
 
   return 0;
 }

@@ -599,6 +599,12 @@ static DisplayOpenGLView *instance = nil;
   [view_lock unlock];
 }
 
+-(void) createTextureWithValue:(NSValue*)newScreenValue
+{
+  Cocoa_Texture *newScreen = (Cocoa_Texture*)[newScreenValue pointerValue];
+  [self createTexture:newScreen];
+}
+
 -(void) createTexture:(Cocoa_Texture*)newScreen
 {
   [view_lock lock];

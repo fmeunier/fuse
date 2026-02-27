@@ -199,10 +199,18 @@ cocoadisplay_load_gfx_mode( void )
   if( error ) return error;
 
   /* Destroy any existing OpenGL textures (and their dirty lists) */
-  [[DisplayOpenGLView instance] destroyTexture];
+  [[DisplayOpenGLView instance] performSelectorOnMainThread:@selector(destroyTexture)
+                                                 withObject:nil
+                                              waitUntilDone:YES];
 
   /* Create OpenGL textures for the image in DisplayOpenGLView */
-  [[DisplayOpenGLView instance] createTexture:&buffered_screen];
+  {
+    NSValue *screenValue = [NSValue valueWithPointer:&buffered_screen];
+    [[DisplayOpenGLView instance]
+      performSelectorOnMainThread:@selector(createTextureWithValue:)
+                       withObject:screenValue
+                    waitUntilDone:YES];
+  }
 
   return 0;
 }
@@ -483,7 +491,9 @@ uidisplay_end( void )
   [buffered_screen_lock lock];
 
   if( screen && screen->pixels ) {
-    [[DisplayOpenGLView instance] destroyTexture];
+    [[DisplayOpenGLView instance] performSelectorOnMainThread:@selector(destroyTexture)
+                                                   withObject:nil
+                                                waitUntilDone:YES];
   }
 
   [buffered_screen_lock unlock];

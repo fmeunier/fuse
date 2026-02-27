@@ -42,7 +42,17 @@ static TapeBrowserController *singleton = nil;
    
 + (TapeBrowserController *)singleton 
 {
-  return singleton ? singleton : [[self alloc] init];
+  if( singleton ) return singleton;
+
+  if( [NSThread isMainThread] ) {
+    [[self alloc] init];
+  } else {
+    dispatch_sync( dispatch_get_main_queue(), ^{
+      [[self alloc] init];
+    } );
+  }
+
+  return singleton;
 }
 
 - (id)init
@@ -371,9 +381,15 @@ ui_tape_browser_update( ui_tape_browser_update_type change,
   }
 
   if( tape_modified ) {
-    [[tapeBrowserController window] setDocumentEdited:YES];
+    [[tapeBrowserController window]
+      performSelectorOnMainThread:@selector(setDocumentEdited:)
+                       withObject:@YES
+                    waitUntilDone:NO];
   } else {
-    [[tapeBrowserController window] setDocumentEdited:NO];
+    [[tapeBrowserController window]
+      performSelectorOnMainThread:@selector(setDocumentEdited:)
+                       withObject:@NO
+                    waitUntilDone:NO];
   }
 
   fuse_emulation_unpause();

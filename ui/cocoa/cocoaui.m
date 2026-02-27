@@ -81,9 +81,10 @@ ui_mouse_grab( int startup )
   /* Lock the mouse pointer at its current position */
   CGAssociateMouseAndMouseCursorPosition(false);
 
-  [NSCursor hide];
-
-  [[FuseController singleton] setAcceptsMouseMovedEvents:YES];
+  dispatch_async( dispatch_get_main_queue(), ^{
+    [NSCursor hide];
+    [[FuseController singleton] setAcceptsMouseMovedEvents:YES];
+  } );
 
   return 1;
 }
@@ -91,12 +92,13 @@ ui_mouse_grab( int startup )
 int
 ui_mouse_release( int suspend GCC_UNUSED )
 {
-  [[FuseController singleton] setAcceptsMouseMovedEvents:NO];
+  dispatch_async( dispatch_get_main_queue(), ^{
+    [[FuseController singleton] setAcceptsMouseMovedEvents:NO];
+    [NSCursor unhide];
+  } );
 
   /* Unlock the mouse pointer */
   CGAssociateMouseAndMouseCursorPosition(true);
-
-  [NSCursor unhide];
 
   return 0;
 }

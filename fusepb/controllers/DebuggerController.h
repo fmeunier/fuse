@@ -75,11 +75,11 @@
 + (DebuggerController *)singleton;
 - (void)awakeFromNib;
 - (void)debugger_activate:(id)sender;
-- (void)debugger_deactivate:(int)interruptable; 
+- (void)debugger_deactivate:(NSNumber *)interruptable;
 - (void)debugger_update_breakpoints;
 - (void)debugger_update:(id)sender;
 - (void)add_event:(event_t *)ptr;
-- (void)debugger_disassemble:(libspectrum_word)address;
+- (void)debugger_disassemble:(NSNumber *)address;
 - (IBAction)debugger_cmd_evaluate:(id)sender;
 - (IBAction)debugger_done_step:(id)sender;
 - (IBAction)debugger_done_continue:(id)sender;
