@@ -296,6 +296,8 @@
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*ibspectrum.h.in";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"${SRCROOT}/libspectrum.h",
@@ -307,6 +309,8 @@
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*ape_accessors.txt";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).c",
@@ -319,6 +323,8 @@
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*nap_accessors.txt";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).c",
@@ -1577,7 +1583,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B61F46A509121DF100C8096C /* Build configuration list for PBXNativeTarget "Fuse" */;
 			buildPhases = (
-				B61F459109121DF100C8096C /* ShellScript */,
+				B61F459109121DF100C8096C /* Run Script */,
 				B61F459209121DF100C8096C /* CopyFiles */,
 				B61F45A109121DF100C8096C /* CopyFiles */,
 				B61F45FE09121DF100C8096C /* Resources */,
@@ -1745,14 +1751,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		B61F459109121DF100C8096C /* ShellScript */ = {
+		B61F459109121DF100C8096C /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = make;
+			shellScript = "make";
 		};
 		B6D6704D1DD6CEF10014914E /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2021,11 +2032,13 @@
 				HEADER_SEARCH_PATHS = (
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)/audiofile.framework/Headers",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)/gcrypt.framework/Headers",
-					..,
+					"$(SRCROOT)/..",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = .;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
 					"-lbz2",
@@ -2066,11 +2079,13 @@
 				HEADER_SEARCH_PATHS = (
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)/audiofile.framework/Headers",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)/gcrypt.framework/Headers",
-					..,
+					"$(SRCROOT)/..",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = .;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
 					"-lbz2",
@@ -2110,11 +2125,13 @@
 				HEADER_SEARCH_PATHS = (
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)/audiofile.framework/Headers",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)/gcrypt.framework/Headers",
-					..,
+					"$(SRCROOT)/..",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = .;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
 					"-lbz2",
@@ -2134,6 +2151,9 @@
 		B63319B4086803BA00732AA3 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CODE_SIGN_IDENTITY = "";
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_TESTABILITY = YES;
@@ -2149,7 +2169,7 @@
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
-				RUN_CLANG_STATIC_ANALYZER = YES;
+				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = macosx;
 				YACCFLAGS = "-d";
 				YACC_GENERATED_FILE_STEM = InputFileStem;
@@ -2160,6 +2180,9 @@
 		B63319B5086803BA00732AA3 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CODE_SIGN_IDENTITY = "";
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -2174,7 +2197,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
-				RUN_CLANG_STATIC_ANALYZER = YES;
+				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = macosx;
 				YACCFLAGS = "-d";
 				YACC_GENERATED_FILE_STEM = InputFileStem;
@@ -2185,6 +2208,9 @@
 		B63319B6086803BA00732AA3 /* Default */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CODE_SIGN_IDENTITY = "";
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = c89;
@@ -2197,7 +2223,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
-				RUN_CLANG_STATIC_ANALYZER = YES;
+				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = macosx;
 				YACCFLAGS = "-d";
 				YACC_GENERATED_FILE_STEM = InputFileStem;
@@ -2248,7 +2274,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = FuseHelp/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-for-macosx.FuseHelp";
@@ -2296,7 +2322,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = FuseHelp/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-for-macosx.FuseHelp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2343,7 +2369,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = FuseHelp/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-for-macosx.FuseHelp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
