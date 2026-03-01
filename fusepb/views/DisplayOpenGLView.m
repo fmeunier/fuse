@@ -551,14 +551,7 @@ static DisplayOpenGLView *instance = nil;
 }
 
 /* Called by AppKit (e.g. -[NSOpenGLView _invalidateGStatesForTree]) when the
-   drawable needs to be updated — including during live window resize.  This
-   path is separate from -reshape and does NOT hold view_lock, so we must
-   acquire it here before touching the OpenGL context.  Without this, the
-   CVDisplayLink render thread can be mid-draw (holding view_lock, inside
-   glEnd/flushBuffer) at the same moment AppKit tears down the underlying
-   Metal texture in -[NSOpenGLContext update], causing a use-after-free
-   crash (EXC_BAD_ACCESS in objc_release inside
-   -[MTLRenderPassColorAttachmentDescriptorInternal setTexture:]). */
+   drawable needs to be updated — including during live window resize. */
 -(void) update
 {
   [view_lock lock];
@@ -566,13 +559,7 @@ static DisplayOpenGLView *instance = nil;
   [view_lock unlock];
 }
 
-/* scrolled, moved or resized.
-   We do NOT call [super reshape] here.  NSOpenGLView's default -reshape
-   implementation only makes the context current and calls
-   [[self openGLContext] update] — both of which we do explicitly below.
-   Calling [super reshape] would re-enter our -update override (via
-   _invalidateGStatesForTree) while we already hold view_lock, which would
-   deadlock because NSLock is non-reentrant. */
+/* scrolled, moved or resized. */
 -(void) reshape
 {
   [view_lock lock];
