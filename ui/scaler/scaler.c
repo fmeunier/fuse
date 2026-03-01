@@ -75,46 +75,56 @@ static void expand_dotmatrix( int *x, int *y, int *w, int *h,
    in the same order as scaler.h:scaler_type */
 static struct scaler_info available_scalers[] = {
 
-  { "Timex Half (smoothed)", "half", SCALER_FLAGS_NONE,	  SCALE_FACTOR_HALF,
+  { "Timex Half (smoothed)", "half", SCALER_FLAGS_NONE,	       SCALE_FACTOR_HALF,
     scaler_Half_16,       NULL,       NULL                },
-  { "Timex Half (skipping)", "halfskip", SCALER_FLAGS_NONE, SCALE_FACTOR_HALF,
+  { "Timex Half (skipping)", "halfskip", SCALER_FLAGS_NONE,    SCALE_FACTOR_HALF,
     scaler_HalfSkip_16,   NULL,   NULL                },
-  { "Normal",	       "normal",     SCALER_FLAGS_NONE,	  SCALE_FACTOR_ONE,
+  { "Normal",	       "normal",     SCALER_FLAGS_NONE,	       SCALE_FACTOR_ONE, 
     scaler_Normal1x_16,   NULL,   NULL                },
-  { "Double size",     "2x",	     SCALER_FLAGS_NONE,	  SCALE_FACTOR_TWO,
+  { "Double size",     "2x",	     SCALER_FLAGS_NONE,	       SCALE_FACTOR_TWO, 
     scaler_Normal2x_16,   NULL,   NULL                },
-  { "Triple size",     "3x",	     SCALER_FLAGS_NONE,	  SCALE_FACTOR_THREE,
-    scaler_Normal3x_16,   NULL,   NULL		    },
-  { "2xSaI",	       "2xsai",	     SCALER_FLAGS_EXPAND, SCALE_FACTOR_TWO,
+  { "Triple size",     "3x",	     SCALER_FLAGS_NONE,	       SCALE_FACTOR_THREE, 
+    scaler_Normal3x_16,   NULL,   NULL                },
+  { "Quadruple size",  "4x",	     SCALER_FLAGS_NONE,	       SCALE_FACTOR_FOUR,
+    scaler_Normal4x_16,   NULL,   NULL                },
+  { "2xSaI",	       "2xsai",	     SCALER_FLAGS_EXPAND,      SCALE_FACTOR_TWO, 
     scaler_2xSaI_16,      NULL,      expand_sai          },
-  { "Super 2xSaI",     "super2xsai", SCALER_FLAGS_EXPAND, SCALE_FACTOR_TWO,
+  { "Super 2xSaI",     "super2xsai", SCALER_FLAGS_EXPAND,      SCALE_FACTOR_TWO, 
     scaler_Super2xSaI_16, NULL, expand_sai          },
-  { "SuperEagle",      "supereagle", SCALER_FLAGS_EXPAND, SCALE_FACTOR_TWO,
+  { "SuperEagle",      "supereagle", SCALER_FLAGS_EXPAND,      SCALE_FACTOR_TWO, 
     scaler_SuperEagle_16, NULL, expand_sai          },
-  { "AdvMAME 2x",      "advmame2x",  SCALER_FLAGS_EXPAND, SCALE_FACTOR_TWO,
+  { "AdvMAME 2x",      "advmame2x",  SCALER_FLAGS_EXPAND,      SCALE_FACTOR_TWO, 
     scaler_AdvMame2x_16,  NULL,  expand_1            },
-  { "AdvMAME 3x",      "advmame3x",  SCALER_FLAGS_EXPAND, SCALE_FACTOR_THREE,
+  { "AdvMAME 3x",      "advmame3x",  SCALER_FLAGS_EXPAND,      SCALE_FACTOR_THREE, 
     scaler_AdvMame3x_16,  NULL,  expand_1            },
-  { "TV 2x",	       "tv2x",	     SCALER_FLAGS_NONE,   SCALE_FACTOR_TWO,
+  { "TV 2x",	       "tv2x",	     SCALER_FLAGS_NONE,        SCALE_FACTOR_TWO, 
     scaler_TV2x_16,       NULL,       NULL                },
-  { "TV 3x",	       "tv3x",	     SCALER_FLAGS_NONE,   SCALE_FACTOR_THREE,
+  { "TV 3x",	       "tv3x",	     SCALER_FLAGS_NONE,        SCALE_FACTOR_THREE, 
     scaler_TV3x_16,       NULL,       NULL                },
-  { "Timex TV",	       "timextv",    SCALER_FLAGS_NONE,   SCALE_FACTOR_ONE,
+  { "TV 4x",	       "tv4x",	     SCALER_FLAGS_NONE,        SCALE_FACTOR_FOUR,
+    scaler_TV4x_16,       NULL,       NULL                },
+  { "Timex TV",	       "timextv",    SCALER_FLAGS_NONE,        SCALE_FACTOR_ONE, 
     scaler_TimexTV_16,    NULL,    NULL                },
-  { "Dot Matrix",      "dotmatrix",  SCALER_FLAGS_EXPAND, SCALE_FACTOR_TWO,
+  { "Dot Matrix",      "dotmatrix",  SCALER_FLAGS_EXPAND,      SCALE_FACTOR_TWO,
     scaler_DotMatrix_16,  NULL,  expand_dotmatrix    },
-  { "Timex 1.5x",      "timex15x",   SCALER_FLAGS_NONE,   SCALE_FACTOR_ONE_HALF,
+  { "Timex 1.5x",      "timex15x",   SCALER_FLAGS_NONE,        SCALE_FACTOR_ONE_HALF,
     scaler_Timex1_5x_16,  NULL,  NULL                },
-  { "PAL TV",	       "paltv",     SCALER_FLAGS_EXPAND,  SCALE_FACTOR_ONE,
-    scaler_PalTV_16,  	  NULL,  expand_pal1        	    },
-  { "PAL TV 2x",       "paltv2x",   SCALER_FLAGS_EXPAND,  SCALE_FACTOR_TWO,
-    scaler_PalTV2x_16,    NULL,  expand_pal            },
-  { "PAL TV 3x",       "paltv3x",   SCALER_FLAGS_EXPAND,  SCALE_FACTOR_THREE,
-    scaler_PalTV3x_16,    NULL,  expand_pal            },
-  { "HQ 2x",           "hq2x",      SCALER_FLAGS_EXPAND,  SCALE_FACTOR_TWO,
-    scaler_HQ2x_16,       NULL,    expand_1            },
-  { "HQ 3x",           "hq3x",      SCALER_FLAGS_EXPAND,  SCALE_FACTOR_THREE,
-    scaler_HQ3x_16,       NULL,    expand_1            },
+  { "Timex 2x",        "timex2x",    SCALER_FLAGS_NONE,        SCALE_FACTOR_TWO,
+    scaler_Normal2x_16,  NULL,    NULL                },
+  { "PAL TV",	       "paltv",     SCALER_FLAGS_EXPAND,       SCALE_FACTOR_ONE,
+    scaler_PalTV_16,  	  NULL,      expand_pal1         },
+  { "PAL TV 2x",       "paltv2x",   SCALER_FLAGS_EXPAND,       SCALE_FACTOR_TWO,
+    scaler_PalTV2x_16,    NULL,    expand_pal          },
+  { "PAL TV 3x",       "paltv3x",   SCALER_FLAGS_EXPAND,       SCALE_FACTOR_THREE,
+    scaler_PalTV3x_16,    NULL,    expand_pal          },
+  { "PAL TV 4x",       "paltv4x",   SCALER_FLAGS_EXPAND,       SCALE_FACTOR_FOUR,
+    scaler_PalTV4x_16,    NULL,    expand_pal          },
+  { "HQ 2x",           "hq2x",      SCALER_FLAGS_EXPAND,       SCALE_FACTOR_TWO,
+    scaler_HQ2x_16,       NULL,       expand_1            },
+  { "HQ 3x",           "hq3x",      SCALER_FLAGS_EXPAND,       SCALE_FACTOR_THREE,
+    scaler_HQ3x_16,       NULL,       expand_1            },
+  { "HQ 4x",           "hq4x",      SCALER_FLAGS_EXPAND,       SCALE_FACTOR_FOUR,
+    scaler_HQ4x_16,       NULL,       expand_1            },
 };
 
 scaler_type current_scaler = SCALER_NUM;
@@ -230,6 +240,7 @@ scaler_get_scaling_factor( scaler_type scaler )
   case SCALE_FACTOR_ONE: return 1.0f;
   case SCALE_FACTOR_TWO: return 2.0f;
   case SCALE_FACTOR_THREE: return 3.0f;
+  case SCALE_FACTOR_FOUR: return 4.0f;
   case SCALE_FACTOR_ONE_HALF: return 1.5f;
   }
   /* Silence warning */
@@ -244,6 +255,7 @@ scaler_scale_number( scaler_type scaler, int num )
   case SCALE_FACTOR_ONE: return num;
   case SCALE_FACTOR_TWO: return num<<1;
   case SCALE_FACTOR_THREE: return num*3;
+  case SCALE_FACTOR_FOUR: return num*4;
   case SCALE_FACTOR_ONE_HALF: return num + (num>>1);
   }
   /* Silence warning */

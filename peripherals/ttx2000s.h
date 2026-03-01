@@ -1,5 +1,5 @@
-/* nullsound.c: dummy sound routines
-   Copyright (c) 2003-2004 Philip Kendall
+/* ttx2000s.h: Routines for handling the TTX2000S teletext adapter
+   Copyright (c) 2018 Alistair Cree
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,28 +17,16 @@
 
 */
 
-#include <config.h>
+#ifndef FUSE_TTX2000S_H
+#define FUSE_TTX2000S_H
 
-/* Dummy functions for when we don't have a sound device; should never be
-   called, so just abort if they are */
+extern int ttx2000s_paged;
 
-#include "fuse.h"
+void ttx2000s_register_startup( void );
+void ttx2000s_page( void );
+void ttx2000s_unpage( void );
+int ttx2000s_unittest( void );
+libspectrum_byte ttx2000s_sram_read( libspectrum_word address );
+void ttx2000s_sram_write( libspectrum_word address, libspectrum_byte b );
 
-int
-sound_lowlevel_init( const char *device, int *freqptr, int *stereoptr )
-{
-  /* Audio driver not initialised */
-  return 1;
-}
-
-void
-sound_lowlevel_end( void )
-{
-  fuse_abort();
-}
-
-void
-sound_lowlevel_frame( unsigned char *data, int len )
-{
-  fuse_abort();
-}
+#endif				/* #ifndef FUSE_TTX2000S_H */

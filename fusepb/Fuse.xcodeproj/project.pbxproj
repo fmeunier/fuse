@@ -179,6 +179,7 @@
 		B684A19E0E93A8CD00A5B097 /* event.c in Sources */ = {isa = PBXBuildFile; fileRef = B684A19D0E93A8CD00A5B097 /* event.c */; };
 		B684A1A00E93A8D700A5B097 /* variable.c in Sources */ = {isa = PBXBuildFile; fileRef = B684A19F0E93A8D700A5B097 /* variable.c */; };
 		B684A1A20E93A8FC00A5B097 /* file.c in Sources */ = {isa = PBXBuildFile; fileRef = B684A1A10E93A8FC00A5B097 /* file.c */; };
+		B688FD9D2F544D6000A08A6D /* ttx2000s.c in Sources */ = {isa = PBXBuildFile; fileRef = B688FD9C2F544D6000A08A6D /* ttx2000s.c */; };
 		B68C32921D3BBEC20082CBD4 /* system_variable.c in Sources */ = {isa = PBXBuildFile; fileRef = B68C32911D3BBEC20082CBD4 /* system_variable.c */; };
 		B68C32961D3BBF2D0082CBD4 /* startup_manager.c in Sources */ = {isa = PBXBuildFile; fileRef = B68C32941D3BBF2D0082CBD4 /* startup_manager.c */; };
 		B68C32991D3BBF620082CBD4 /* z80_debugger_variables.c in Sources */ = {isa = PBXBuildFile; fileRef = B68C32971D3BBF620082CBD4 /* z80_debugger_variables.c */; };
@@ -387,7 +388,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -528,6 +528,9 @@
 		B684A19F0E93A8D700A5B097 /* variable.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = variable.c; sourceTree = "<group>"; };
 		B684A1A10E93A8FC00A5B097 /* file.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = file.c; sourceTree = "<group>"; };
 		B6871C9D04AF7BEF00C24D83 /* compat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = compat.h; path = ../compat.h; sourceTree = SOURCE_ROOT; };
+		B688FD9B2F544D6000A08A6D /* ttx2000s.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ttx2000s.h; sourceTree = "<group>"; };
+		B688FD9C2F544D6000A08A6D /* ttx2000s.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ttx2000s.c; sourceTree = "<group>"; };
+		B688FD9E2F54522E00A08A6D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B68C17DC06C8C0DC004981AE /* kempmouse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = kempmouse.c; sourceTree = "<group>"; };
 		B68C17DD06C8C0DC004981AE /* kempmouse.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = kempmouse.h; sourceTree = "<group>"; };
 		B68C32911D3BBEC20082CBD4 /* system_variable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = system_variable.c; sourceTree = "<group>"; };
@@ -1424,6 +1427,8 @@
 				B6E1F1AA14F653FB00600EB0 /* specdrum.h */,
 				B69BE5431660E04000C5D0CE /* spectranet.c */,
 				B69BE5441660E04000C5D0CE /* spectranet.h */,
+				B688FD9C2F544D6000A08A6D /* ttx2000s.c */,
+				B688FD9B2F544D6000A08A6D /* ttx2000s.h */,
 				B6AB429D0677466E007C50EF /* ula.c */,
 				B6AB429E0677466E007C50EF /* ula.h */,
 				B6D0E1041CFD549200202683 /* usource.c */,
@@ -1640,13 +1645,13 @@
 			};
 			buildConfigurationList = B63319B3086803BA00732AA3 /* Build configuration list for PBXProject "Fuse" */;
 			compatibilityVersion = "Xcode 6.3";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
+				en,
+				fr,
+				de,
+				ja,
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Fuse */;
 			projectDirPath = "";
@@ -1897,6 +1902,7 @@
 				B63225EC0C66BA1300BB081B /* osname.c in Sources */,
 				B6CE3A060CD2160A005ACDC8 /* beta.c in Sources */,
 				B6CE3A080CD2160A005ACDC8 /* crc.c in Sources */,
+				B688FD9D2F544D6000A08A6D /* ttx2000s.c in Sources */,
 				B6CE3A0A0CD2160A005ACDC8 /* disk.c in Sources */,
 				B6CE3A0C0CD2160A005ACDC8 /* fdd.c in Sources */,
 				B6CE3A100CD21617005ACDC8 /* wd_fdc.c in Sources */,
@@ -2000,7 +2006,7 @@
 		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				089C165DFE840E0CC02AAC07 /* English */,
+				B688FD9E2F54522E00A08A6D /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";

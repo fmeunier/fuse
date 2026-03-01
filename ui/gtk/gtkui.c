@@ -1,4 +1,4 @@
-/* gtkui.c: GTK+ routines for dealing with the user interface
+/* gtkui.c: GTK routines for dealing with the user interface
    Copyright (c) 2000-2015 Philip Kendall, Russell Marks, Sergio Baldoví
 
    This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include <stdio.h>
 
 #include <gdk/gdkkeysyms.h>
-#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
 #include <glib.h>
@@ -153,6 +152,11 @@ ui_init( int *argc, char ***argv )
   GtkAccelGroup *accel_group;
   GtkSettings *settings;
 
+#if GTK_CHECK_VERSION( 3, 10, 0 )
+  /* The Wayland output is buggy, see #367 */
+  gdk_set_allowed_backends( "quartz,win32,mir,x11,*" );
+#endif
+
   gtk_init(argc,argv);
 
 #if !GTK_CHECK_VERSION( 3, 0, 0 )
@@ -163,6 +167,10 @@ ui_init( int *argc, char ***argv )
 #endif                /* #if !GTK_CHECK_VERSION( 3, 0, 0 ) */
 
   gtkui_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+#ifdef FUSE_ICON_AVAILABLE
+  gtk_window_set_icon_name( GTK_WINDOW( gtkui_window ), "fuse" );
+#endif
 
   settings = gtk_widget_get_settings( GTK_WIDGET( gtkui_window ) );
   g_object_set( settings, "gtk-menu-bar-accel", "F1", NULL );
@@ -656,18 +664,21 @@ ui_widgets_reset( void )
 void
 menu_help_keyboard( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 {
-  gtkui_picture( "keyboard.scr", 0 );
+  gtkui_picture( "keyboard.png", 0 );
 }
 
 void
 menu_help_about( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
 {
-  /* TODO: show Fuse icon */
   gtk_show_about_dialog( GTK_WINDOW( gtkui_window ),
                          "program-name", "Fuse",
                          "comments", "The Free Unix Spectrum Emulator",
                          "copyright", FUSE_COPYRIGHT,
+#ifdef FUSE_ICON_AVAILABLE
+                         "logo-icon-name", "fuse",
+#else
                          "logo-icon-name", NULL,
+#endif
                          "version", VERSION,
                          "website", PACKAGE_URL,
                          NULL );

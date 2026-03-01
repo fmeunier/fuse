@@ -46,6 +46,12 @@
 #include "win32internals.h"
 #include "win32joystick.h"
 
+/* Window handler */
+HWND fuse_hWnd;
+
+/* Application instance */
+HINSTANCE fuse_hInstance;
+
 /* fuse_hPrevInstance is needed only to register window class */
 static HINSTANCE fuse_hPrevInstance;
 
@@ -649,7 +655,12 @@ ui_widgets_reset( void )
 void
 menu_help_keyboard( int action )
 {
-  win32ui_picture( "keyboard.scr", 0 );
+#ifdef USE_LIBPNG
+  if( win32ui_picture( "keyboard.png", PICTURE_PNG ) == 0 )
+    return;
+#endif
+
+  win32ui_picture( "keyboard.scr", PICTURE_SCR );
 }
 
 /* Functions to activate and deactivate certain menu items */
@@ -1107,8 +1118,8 @@ win32ui_window_resizing( HWND hWnd, WPARAM wParam, LPARAM lParam )
     width = w_max; height = h_max;
   }
 
-  if( width > 3 || height > 3 ) {
-    width = 3; height = 3;
+  if( width > MAX_SCALE || height > MAX_SCALE ) {
+    width = MAX_SCALE; height = MAX_SCALE;
   }
 
   if( width < height ) {

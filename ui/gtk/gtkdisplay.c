@@ -1,4 +1,4 @@
-/* gtkdisplay.c: GTK+ routines for dealing with the Speccy screen
+/* gtkdisplay.c: GTK routines for dealing with the Speccy screen
    Copyright (c) 2000-2005 Philip Kendall
 
    This program is free software; you can redistribute it and/or modify
@@ -42,6 +42,11 @@
 #include "ui/scaler/scaler.h"
 #include "settings.h"
 
+/* The biggest size screen (in units of DISPLAY_ASPECT_WIDTH x
+   DISPLAY_SCREEN_HEIGHT ie a Timex screen is size 2) we will be
+   creating via the scalers */
+#define MAX_SCALE 4
+
 /* The size of a 1x1 image in units of
    DISPLAY_ASPECT WIDTH x DISPLAY_SCREEN_HEIGHT */
 int image_scale;
@@ -62,9 +67,9 @@ static guchar rgb_image[ 4 * 2 * ( DISPLAY_SCREEN_HEIGHT + 4 ) *
 static const gint rgb_pitch = ( DISPLAY_SCREEN_WIDTH + 3 ) * 4;
 
 /* The scaled image */
-static guchar scaled_image[ 3 * DISPLAY_SCREEN_HEIGHT *
-                            6 * DISPLAY_SCREEN_WIDTH ];
-static const ptrdiff_t scaled_pitch = 6 * DISPLAY_SCREEN_WIDTH;
+static guchar scaled_image[ MAX_SCALE * DISPLAY_SCREEN_HEIGHT *
+                            MAX_SCALE * DISPLAY_SCREEN_WIDTH * 2 ];
+static const ptrdiff_t scaled_pitch = MAX_SCALE * DISPLAY_SCREEN_WIDTH * 2;
 
 /* The colour palette */
 static const guchar rgb_colours[16][3] = {
@@ -297,15 +302,20 @@ register_scalers( int force_scaler )
     scaler_register( SCALER_HALFSKIP );
     scaler_register( SCALER_TIMEXTV );
     scaler_register( SCALER_TIMEX1_5X );
+    scaler_register( SCALER_TIMEX2X );
   } else {
     scaler_register( SCALER_DOUBLESIZE );
     scaler_register( SCALER_TRIPLESIZE );
+    scaler_register( SCALER_QUADSIZE );
     scaler_register( SCALER_TV2X );
     scaler_register( SCALER_TV3X );
+    scaler_register( SCALER_TV4X );
     scaler_register( SCALER_PALTV2X );
     scaler_register( SCALER_PALTV3X );
+    scaler_register( SCALER_PALTV4X );
     scaler_register( SCALER_HQ2X );
     scaler_register( SCALER_HQ3X );
+    scaler_register( SCALER_HQ4X );
     scaler_register( SCALER_ADVMAME2X );
     scaler_register( SCALER_ADVMAME3X );
     scaler_register( SCALER_2XSAI );
@@ -332,6 +342,9 @@ register_scalers( int force_scaler )
       break;
     case 3: scaler = machine_current->timex ? SCALER_TIMEX1_5X :
                                               SCALER_TRIPLESIZE;
+      break;
+    case 4: scaler = machine_current->timex ? SCALER_TIMEX2X :
+                                              SCALER_QUADSIZE;
       break;
     }
   }
@@ -532,7 +545,7 @@ gtkdisplay_expose( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
 }
 
 /* Called by gtkui_drawing_area on "configure_event".
-   On GTK+ 2 the drawing_area determines the size of the window */
+   On GTK 2 the drawing_area determines the size of the window */
 static gint
 drawing_area_resize_callback( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
                               gpointer data GCC_UNUSED )
@@ -560,7 +573,7 @@ gtkdisplay_draw( GtkWidget *widget, cairo_t *cr, gpointer user_data )
 }
 
 /* Called by gtkui_window on "configure_event".
-   On GTK+ 3 the window determines the size of the drawing area */
+   On GTK 3 the window determines the size of the drawing area */
 static gint
 drawing_area_resize_callback( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
                               gpointer data GCC_UNUSED )
@@ -590,7 +603,7 @@ gtkdisplay_update_geometry( void )
 
 #if GTK_CHECK_VERSION( 3, 0, 0 )
 
-  /* Since GTK+ 3.20 it is intended that gtk_window_set_geometry_hints
+  /* Since GTK 3.20 it is intended that gtk_window_set_geometry_hints
      don't set geometry of widgets. See [bugs:#344] */
   geometry_widget = NULL;
 
@@ -621,8 +634,8 @@ gtkdisplay_update_geometry( void )
 
   geometry.min_width = DISPLAY_ASPECT_WIDTH;
   geometry.min_height = DISPLAY_SCREEN_HEIGHT + extra_height;
-  geometry.max_width = 3 * DISPLAY_ASPECT_WIDTH;
-  geometry.max_height = 3 * DISPLAY_SCREEN_HEIGHT + extra_height;
+  geometry.max_width = MAX_SCALE * DISPLAY_ASPECT_WIDTH;
+  geometry.max_height = MAX_SCALE * DISPLAY_SCREEN_HEIGHT + extra_height;
   geometry.base_width = scale * image_width;
   geometry.base_height = scale * image_height + extra_height;
   geometry.width_inc = DISPLAY_ASPECT_WIDTH;
