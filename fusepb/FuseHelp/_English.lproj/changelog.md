@@ -3,6 +3,17 @@ title: What's New In Fuse?
 description: This section describes the changes for version 1.5.6 of the Fuse emulator.
 ---
 
+## What's new in Fuse for macOS 1.6.0
+
+### Emulation core improvements:
+* Fix activation of joystick and IF2 peripherals when loading a snapshot (thanks, ICEknight) (Sergio Baldoví).
+
+### Scaler improvements:
+* Fix display corruption with HQ 3x scaler (thanks, Philip Kendall) (Sergio Baldoví).
+* Fix antialiasing effect of AdvMAME3x scaler (Sergio Baldoví).
+
+### Various other minor bugfixes.
+
 ## What's new in Fuse for macOS 1.5.6
 
 ### Emulation core improvements:
