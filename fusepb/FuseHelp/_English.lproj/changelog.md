@@ -12,6 +12,9 @@ description: This section describes the changes for version 1.5.6 of the Fuse em
 * Fix display corruption with HQ 3x scaler (thanks, Philip Kendall) (Sergio Baldoví).
 * Fix antialiasing effect of AdvMAME3x scaler (Sergio Baldoví).
 
+### Miscellaneous improvements:
+* Fix resize window crash (Fredrick Meunier).
+
 ### Various other minor bugfixes.
 
 ## What's new in Fuse for macOS 1.5.6
