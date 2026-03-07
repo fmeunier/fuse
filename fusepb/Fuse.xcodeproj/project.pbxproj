@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B6013812164692F5005FD3AE /* Fuse.iconset in Resources */ = {isa = PBXBuildFile; fileRef = B6013811164692F5005FD3AE /* Fuse.iconset */; };
-		B604B21B0DC182BE00981CC7 /* FuseGenerator.qlgenerator in CopyFiles */ = {isa = PBXBuildFile; fileRef = B61EEB950D1A917D006FEA80 /* FuseGenerator.qlgenerator */; };
+		B604B21B0DC182BE00981CC7 /* FuseGenerator.qlgenerator in CopyFiles */ = {isa = PBXBuildFile; fileRef = B61EEB950D1A917D006FEA80 /* FuseGenerator.qlgenerator */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B61159BF0EEE99D50029FEA3 /* Graphics_Filter.png in Resources */ = {isa = PBXBuildFile; fileRef = B61159BE0EEE99D50029FEA3 /* Graphics_Filter.png */; };
 		B61159C10EEE99E20029FEA3 /* Machine.png in Resources */ = {isa = PBXBuildFile; fileRef = B61159C00EEE99E20029FEA3 /* Machine.png */; };
 		B61159C30EEE99EE0029FEA3 /* Peripherals.png in Resources */ = {isa = PBXBuildFile; fileRef = B61159C20EEE99EE0029FEA3 /* Peripherals.png */; };
@@ -128,7 +128,7 @@
 		B61F469A09121DF100C8096C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		B61F469B09121DF100C8096C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
 		B61F469C09121DF100C8096C /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97324FDCFA39411CA2CEA /* AppKit.framework */; };
-		B61F46A409121DF100C8096C /* FuseImporter.mdimporter in CopyFiles */ = {isa = PBXBuildFile; fileRef = B64FEA96084F8EC300879389 /* FuseImporter.mdimporter */; };
+		B61F46A409121DF100C8096C /* FuseImporter.mdimporter in CopyFiles */ = {isa = PBXBuildFile; fileRef = B64FEA96084F8EC300879389 /* FuseImporter.mdimporter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B6251C3E0C2EB24500BD5543 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B6251C3D0C2EB24500BD5543 /* QuartzCore.framework */; };
 		B629532E114FB265007808E0 /* libspectrum.h.in in Resources */ = {isa = PBXBuildFile; fileRef = B6DCBB7A114FA0E700DC9A11 /* libspectrum.h.in */; };
 		B62B19E10DD31DF500D42AAF /* scalers16.c in Sources */ = {isa = PBXBuildFile; fileRef = B62B19E00DD31DF500D42AAF /* scalers16.c */; };
@@ -227,7 +227,7 @@
 		B6D0E1091CFD54B800202683 /* svg.c in Sources */ = {isa = PBXBuildFile; fileRef = B6D0E1071CFD54B800202683 /* svg.c */; };
 		B6D0E10B1CFD54D400202683 /* uimedia.c in Sources */ = {isa = PBXBuildFile; fileRef = B6D0E10A1CFD54D400202683 /* uimedia.c */; };
 		B6D65C3718A6431500170B64 /* gcrypt.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B6D65C3618A6431500170B64 /* gcrypt.framework */; };
-		B6D65C3818A645A100170B64 /* gcrypt.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6D65C3618A6431500170B64 /* gcrypt.framework */; };
+		B6D65C3818A645A100170B64 /* gcrypt.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6D65C3618A6431500170B64 /* gcrypt.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B6D670501DD6D2440014914E /* FuseHelp.help in Resources */ = {isa = PBXBuildFile; fileRef = B6D670451DD6CB6B0014914E /* FuseHelp.help */; };
 		B6D71DD21F6A94750000D666 /* divmmc.c in Sources */ = {isa = PBXBuildFile; fileRef = B6D71DCC1F6A94750000D666 /* divmmc.c */; };
 		B6D71DD31F6A94750000D666 /* divxxx.c in Sources */ = {isa = PBXBuildFile; fileRef = B6D71DCE1F6A94750000D666 /* divxxx.c */; };
@@ -288,7 +288,7 @@
 		B6F5E1801EE16CA70005178D /* covox.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F5E17E1EE16CA70005178D /* covox.c */; };
 		B6F66E351E473D68005B270A /* memory_pages.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F66E331E473D68005B270A /* memory_pages.c */; };
 		B6FA759D0C1D7507007F5A10 /* audiofile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B6FA759C0C1D7507007F5A10 /* audiofile.framework */; };
-		B6FA75C60C1D76A5007F5A10 /* audiofile.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6FA759C0C1D7507007F5A10 /* audiofile.framework */; };
+		B6FA75C60C1D76A5007F5A10 /* audiofile.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6FA759C0C1D7507007F5A10 /* audiofile.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
