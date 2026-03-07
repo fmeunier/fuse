@@ -2050,7 +2050,7 @@
 					"-lbz2",
 					"-lz",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = FusePreferences;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.fuse-for-macosx.Fuse";
 				PRODUCT_NAME = Fuse;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
@@ -2097,7 +2097,7 @@
 					"-lbz2",
 					"-lz",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = FusePreferences;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.fuse-for-macosx.Fuse";
 				PRODUCT_NAME = Fuse;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
@@ -2143,7 +2143,7 @@
 					"-lbz2",
 					"-lz",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = FusePreferences;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.fuse-for-macosx.Fuse";
 				PRODUCT_NAME = Fuse;
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = YES;
 				SDKROOT = macosx;
