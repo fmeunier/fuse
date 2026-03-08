@@ -606,6 +606,8 @@
 	<string>1.6.0</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
+	<key>NSInputMonitoringUsageDescription</key>
+	<string>Fuse needs access to joystick and gamepad devices for ZX Spectrum joystick emulation.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>UTExportedTypeDeclarations</key>

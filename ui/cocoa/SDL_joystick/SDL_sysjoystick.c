@@ -617,15 +617,75 @@ HIDDisposeDevice(recDevice ** ppDevice)
  * This function should return the number of available joysticks, or -1
  * on an unrecoverable fatal error.
  */
+/* Build a usage-filtered HID matching dictionary for one Generic Desktop usage
+   type and append any matching devices to the linked list whose tail is *lastDevice.
+   masterPort and gpDeviceList/lastDevice are updated in place.
+   Returns -1 on hard IOKit error, 0 on success (including "no devices found"). */
+static int
+SDL_SYS_AddMatchingDevices( mach_port_t masterPort, UInt32 usage,
+                             recDevice **lastDevice )
+{
+    IOReturn result;
+    CFMutableDictionaryRef hidMatchDictionary = NULL;
+    io_iterator_t hidObjectIterator = 0;
+    io_object_t ioHIDDeviceObject = 0;
+    UInt32 usagePage = kHIDPage_GenericDesktop;
+    CFNumberRef refUsage = NULL, refUsagePage = NULL;
+    recDevice *device;
+
+    /* Build a matching dictionary restricted to the requested usage type.
+       This prevents IOServiceGetMatchingServices from enumerating keyboards,
+       mice, and other non-joystick HID devices, which would otherwise trigger
+       the macOS Input Monitoring privacy permission (TCC). */
+    hidMatchDictionary = IOServiceMatching( kIOHIDDeviceKey );
+    if( !hidMatchDictionary ) {
+        ui_error( UI_ERROR_ERROR,
+                  "Joystick: Failed to get HID CFMutableDictionaryRef via IOServiceMatching." );
+        return -1;
+    }
+
+    refUsagePage = CFNumberCreate( kCFAllocatorDefault, kCFNumberIntType, &usagePage );
+    CFDictionarySetValue( hidMatchDictionary, CFSTR( kIOHIDPrimaryUsagePageKey ), refUsagePage );
+    CFRelease( refUsagePage );
+
+    refUsage = CFNumberCreate( kCFAllocatorDefault, kCFNumberIntType, &usage );
+    CFDictionarySetValue( hidMatchDictionary, CFSTR( kIOHIDPrimaryUsageKey ), refUsage );
+    CFRelease( refUsage );
+
+    /* IOServiceGetMatchingServices consumes the dictionary reference. */
+    result = IOServiceGetMatchingServices( masterPort, hidMatchDictionary,
+                                           &hidObjectIterator );
+    if( kIOReturnSuccess != result ) {
+        ui_error( UI_ERROR_ERROR, "Joystick: Couldn't create a HID object iterator." );
+        return -1;
+    }
+    if( !hidObjectIterator )
+        return 0;   /* no devices of this type — not an error */
+
+    while( (ioHIDDeviceObject = IOIteratorNext( hidObjectIterator )) ) {
+        device = HIDBuildDevice( ioHIDDeviceObject );
+        IOObjectRelease( ioHIDDeviceObject );
+        if( !device )
+            continue;
+
+        /* Add device to the end of the list */
+        if( *lastDevice )
+            (*lastDevice)->pNext = device;
+        else
+            gpDeviceList = device;
+        *lastDevice = device;
+    }
+    IOObjectRelease( hidObjectIterator );
+
+    return 0;
+}
+
 int
 SDL_SYS_JoystickInit(void)
 {
     IOReturn result = kIOReturnSuccess;
     mach_port_t masterPort = 0;
-    io_iterator_t hidObjectIterator = 0;
-    CFMutableDictionaryRef hidMatchDictionary = NULL;
     recDevice *device, *lastDevice;
-    io_object_t ioHIDDeviceObject = 0;
 
     SDL_numjoysticks = 0;
 
@@ -640,79 +700,21 @@ SDL_SYS_JoystickInit(void)
         return -1;
     }
 
-    /* Set up a matching dictionary to search I/O Registry by class name for all HID class devices. */
-    hidMatchDictionary = IOServiceMatching(kIOHIDDeviceKey);
-    if (hidMatchDictionary) {
-        /* Add key for device type (joystick, in this case) to refine the matching dictionary. */
-
-        /* NOTE: we now perform this filtering later
-           UInt32 usagePage = kHIDPage_GenericDesktop;
-           UInt32 usage = kHIDUsage_GD_Joystick;
-           CFNumberRef refUsage = NULL, refUsagePage = NULL;
-
-           refUsage = CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &usage);
-           CFDictionarySetValue (hidMatchDictionary, CFSTR (kIOHIDPrimaryUsageKey), refUsage);
-           refUsagePage = CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &usagePage);
-           CFDictionarySetValue (hidMatchDictionary, CFSTR (kIOHIDPrimaryUsagePageKey), refUsagePage);
-         */
-    } else {
-        ui_error( UI_ERROR_ERROR, 
-                  "Joystick: Failed to get HID CFMutableDictionaryRef via IOServiceMatching.");
-        return -1;
-    }
-
-    /*/ Now search I/O Registry for matching devices. */
-    result =
-        IOServiceGetMatchingServices(masterPort, hidMatchDictionary,
-                                     &hidObjectIterator);
-    /* Check for errors */
-    if (kIOReturnSuccess != result) {
-        ui_error( UI_ERROR_ERROR, "Joystick: Couldn't create a HID object iterator.");
-        return -1;
-    }
-    if (!hidObjectIterator) {   /* there are no joysticks */
-        gpDeviceList = NULL;
-        SDL_numjoysticks = 0;
-        return 0;
-    }
-    /* IOServiceGetMatchingServices consumes a reference to the dictionary, so we don't need to release the dictionary ref. */
-
-    /* build flat linked list of devices from device iterator */
-
+    /* Search for each supported Generic Desktop joystick-class usage type
+       separately.  Using per-usage matching dictionaries avoids enumerating
+       keyboards and mice, which would trigger the macOS Input Monitoring
+       privacy permission (Transparency, Consent and Control / TCC). */
     gpDeviceList = lastDevice = NULL;
 
-    while ((ioHIDDeviceObject = IOIteratorNext(hidObjectIterator))) {
-        /* build a device record */
-        device = HIDBuildDevice(ioHIDDeviceObject);
-        if (!device)
-            continue;
-
-        /* dump device object, it is no longer needed */
-        result = IOObjectRelease(ioHIDDeviceObject);
-/*		if (KERN_SUCCESS != result)
-			HIDReportErrorNum ("IOObjectRelease error with ioHIDDeviceObject.", result);
-*/
-
-        /* Filter device list to non-keyboard/mouse stuff */
-        if ((device->usagePage != kHIDPage_GenericDesktop) ||
-            ((device->usage != kHIDUsage_GD_Joystick &&
-              device->usage != kHIDUsage_GD_GamePad &&
-              device->usage != kHIDUsage_GD_MultiAxisController))) {
-
-            /* release memory for the device */
-            HIDDisposeDevice(&device);
-            DisposePtr((Ptr) device);
-            continue;
-        }
-
-        /* Add device to the end of the list */
-        if (lastDevice)
-            lastDevice->pNext = device;
-        else
-            gpDeviceList = device;
-        lastDevice = device;
-    }
-    result = IOObjectRelease(hidObjectIterator);        /* release the iterator */
+    if( SDL_SYS_AddMatchingDevices( masterPort, kHIDUsage_GD_Joystick,
+                                     &lastDevice ) < 0 )
+        return -1;
+    if( SDL_SYS_AddMatchingDevices( masterPort, kHIDUsage_GD_GamePad,
+                                     &lastDevice ) < 0 )
+        return -1;
+    if( SDL_SYS_AddMatchingDevices( masterPort, kHIDUsage_GD_MultiAxisController,
+                                     &lastDevice ) < 0 )
+        return -1;
 
     /* Count the total number of devices we found */
     device = gpDeviceList;
