@@ -1,0 +1,7 @@
+// Shared signing defaults for contributor builds.
+// Maintainers can override these values locally in LocalSigning.xcconfig.
+
+CODE_SIGN_IDENTITY = -
+DEVELOPMENT_TEAM =
+
+#include? "LocalSigning.xcconfig"

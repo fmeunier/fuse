@@ -113,5 +113,6 @@ xcuserdata
 /fusepb/options_cocoa.h
 /fusepb/settings.h
 /fusepb/settings.m
+/fusepb/LocalSigning.xcconfig
 .DS_Store
 opencode.json

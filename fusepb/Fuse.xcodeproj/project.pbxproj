@@ -419,6 +419,7 @@
 		B61EEB950D1A917D006FEA80 /* FuseGenerator.qlgenerator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.bundle"; name = FuseGenerator.qlgenerator; path = ../../FuseGenerator/build/Release/FuseGenerator.qlgenerator; sourceTree = SOURCE_ROOT; };
 		B61F46A909121DF100C8096C /* Info-Fuse.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Fuse.plist"; sourceTree = "<group>"; };
 		B61F46AA09121DF200C8096C /* Fuse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fuse.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B688FD9E2F54500000A08A6D /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		B621A11E062E92FB00F63DBC /* if2.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = if2.c; sourceTree = "<group>"; };
 		B621A11F062E92FB00F63DBC /* if2.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = if2.h; sourceTree = "<group>"; };
 		B6251C3D0C2EB24500BD5543 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = /System/Library/Frameworks/QuartzCore.framework; sourceTree = "<absolute>"; };
@@ -898,6 +899,7 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				B61F46A909121DF100C8096C /* Info-Fuse.plist */,
+				B688FD9E2F54500000A08A6D /* Signing.xcconfig */,
 			);
 			indentWidth = 2;
 			name = Fuse;
@@ -2064,12 +2066,11 @@
 		};
 		B61F46A709121DF100C8096C /* Deployment */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B688FD9E2F54500000A08A6D /* Signing.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Fuse.entitlements;
-				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -2298,6 +2299,7 @@
 		};
 		B6D670491DD6CB6B0014914E /* Deployment */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B688FD9E2F54500000A08A6D /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -2317,12 +2319,10 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
