@@ -7,9 +7,16 @@ HELP := $(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)
 export LANG ?= en_US.UTF-8
 
 $(HELP) : * **/*
-	[[ -s "$(HOME)/.rvm/environments/default" ]] && source "$(HOME)/.rvm/environments/default" ; \
-	(which -s jekyll || (echo "error: Jekyll not found - check setup requirements" ; false )) \
-	&& jekyll build --destination "$(HELP)"
+	[ -s "$(HOME)/.rvm/environments/default" ] && . "$(HOME)/.rvm/environments/default" ; \
+	PATH="/opt/homebrew/bin:/opt/homebrew/opt/ruby/bin:/usr/local/bin:/usr/local/opt/ruby/bin:$$PATH" ; export PATH ; \
+	for GEM_BIN in /opt/homebrew/lib/ruby/gems/*/bin /usr/local/lib/ruby/gems/*/bin ; do \
+		[ ! -d "$$GEM_BIN" ] || PATH="$$GEM_BIN:$$PATH" ; \
+	done ; export PATH ; \
+	JEKYLL=$$(command -v jekyll 2>/dev/null) ; \
+	[ -n "$$JEKYLL" ] || [ ! -x /opt/homebrew/bin/jekyll ] || JEKYLL=/opt/homebrew/bin/jekyll ; \
+	[ -n "$$JEKYLL" ] || [ ! -x /usr/local/bin/jekyll ] || JEKYLL=/usr/local/bin/jekyll ; \
+	[ -n "$$JEKYLL" ] || (echo "error: Jekyll not found - install it via Homebrew or make it available on PATH" ; false) ; \
+	"$$JEKYLL" build --destination "$(HELP)"
 	for LPROJ in "$(HELP)"/*.lproj ; do \
 		LOCALE=$$(basename "$$LPROJ" .lproj) ; \
 		echo "Indexing: $$LPROJ" ; \
