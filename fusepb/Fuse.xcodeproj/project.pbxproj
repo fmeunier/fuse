@@ -130,7 +130,6 @@
 		B61F469C09121DF100C8096C /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97324FDCFA39411CA2CEA /* AppKit.framework */; };
 		B61F46A409121DF100C8096C /* FuseImporter.mdimporter in CopyFiles */ = {isa = PBXBuildFile; fileRef = B64FEA96084F8EC300879389 /* FuseImporter.mdimporter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B6251C3E0C2EB24500BD5543 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B6251C3D0C2EB24500BD5543 /* QuartzCore.framework */; };
-		B629532E114FB265007808E0 /* libspectrum.h.in in Resources */ = {isa = PBXBuildFile; fileRef = B6DCBB7A114FA0E700DC9A11 /* libspectrum.h.in */; };
 		B62B19E10DD31DF500D42AAF /* scalers16.c in Sources */ = {isa = PBXBuildFile; fileRef = B62B19E00DD31DF500D42AAF /* scalers16.c */; };
 		B62B1A280DD6655800D42AAF /* fuse.c in Sources */ = {isa = PBXBuildFile; fileRef = B62B1A270DD6655800D42AAF /* fuse.c */; };
 		B62B1A2A0DD667EC00D42AAF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B62B1A290DD667EC00D42AAF /* main.m */; };
@@ -226,8 +225,6 @@
 		B6D0E1061CFD549200202683 /* usource.c in Sources */ = {isa = PBXBuildFile; fileRef = B6D0E1041CFD549200202683 /* usource.c */; };
 		B6D0E1091CFD54B800202683 /* svg.c in Sources */ = {isa = PBXBuildFile; fileRef = B6D0E1071CFD54B800202683 /* svg.c */; };
 		B6D0E10B1CFD54D400202683 /* uimedia.c in Sources */ = {isa = PBXBuildFile; fileRef = B6D0E10A1CFD54D400202683 /* uimedia.c */; };
-		B6D65C3718A6431500170B64 /* gcrypt.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B6D65C3618A6431500170B64 /* gcrypt.framework */; };
-		B6D65C3818A645A100170B64 /* gcrypt.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6D65C3618A6431500170B64 /* gcrypt.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B6D670501DD6D2440014914E /* FuseHelp.help in Resources */ = {isa = PBXBuildFile; fileRef = B6D670451DD6CB6B0014914E /* FuseHelp.help */; };
 		B6D71DD21F6A94750000D666 /* divmmc.c in Sources */ = {isa = PBXBuildFile; fileRef = B6D71DCC1F6A94750000D666 /* divmmc.c */; };
 		B6D71DD31F6A94750000D666 /* divxxx.c in Sources */ = {isa = PBXBuildFile; fileRef = B6D71DCE1F6A94750000D666 /* divxxx.c */; };
@@ -287,51 +284,9 @@
 		B6F0481B0952B5FD006D8005 /* zxs.icns in Resources */ = {isa = PBXBuildFile; fileRef = B6F0481A0952B5FD006D8005 /* zxs.icns */; };
 		B6F5E1801EE16CA70005178D /* covox.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F5E17E1EE16CA70005178D /* covox.c */; };
 		B6F66E351E473D68005B270A /* memory_pages.c in Sources */ = {isa = PBXBuildFile; fileRef = B6F66E331E473D68005B270A /* memory_pages.c */; };
-		B6FA759D0C1D7507007F5A10 /* audiofile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B6FA759C0C1D7507007F5A10 /* audiofile.framework */; };
-		B6FA75C60C1D76A5007F5A10 /* audiofile.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6FA759C0C1D7507007F5A10 /* audiofile.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
-		B6DCBC42114FA33300DC9A11 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*ibspectrum.h.in";
-			fileType = pattern.proxy;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"${SRCROOT}/libspectrum.h",
-			);
-			script = "perl -p ${SRCROOT}/generate.pl ${INPUT_FILE_PATH} > ${SRCROOT}/libspectrum.h\n";
-		};
-		B6DCBC47114FA3E100DC9A11 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*ape_accessors.txt";
-			fileType = pattern.proxy;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).c",
-				"$(DERIVED_FILE_DIR)/tape_set.c",
-			);
-			script = "perl ${SRCROOT}/libspectrum/tape_accessors.pl ${INPUT_FILE_PATH} > ${DERIVED_FILE_DIR}/${INPUT_FILE_BASE}.c\nperl ${SRCROOT}/libspectrum/tape_set.pl ${INPUT_FILE_PATH} > ${DERIVED_FILE_DIR}/tape_set.c\n";
-		};
-		B6DCBC48114FA3E100DC9A11 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.proxy.script;
-			filePatterns = "*nap_accessors.txt";
-			fileType = pattern.proxy;
-			inputFiles = (
-			);
-			isEditable = 1;
-			outputFiles = (
-				"$(DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).c",
-			);
-			script = "perl ${SRCROOT}/libspectrum/accessor.pl ${INPUT_FILE_PATH} > ${DERIVED_FILE_DIR}/${INPUT_FILE_BASE}.c\n";
-		};
 /* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
@@ -370,8 +325,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				B6FA75C60C1D76A5007F5A10 /* audiofile.framework in CopyFiles */,
-				B6D65C3818A645A100170B64 /* gcrypt.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -647,7 +600,6 @@
 		B6D0E10C1CFD54EE00202683 /* uimedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uimedia.h; sourceTree = "<group>"; };
 		B6D2989105B061CB00C2AA14 /* MemoryBrowserController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MemoryBrowserController.h; path = controllers/MemoryBrowserController.h; sourceTree = "<group>"; };
 		B6D2989205B061CB00C2AA14 /* MemoryBrowserController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MemoryBrowserController.m; path = controllers/MemoryBrowserController.m; sourceTree = "<group>"; };
-		B6D65C3618A6431500170B64 /* gcrypt.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = gcrypt.framework; path = ../../libgcrypt/build/Deployment/gcrypt.framework; sourceTree = "<group>"; };
 		B6D670451DD6CB6B0014914E /* FuseHelp.help */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FuseHelp.help; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6D670471DD6CB6B0014914E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B6D71DCC1F6A94750000D666 /* divmmc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = divmmc.c; sourceTree = "<group>"; };
@@ -736,7 +688,6 @@
 		B6F74F9704B855D40059D51C /* LoadBinaryController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = LoadBinaryController.m; path = controllers/LoadBinaryController.m; sourceTree = "<group>"; };
 		B6F74F9C04B85B660059D51C /* SaveBinaryController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SaveBinaryController.h; path = controllers/SaveBinaryController.h; sourceTree = "<group>"; };
 		B6F74F9D04B85B660059D51C /* SaveBinaryController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = SaveBinaryController.m; path = controllers/SaveBinaryController.m; sourceTree = "<group>"; };
-		B6FA759C0C1D7507007F5A10 /* audiofile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = audiofile.framework; path = ../../audiofile/build/Deployment/audiofile.framework; sourceTree = "<group>"; };
 		B6FD5C7A05A4F5B600A6C4FC /* utils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = utils.h; path = ../utils.h; sourceTree = SOURCE_ROOT; };
 		B6FEA44B0444C2CC0013916D /* tc2068-0.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "tc2068-0.rom"; path = "../roms/tc2068-0.rom"; sourceTree = SOURCE_ROOT; };
 		B6FEA44C0444C2CC0013916D /* tc2068-1.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "tc2068-1.rom"; path = "../roms/tc2068-1.rom"; sourceTree = SOURCE_ROOT; };
@@ -814,8 +765,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B6D65C3718A6431500170B64 /* gcrypt.framework in Frameworks */,
-				B6FA759D0C1D7507007F5A10 /* audiofile.framework in Frameworks */,
 				B61F469A09121DF100C8096C /* Cocoa.framework in Frameworks */,
 				B61F469B09121DF100C8096C /* Foundation.framework in Frameworks */,
 				B61F469C09121DF100C8096C /* AppKit.framework in Frameworks */,
@@ -858,8 +807,6 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				B6FA759C0C1D7507007F5A10 /* audiofile.framework */,
-				B6D65C3618A6431500170B64 /* gcrypt.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -1592,6 +1539,7 @@
 			buildPhases = (
 				B7A1C0013A74D20000C0DE01 /* Build libgpg-error */,
 				B7A1C0023A74D20000C0DE01 /* Build libgcrypt */,
+				B7A1C0033A74D20000C0DE01 /* Build libspectrum */,
 				B61F459109121DF100C8096C /* Run Script */,
 				B61F459209121DF100C8096C /* CopyFiles */,
 				B61F45A109121DF100C8096C /* CopyFiles */,
@@ -1602,9 +1550,6 @@
 				B604B2190DC1827200981CC7 /* CopyFiles */,
 			);
 			buildRules = (
-				B6DCBC47114FA3E100DC9A11 /* PBXBuildRule */,
-				B6DCBC48114FA3E100DC9A11 /* PBXBuildRule */,
-				B6DCBC42114FA33300DC9A11 /* PBXBuildRule */,
 			);
 			dependencies = (
 				B6D6704F1DD6D1430014914E /* PBXTargetDependency */,
@@ -1744,7 +1689,6 @@
 				B665EE221052A4F200FCFED8 /* MainMenu.xib in Resources */,
 				B665EE251052A51B00FCFED8 /* TapeBrowser.xib in Resources */,
 				B665EE281052A53C00FCFED8 /* SavePanelAccessoryView.xib in Resources */,
-				B629532E114FB265007808E0 /* libspectrum.h.in in Resources */,
 				B61700F4163EAF8D00142336 /* PokeMemory.xib in Resources */,
 				B6013812164692F5005FD3AE /* Fuse.iconset in Resources */,
 			);
@@ -1830,6 +1774,44 @@
 			shellPath = /bin/sh;
 			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$SRCROOT/../../scripts/build-libgcrypt.sh\"";
 		};
+		B7A1C0033A74D20000C0DE01 /* Build libspectrum */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../../scripts/autotools-common.sh",
+				"$(SRCROOT)/../../scripts/build-libspectrum.sh",
+				"$(SRCROOT)/libspectrum/configure",
+				"$(SRCROOT)/libspectrum/Makefile.in",
+				"$(SRCROOT)/libspectrum/aclocal.m4",
+				"$(SRCROOT)/libspectrum/config.h.in",
+				"$(SRCROOT)/libspectrum/Makefile.am",
+				"$(SRCROOT)/libspectrum/libspectrum.h.in",
+				"$(SRCROOT)/libspectrum/generate.pl.in",
+				"$(SRCROOT)/libspectrum/make-perl.c",
+				"$(SRCROOT)/libspectrum/snap_accessors.txt",
+				"$(SRCROOT)/libspectrum/tape_accessors.txt",
+				"$(SRCROOT)/libspectrum/accessor.pl",
+				"$(SRCROOT)/libspectrum/tape_accessors.pl",
+				"$(SRCROOT)/libspectrum/tape_set.pl",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
+			);
+			name = "Build libspectrum";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include/libspectrum.h",
+				"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib/libspectrum.a",
+				"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/.build-libspectrum.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$SRCROOT/../../scripts/build-libspectrum.sh\"";
+		};
 		B6D6704D1DD6CEF10014914E /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1851,9 +1833,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B6D0E1061CFD549200202683 /* usource.c in Sources */,
-				B6DCBC96114FA67200DC9A11 /* tape_accessors.txt in Sources */,
 				B6168CEC1F0BC50D008C99E6 /* multiface.c in Sources */,
-				B6DCBC97114FA67200DC9A11 /* snap_accessors.txt in Sources */,
 				B61F463909121DF100C8096C /* z80_ops.c in Sources */,
 				B61F463A09121DF100C8096C /* z80.c in Sources */,
 				B61F463B09121DF100C8096C /* ay.c in Sources */,
@@ -1987,39 +1967,7 @@
 				B64BD11E0FF6EF98000B82AE /* native.c in Sources */,
 				B64BD1650FF8D284000B82AE /* options.m in Sources */,
 				B631B9FF10257CA400BE1EE1 /* opus.c in Sources */,
-				B6DCBBBF114FA0E700DC9A11 /* bzip2.c in Sources */,
-				B6DCBBC4114FA0E700DC9A11 /* creator.c in Sources */,
-				B6DCBBC5114FA0E700DC9A11 /* crypto.c in Sources */,
-				B6DCBBC6114FA0E700DC9A11 /* csw.c in Sources */,
 				B6D71DD61F6AA1E70000D666 /* mmc.c in Sources */,
-				B6DCBBC7114FA0E700DC9A11 /* dck.c in Sources */,
-				B6DCBBD2114FA0E700DC9A11 /* ide.c in Sources */,
-				B6DCBBD4114FA0E700DC9A11 /* libspectrum.c in Sources */,
-				B6DCBBD9114FA0E700DC9A11 /* memory.c in Sources */,
-				B6DCBBDA114FA0E700DC9A11 /* microdrive.c in Sources */,
-				B6DCBBDC114FA0E700DC9A11 /* garray.c in Sources */,
-				B6DCBBDD114FA0E700DC9A11 /* ghash.c in Sources */,
-				B6DCBBDE114FA0E700DC9A11 /* gslist.c in Sources */,
-				B6DCBBE0114FA0E700DC9A11 /* plusd.c in Sources */,
-				B6DCBBE2114FA0E700DC9A11 /* rzx.c in Sources */,
-				B6DCBBE3114FA0E700DC9A11 /* sna.c in Sources */,
-				B6DCBBE5114FA0E700DC9A11 /* snapshot.c in Sources */,
-				B6DCBBE6114FA0E700DC9A11 /* snp.c in Sources */,
-				B6DCBBE7114FA0E700DC9A11 /* sp.c in Sources */,
-				B6DCBBE8114FA0E700DC9A11 /* symbol_table.c in Sources */,
-				B6DCBBE9114FA0E700DC9A11 /* szx.c in Sources */,
-				B6DCBBEA114FA0E700DC9A11 /* tap.c in Sources */,
-				B6DCBBEB114FA0E700DC9A11 /* tape.c in Sources */,
-				B6DCBBEE114FA0E700DC9A11 /* tape_block.c in Sources */,
-				B6DCBC0B114FA0E700DC9A11 /* timings.c in Sources */,
-				B6DCBC0C114FA0E700DC9A11 /* tzx_read.c in Sources */,
-				B6DCBC0D114FA0E700DC9A11 /* tzx_write.c in Sources */,
-				B6DCBC0E114FA0E700DC9A11 /* warajevo_read.c in Sources */,
-				B6DCBC0F114FA0E700DC9A11 /* wav.c in Sources */,
-				B6DCBC10114FA0E700DC9A11 /* z80.c in Sources */,
-				B6DCBC11114FA0E700DC9A11 /* z80em.c in Sources */,
-				B6DCBC12114FA0E700DC9A11 /* zlib.c in Sources */,
-				B6DCBC13114FA0E700DC9A11 /* zxs.c in Sources */,
 				B635EAE7116A0FE500A166F2 /* keystate.c in Sources */,
 				B6501DF411AABD6800898AD1 /* blipbuffer.c in Sources */,
 				B6501DF711AABD9300898AD1 /* sound.c in Sources */,
@@ -2082,11 +2030,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					../../,
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)",
 				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/../../audiofile/build/Deployment\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/../../libgcrypt/build/Deployment\"";
 				GCC_C_LANGUAGE_STANDARD = gnu89;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
@@ -2096,16 +2040,16 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
 					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)/audiofile.framework/Headers",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)/gcrypt.framework/Headers",
 					"$(SRCROOT)/..",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
 					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
@@ -2114,6 +2058,9 @@
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
+					"-lspectrum",
+					"-lgcrypt",
+					"-lgpg-error",
 					"-lbz2",
 					"-lz",
 				);
@@ -2141,11 +2088,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					../../,
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)",
 				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/../../audiofile/build/Deployment\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/../../libgcrypt/build/Deployment\"";
 				GCC_C_LANGUAGE_STANDARD = gnu89;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
@@ -2154,16 +2097,16 @@
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
 					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)/audiofile.framework/Headers",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)/gcrypt.framework/Headers",
 					"$(SRCROOT)/..",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
 					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
@@ -2172,6 +2115,9 @@
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
+					"-lspectrum",
+					"-lgcrypt",
+					"-lgpg-error",
 					"-lbz2",
 					"-lz",
 				);
@@ -2194,11 +2140,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					../../,
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)",
 				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/../../audiofile/build/Deployment\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/../../libgcrypt/build/Deployment\"";
 				GCC_C_LANGUAGE_STANDARD = gnu89;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
@@ -2207,16 +2149,16 @@
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
 					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)/audiofile.framework/Headers",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)/gcrypt.framework/Headers",
 					"$(SRCROOT)/..",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
 					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
@@ -2225,6 +2167,9 @@
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
+					"-lspectrum",
+					"-lgcrypt",
+					"-lgpg-error",
 					"-lbz2",
 					"-lz",
 				);
