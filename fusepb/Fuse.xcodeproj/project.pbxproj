@@ -1591,6 +1591,7 @@
 			buildConfigurationList = B61F46A509121DF100C8096C /* Build configuration list for PBXNativeTarget "Fuse" */;
 			buildPhases = (
 				B7A1C0013A74D20000C0DE01 /* Build libgpg-error */,
+				B7A1C0023A74D20000C0DE01 /* Build libgcrypt */,
 				B61F459109121DF100C8096C /* Run Script */,
 				B61F459209121DF100C8096C /* CopyFiles */,
 				B61F45A109121DF100C8096C /* CopyFiles */,
@@ -1798,6 +1799,36 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$SRCROOT/../../scripts/build-libgpg-error.sh\"";
+		};
+		B7A1C0023A74D20000C0DE01 /* Build libgcrypt */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../../scripts/autotools-common.sh",
+				"$(SRCROOT)/../../scripts/build-libgcrypt.sh",
+				"$(SRCROOT)/../../third_party/libgcrypt/configure",
+				"$(SRCROOT)/../../third_party/libgcrypt/Makefile.in",
+				"$(SRCROOT)/../../third_party/libgcrypt/aclocal.m4",
+				"$(SRCROOT)/../../third_party/libgcrypt/config.h.in",
+				"$(SRCROOT)/../../third_party/libgcrypt/src/Makefile.in",
+				"$(SRCROOT)/../../third_party/libgcrypt/src/gcrypt-module.h",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
+			);
+			name = "Build libgcrypt";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt-module.h",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$SRCROOT/../../scripts/build-libgcrypt.sh\"";
 		};
 		B6D6704D1DD6CEF10014914E /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2065,6 +2096,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)/audiofile.framework/Headers",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)/gcrypt.framework/Headers",
@@ -2074,6 +2106,7 @@
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 					".",
@@ -2121,6 +2154,7 @@
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)/audiofile.framework/Headers",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)/gcrypt.framework/Headers",
@@ -2130,6 +2164,7 @@
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 					".",
@@ -2172,6 +2207,7 @@
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)/audiofile.framework/Headers",
 					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)/gcrypt.framework/Headers",
@@ -2181,6 +2217,7 @@
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
 					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 					".",
