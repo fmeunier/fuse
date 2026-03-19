@@ -129,6 +129,15 @@
 		B61F469B09121DF100C8096C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
 		B61F469C09121DF100C8096C /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97324FDCFA39411CA2CEA /* AppKit.framework */; };
 		B61F46A409121DF100C8096C /* FuseImporter.mdimporter in CopyFiles */ = {isa = PBXBuildFile; fileRef = B64FEA96084F8EC300879389 /* FuseImporter.mdimporter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B7A1C1013A75380000C0DE01 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C10A3A75380000C0DE01 /* main.m */; };
+		B7A1C1023A75380000C0DE01 /* GetMetadataForFile.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C10B3A75380000C0DE01 /* GetMetadataForFile.m */; };
+		B7A1C1033A75380000C0DE01 /* LibspectrumMetadataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C10D3A75380000C0DE01 /* LibspectrumMetadataImporter.m */; };
+		B7A1C1043A75380000C0DE01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
+		B7A1C1053A75380000C0DE01 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C1143A75380000C0DE01 /* CoreServices.framework */; };
+		B7A1C1063A75380000C0DE01 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C1153A75380000C0DE01 /* CoreFoundation.framework */; };
+		B7A1C1073A75380000C0DE01 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C1103A75380000C0DE01 /* InfoPlist.strings */; };
+		B7A1C1083A75380000C0DE01 /* schema.xml in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C1113A75380000C0DE01 /* schema.xml */; };
+		B7A1C1093A75380000C0DE01 /* schema.strings in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C1123A75380000C0DE01 /* schema.strings */; };
 		B6251C3E0C2EB24500BD5543 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B6251C3D0C2EB24500BD5543 /* QuartzCore.framework */; };
 		B62B19E10DD31DF500D42AAF /* scalers16.c in Sources */ = {isa = PBXBuildFile; fileRef = B62B19E00DD31DF500D42AAF /* scalers16.c */; };
 		B62B1A280DD6655800D42AAF /* fuse.c in Sources */ = {isa = PBXBuildFile; fileRef = B62B1A270DD6655800D42AAF /* fuse.c */; };
@@ -344,6 +353,18 @@
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		B7A1C10A3A75380000C0DE01 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseImporter/main.m; sourceTree = SOURCE_ROOT; };
+		B7A1C10B3A75380000C0DE01 /* GetMetadataForFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseImporter/GetMetadataForFile.m; sourceTree = SOURCE_ROOT; };
+		B7A1C10C3A75380000C0DE01 /* GetMetadataForFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseImporter/GetMetadataForFile.h; sourceTree = SOURCE_ROOT; };
+		B7A1C10D3A75380000C0DE01 /* LibspectrumMetadataImporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseImporter/LibspectrumMetadataImporter.m; sourceTree = SOURCE_ROOT; };
+		B7A1C10E3A75380000C0DE01 /* LibspectrumMetadataImporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseImporter/LibspectrumMetadataImporter.h; sourceTree = SOURCE_ROOT; };
+		B7A1C10F3A75380000C0DE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ../../FuseImporter/Info.plist; sourceTree = SOURCE_ROOT; };
+		B7A1C1103A75380000C0DE01 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = ../../FuseImporter/en.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
+		B7A1C1113A75380000C0DE01 /* schema.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = ../../FuseImporter/schema.xml; sourceTree = SOURCE_ROOT; };
+		B7A1C1123A75380000C0DE01 /* schema.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = ../../FuseImporter/en.lproj/schema.strings; sourceTree = SOURCE_ROOT; };
+		B7A1C1133A75380000C0DE01 /* FuseImporter.mdimporter */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FuseImporter.mdimporter; sourceTree = BUILT_PRODUCTS_DIR; };
+		B7A1C1143A75380000C0DE01 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
+		B7A1C1153A75380000C0DE01 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		B6013811164692F5005FD3AE /* Fuse.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = Fuse.iconset; path = ../Fuse.iconset; sourceTree = "<group>"; };
 		B6018479065A586900B0BE59 /* zxatasp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = zxatasp.c; sourceTree = "<group>"; };
 		B601847A065A586900B0BE59 /* zxatasp.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = zxatasp.h; sourceTree = "<group>"; };
@@ -784,6 +805,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B7A1C1193A75380000C0DE01 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7A1C1063A75380000C0DE01 /* CoreFoundation.framework in Frameworks */,
+				B7A1C1053A75380000C0DE01 /* CoreServices.framework in Frameworks */,
+				B7A1C1043A75380000C0DE01 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -818,7 +849,9 @@
 				B6A6F0F20B3D602F000B88E9 /* AudioUnit.framework */,
 				B64E2A160A6534A3006863D9 /* Carbon.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
+				B7A1C1153A75380000C0DE01 /* CoreFoundation.framework */,
 				B6A6F0ED0B3D5F9E000B88E9 /* CoreAudio.framework */,
+				B7A1C1143A75380000C0DE01 /* CoreServices.framework */,
 				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
 				B653532A0B902CB20083F942 /* IOKit.framework */,
 				F520C8BC038D022E01A804BA /* OpenGL.framework */,
@@ -831,6 +864,7 @@
 			isa = PBXGroup;
 			children = (
 				B61F46AA09121DF200C8096C /* Fuse.app */,
+				B7A1C1133A75380000C0DE01 /* FuseImporter.mdimporter */,
 				B6D670451DD6CB6B0014914E /* FuseHelp.help */,
 			);
 			name = Products;
@@ -842,6 +876,7 @@
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
+				B7A1C1163A75380000C0DE01 /* FuseImporter */,
 				B6D670461DD6CB6B0014914E /* FuseHelp */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
@@ -1258,6 +1293,30 @@
 			path = FuseHelp;
 			sourceTree = "<group>";
 		};
+		B7A1C1163A75380000C0DE01 /* FuseImporter */ = {
+			isa = PBXGroup;
+			children = (
+				B7A1C10A3A75380000C0DE01 /* main.m */,
+				B7A1C10B3A75380000C0DE01 /* GetMetadataForFile.m */,
+				B7A1C10C3A75380000C0DE01 /* GetMetadataForFile.h */,
+				B7A1C10D3A75380000C0DE01 /* LibspectrumMetadataImporter.m */,
+				B7A1C10E3A75380000C0DE01 /* LibspectrumMetadataImporter.h */,
+				B7A1C1173A75380000C0DE01 /* Resources */,
+				B7A1C10F3A75380000C0DE01 /* Info.plist */,
+			);
+			name = FuseImporter;
+			sourceTree = "<group>";
+		};
+		B7A1C1173A75380000C0DE01 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B7A1C1103A75380000C0DE01 /* InfoPlist.strings */,
+				B7A1C1113A75380000C0DE01 /* schema.xml */,
+				B7A1C1123A75380000C0DE01 /* schema.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 		B6DCBB5D114FA0E700DC9A11 /* libspectrum */ = {
 			isa = PBXGroup;
 			children = (
@@ -1560,6 +1619,24 @@
 			productReference = B61F46AA09121DF200C8096C /* Fuse.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B7A1C11F3A75380000C0DE01 /* FuseImporter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B7A1C11E3A75380000C0DE01 /* Build configuration list for PBXNativeTarget "FuseImporter" */;
+			buildPhases = (
+				B7A1C11A3A75380000C0DE01 /* Resources */,
+				B7A1C1183A75380000C0DE01 /* Sources */,
+				B7A1C1193A75380000C0DE01 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FuseImporter;
+			productInstallPath = /Library/Spotlight;
+			productName = FuseImporter;
+			productReference = B7A1C1133A75380000C0DE01 /* FuseImporter.mdimporter */;
+			productType = "com.apple.product-type.bundle";
+		};
 		B6D670441DD6CB6B0014914E /* FuseHelp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B6D6704B1DD6CB6B0014914E /* Build configuration list for PBXNativeTarget "FuseHelp" */;
@@ -1607,12 +1684,23 @@
 			projectRoot = "";
 			targets = (
 				B61F459009121DF100C8096C /* Fuse */,
+				B7A1C11F3A75380000C0DE01 /* FuseImporter */,
 				B6D670441DD6CB6B0014914E /* FuseHelp */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B7A1C11A3A75380000C0DE01 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7A1C1073A75380000C0DE01 /* InfoPlist.strings in Resources */,
+				B7A1C1083A75380000C0DE01 /* schema.xml in Resources */,
+				B7A1C1093A75380000C0DE01 /* schema.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B61F45FE09121DF100C8096C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1884,6 +1972,16 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B7A1C1183A75380000C0DE01 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7A1C1013A75380000C0DE01 /* main.m in Sources */,
+				B7A1C1023A75380000C0DE01 /* GetMetadataForFile.m in Sources */,
+				B7A1C1033A75380000C0DE01 /* LibspectrumMetadataImporter.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B61F463809121DF100C8096C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2472,6 +2570,162 @@
 			};
 			name = Default;
 		};
+		B7A1C11B3A75380000C0DE01 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS = NO;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VALUE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+				);
+				INFOPLIST_FILE = ../../FuseImporter/Info.plist;
+				INSTALL_PATH = /Library/Spotlight;
+				LIBRARY_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(inherited)",
+				);
+				LIBRARY_STYLE = Bundle;
+				LLVM_LTO = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = (
+					"-lspectrum",
+					"-lgcrypt",
+					"-lgpg-error",
+					"-lbz2",
+					"-lz",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.importer";
+				PRODUCT_NAME = FuseImporter;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+				);
+				WRAPPER_EXTENSION = mdimporter;
+				ZERO_LINK = NO;
+			};
+			name = Development;
+		};
+		B7A1C11C3A75380000C0DE01 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+				);
+				INFOPLIST_FILE = ../../FuseImporter/Info.plist;
+				INSTALL_PATH = /Library/Spotlight;
+				LIBRARY_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(inherited)",
+				);
+				LIBRARY_STYLE = Bundle;
+				LLVM_LTO = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = (
+					"-lspectrum",
+					"-lgcrypt",
+					"-lgpg-error",
+					"-lbz2",
+					"-lz",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.importer";
+				PRODUCT_NAME = FuseImporter;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+				);
+				WRAPPER_EXTENSION = mdimporter;
+				ZERO_LINK = NO;
+			};
+			name = Deployment;
+		};
+		B7A1C11D3A75380000C0DE01 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+				);
+				INFOPLIST_FILE = ../../FuseImporter/Info.plist;
+				INSTALL_PATH = /Library/Spotlight;
+				LIBRARY_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(inherited)",
+				);
+				LIBRARY_STYLE = Bundle;
+				LLVM_LTO = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = (
+					"-lspectrum",
+					"-lgcrypt",
+					"-lgpg-error",
+					"-lbz2",
+					"-lz",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.importer";
+				PRODUCT_NAME = FuseImporter;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+				);
+				WRAPPER_EXTENSION = mdimporter;
+				ZERO_LINK = NO;
+			};
+			name = Default;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2481,6 +2735,16 @@
 				B61F46A609121DF100C8096C /* Development */,
 				B61F46A709121DF100C8096C /* Deployment */,
 				B61F46A809121DF100C8096C /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
+		B7A1C11E3A75380000C0DE01 /* Build configuration list for PBXNativeTarget "FuseImporter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7A1C11B3A75380000C0DE01 /* Development */,
+				B7A1C11C3A75380000C0DE01 /* Deployment */,
+				B7A1C11D3A75380000C0DE01 /* Default */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Default;
