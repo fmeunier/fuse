@@ -128,7 +128,7 @@
 		B61F469A09121DF100C8096C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		B61F469B09121DF100C8096C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
 		B61F469C09121DF100C8096C /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97324FDCFA39411CA2CEA /* AppKit.framework */; };
-		B61F46A409121DF100C8096C /* FuseImporter.mdimporter in CopyFiles */ = {isa = PBXBuildFile; fileRef = B64FEA96084F8EC300879389 /* FuseImporter.mdimporter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		B61F46A409121DF100C8096C /* FuseImporter.mdimporter in CopyFiles */ = {isa = PBXBuildFile; fileRef = B7A1C1133A75380000C0DE01 /* FuseImporter.mdimporter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B7A1C1013A75380000C0DE01 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C10A3A75380000C0DE01 /* main.m */; };
 		B7A1C1023A75380000C0DE01 /* GetMetadataForFile.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C10B3A75380000C0DE01 /* GetMetadataForFile.m */; };
 		B7A1C1033A75380000C0DE01 /* LibspectrumMetadataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C10D3A75380000C0DE01 /* LibspectrumMetadataImporter.m */; };
@@ -305,6 +305,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = B6D670441DD6CB6B0014914E;
 			remoteInfo = FuseHelp;
+		};
+		B7A1C2003A754B0000C0DE01 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B7A1C11F3A75380000C0DE01;
+			remoteInfo = FuseImporter;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1611,6 +1618,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B7A1C2013A754B0000C0DE01 /* PBXTargetDependency */,
 				B6D6704F1DD6D1430014914E /* PBXTargetDependency */,
 			);
 			name = Fuse;
@@ -1623,6 +1631,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B7A1C11E3A75380000C0DE01 /* Build configuration list for PBXNativeTarget "FuseImporter" */;
 			buildPhases = (
+				B7A1C2023A754B0000C0DE01 /* Build libgpg-error */,
+				B7A1C2033A754B0000C0DE01 /* Build libgcrypt */,
+				B7A1C2043A754B0000C0DE01 /* Build libspectrum */,
 				B7A1C11A3A75380000C0DE01 /* Resources */,
 				B7A1C1183A75380000C0DE01 /* Sources */,
 				B7A1C1193A75380000C0DE01 /* Frameworks */,
@@ -1942,6 +1953,112 @@
 			shellPath = /bin/sh;
 			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$SRCROOT/../../scripts/build-libspectrum.sh\"";
 		};
+		B7A1C2023A754B0000C0DE01 /* Build libgpg-error */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../../scripts/autotools-common.sh",
+				"$(SRCROOT)/../../scripts/build-libgpg-error.sh",
+				"$(SRCROOT)/../../third_party/libgpg-error/configure",
+				"$(SRCROOT)/../../third_party/libgpg-error/Makefile.in",
+				"$(SRCROOT)/../../third_party/libgpg-error/aclocal.m4",
+				"$(SRCROOT)/../../third_party/libgpg-error/config.h.in",
+				"$(SRCROOT)/../../third_party/libgpg-error/src/Makefile.in",
+				"$(SRCROOT)/../../third_party/libgpg-error/src/gpg-error.h.in",
+			);
+			name = "Build libgpg-error";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$SRCROOT/../../scripts/build-libgpg-error.sh\"";
+		};
+		B7A1C2033A754B0000C0DE01 /* Build libgcrypt */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../../scripts/autotools-common.sh",
+				"$(SRCROOT)/../../scripts/build-libgcrypt.sh",
+				"$(SRCROOT)/../../third_party/libgcrypt/configure",
+				"$(SRCROOT)/../../third_party/libgcrypt/Makefile.in",
+				"$(SRCROOT)/../../third_party/libgcrypt/aclocal.m4",
+				"$(SRCROOT)/../../third_party/libgcrypt/config.h.in",
+				"$(SRCROOT)/../../third_party/libgcrypt/src/Makefile.in",
+				"$(SRCROOT)/../../third_party/libgcrypt/src/gcrypt-module.h",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
+			);
+			name = "Build libgcrypt";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt-module.h",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$SRCROOT/../../scripts/build-libgcrypt.sh\"";
+		};
+		B7A1C2043A754B0000C0DE01 /* Build libspectrum */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"$(SRCROOT)/xcfilelists/build-libspectrum-inputs.xcfilelist",
+			);
+			inputPaths = (
+				"$(SRCROOT)/libspectrum",
+				"$(SRCROOT)/libspectrum/libspectrum.c",
+				"$(SRCROOT)/../../scripts/autotools-common.sh",
+				"$(SRCROOT)/../../scripts/build-libspectrum.sh",
+				"$(SRCROOT)/libspectrum/configure",
+				"$(SRCROOT)/libspectrum/Makefile.in",
+				"$(SRCROOT)/libspectrum/aclocal.m4",
+				"$(SRCROOT)/libspectrum/config.h.in",
+				"$(SRCROOT)/libspectrum/config.guess",
+				"$(SRCROOT)/libspectrum/config.sub",
+				"$(SRCROOT)/libspectrum/install-sh",
+				"$(SRCROOT)/libspectrum/missing",
+				"$(SRCROOT)/libspectrum/compile",
+				"$(SRCROOT)/libspectrum/depcomp",
+				"$(SRCROOT)/libspectrum/ltmain.sh",
+				"$(SRCROOT)/libspectrum/Makefile.am",
+				"$(SRCROOT)/libspectrum/libspectrum.h.in",
+				"$(SRCROOT)/libspectrum/generate.pl.in",
+				"$(SRCROOT)/libspectrum/make-perl.c",
+				"$(SRCROOT)/libspectrum/snap_accessors.txt",
+				"$(SRCROOT)/libspectrum/tape_accessors.txt",
+				"$(SRCROOT)/libspectrum/accessor.pl",
+				"$(SRCROOT)/libspectrum/tape_accessors.pl",
+				"$(SRCROOT)/libspectrum/tape_set.pl",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a",
+				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
+				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
+			);
+			name = "Build libspectrum";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include/libspectrum.h",
+				"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib/libspectrum.a",
+				"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/.build-libspectrum.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$SRCROOT/../../scripts/build-libspectrum.sh\"";
+		};
 		B6D6704D1DD6CEF10014914E /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2157,6 +2274,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		B7A1C2013A754B0000C0DE01 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B7A1C11F3A75380000C0DE01 /* FuseImporter */;
+			targetProxy = B7A1C2003A754B0000C0DE01 /* PBXContainerItemProxy */;
+		};
 		B6D6704F1DD6D1430014914E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B6D670441DD6CB6B0014914E /* FuseHelp */;
