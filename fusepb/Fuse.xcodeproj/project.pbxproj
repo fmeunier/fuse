@@ -138,6 +138,18 @@
 		B7A1C1073A75380000C0DE01 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C1103A75380000C0DE01 /* InfoPlist.strings */; };
 		B7A1C1083A75380000C0DE01 /* schema.xml in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C1113A75380000C0DE01 /* schema.xml */; };
 		B7A1C1093A75380000C0DE01 /* schema.strings in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C1123A75380000C0DE01 /* schema.strings */; };
+		B7A1C3013A75A00000C0DE01 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C30A3A75A00000C0DE01 /* main.c */; };
+		B7A1C3023A75A00000C0DE01 /* GeneratePreviewForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C30B3A75A00000C0DE01 /* GeneratePreviewForURL.m */; };
+		B7A1C3033A75A00000C0DE01 /* GenerateThumbnailForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C30C3A75A00000C0DE01 /* GenerateThumbnailForURL.m */; };
+		B7A1C3043A75A00000C0DE01 /* LibspectrumSCRExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C30E3A75A00000C0DE01 /* LibspectrumSCRExtractor.m */; };
+		B7A1C3053A75A00000C0DE01 /* JWSpectrumScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C3143A75A00000C0DE01 /* JWSpectrumScreen.m */; };
+		B7A1C3063A75A00000C0DE01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
+		B7A1C3073A75A00000C0DE01 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C1143A75380000C0DE01 /* CoreServices.framework */; };
+		B7A1C3083A75A00000C0DE01 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C1153A75380000C0DE01 /* CoreFoundation.framework */; };
+		B7A1C3093A75A00000C0DE01 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C3103A75A00000C0DE01 /* InfoPlist.strings */; };
+		B7A1C31A3A75A00000C0DE01 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		B7A1C31B3A75A00000C0DE01 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C3193A75A00000C0DE01 /* ApplicationServices.framework */; };
+		B7A1C31C3A75A00000C0DE01 /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C3183A75A00000C0DE01 /* QuickLook.framework */; };
 		B6251C3E0C2EB24500BD5543 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B6251C3D0C2EB24500BD5543 /* QuartzCore.framework */; };
 		B62B19E10DD31DF500D42AAF /* scalers16.c in Sources */ = {isa = PBXBuildFile; fileRef = B62B19E00DD31DF500D42AAF /* scalers16.c */; };
 		B62B1A280DD6655800D42AAF /* fuse.c in Sources */ = {isa = PBXBuildFile; fileRef = B62B1A270DD6655800D42AAF /* fuse.c */; };
@@ -372,6 +384,22 @@
 		B7A1C1133A75380000C0DE01 /* FuseImporter.mdimporter */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FuseImporter.mdimporter; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7A1C1143A75380000C0DE01 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		B7A1C1153A75380000C0DE01 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		B7A1C30A3A75A00000C0DE01 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ../../FuseGenerator/main.c; sourceTree = SOURCE_ROOT; };
+		B7A1C30B3A75A00000C0DE01 /* GeneratePreviewForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseGenerator/GeneratePreviewForURL.m; sourceTree = SOURCE_ROOT; };
+		B7A1C30C3A75A00000C0DE01 /* GenerateThumbnailForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseGenerator/GenerateThumbnailForURL.m; sourceTree = SOURCE_ROOT; };
+		B7A1C30D3A75A00000C0DE01 /* LibspectrumSCRExtractor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/LibspectrumSCRExtractor.h; sourceTree = SOURCE_ROOT; };
+		B7A1C30E3A75A00000C0DE01 /* LibspectrumSCRExtractor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseGenerator/LibspectrumSCRExtractor.m; sourceTree = SOURCE_ROOT; };
+		B7A1C30F3A75A00000C0DE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ../../FuseGenerator/Info.plist; sourceTree = SOURCE_ROOT; };
+		B7A1C3103A75A00000C0DE01 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = ../../FuseGenerator/en.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
+		B7A1C3113A75A00000C0DE01 /* FuseGenerator.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FuseGenerator.qlgenerator; sourceTree = BUILT_PRODUCTS_DIR; };
+		B7A1C3123A75A00000C0DE01 /* JWSpectrumScreen */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ../../FuseGenerator/JWSpectrumScreen; sourceTree = SOURCE_ROOT; };
+		B7A1C3133A75A00000C0DE01 /* JWSpectrumScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/JWSpectrumScreen/JWSpectrumScreen.h; sourceTree = SOURCE_ROOT; };
+		B7A1C3143A75A00000C0DE01 /* JWSpectrumScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseGenerator/JWSpectrumScreen/JWSpectrumScreen.m; sourceTree = SOURCE_ROOT; };
+		B7A1C3153A75A00000C0DE01 /* AttributeManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/JWSpectrumScreen/AttributeManager.h; sourceTree = SOURCE_ROOT; };
+		B7A1C3163A75A00000C0DE01 /* ColourMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/JWSpectrumScreen/ColourMacros.h; sourceTree = SOURCE_ROOT; };
+		B7A1C3173A75A00000C0DE01 /* JWSpectrumScreenConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/JWSpectrumScreen/JWSpectrumScreenConstants.h; sourceTree = SOURCE_ROOT; };
+		B7A1C3183A75A00000C0DE01 /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = /System/Library/Frameworks/QuickLook.framework; sourceTree = "<absolute>"; };
+		B7A1C3193A75A00000C0DE01 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		B6013811164692F5005FD3AE /* Fuse.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = Fuse.iconset; path = ../Fuse.iconset; sourceTree = "<group>"; };
 		B6018479065A586900B0BE59 /* zxatasp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = zxatasp.c; sourceTree = "<group>"; };
 		B601847A065A586900B0BE59 /* zxatasp.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = zxatasp.h; sourceTree = "<group>"; };
@@ -822,6 +850,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B7A1C3233A75A00000C0DE01 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7A1C3083A75A00000C0DE01 /* CoreFoundation.framework in Frameworks */,
+				B7A1C3073A75A00000C0DE01 /* CoreServices.framework in Frameworks */,
+				B7A1C31B3A75A00000C0DE01 /* ApplicationServices.framework in Frameworks */,
+				B7A1C31C3A75A00000C0DE01 /* QuickLook.framework in Frameworks */,
+				B7A1C31A3A75A00000C0DE01 /* Cocoa.framework in Frameworks */,
+				B7A1C3063A75A00000C0DE01 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -852,6 +893,7 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B7A1C3193A75A00000C0DE01 /* ApplicationServices.framework */,
 				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
 				B6A6F0F20B3D602F000B88E9 /* AudioUnit.framework */,
 				B64E2A160A6534A3006863D9 /* Carbon.framework */,
@@ -860,6 +902,7 @@
 				B6A6F0ED0B3D5F9E000B88E9 /* CoreAudio.framework */,
 				B7A1C1143A75380000C0DE01 /* CoreServices.framework */,
 				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
+				B7A1C3183A75A00000C0DE01 /* QuickLook.framework */,
 				B653532A0B902CB20083F942 /* IOKit.framework */,
 				F520C8BC038D022E01A804BA /* OpenGL.framework */,
 				B6251C3D0C2EB24500BD5543 /* QuartzCore.framework */,
@@ -871,6 +914,7 @@
 			isa = PBXGroup;
 			children = (
 				B61F46AA09121DF200C8096C /* Fuse.app */,
+				B7A1C3113A75A00000C0DE01 /* FuseGenerator.qlgenerator */,
 				B7A1C1133A75380000C0DE01 /* FuseImporter.mdimporter */,
 				B6D670451DD6CB6B0014914E /* FuseHelp.help */,
 			);
@@ -883,6 +927,7 @@
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
+				B7A1C3203A75A00000C0DE01 /* FuseGenerator */,
 				B7A1C1163A75380000C0DE01 /* FuseImporter */,
 				B6D670461DD6CB6B0014914E /* FuseHelp */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
@@ -1324,6 +1369,41 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
+		B7A1C3203A75A00000C0DE01 /* FuseGenerator */ = {
+			isa = PBXGroup;
+			children = (
+				B7A1C30A3A75A00000C0DE01 /* main.c */,
+				B7A1C30B3A75A00000C0DE01 /* GeneratePreviewForURL.m */,
+				B7A1C30C3A75A00000C0DE01 /* GenerateThumbnailForURL.m */,
+				B7A1C30D3A75A00000C0DE01 /* LibspectrumSCRExtractor.h */,
+				B7A1C30E3A75A00000C0DE01 /* LibspectrumSCRExtractor.m */,
+				B7A1C3213A75A00000C0DE01 /* JWSpectrumScreen */,
+				B7A1C3223A75A00000C0DE01 /* Resources */,
+				B7A1C30F3A75A00000C0DE01 /* Info.plist */,
+			);
+			name = FuseGenerator;
+			sourceTree = "<group>";
+		};
+		B7A1C3213A75A00000C0DE01 /* JWSpectrumScreen */ = {
+			isa = PBXGroup;
+			children = (
+				B7A1C3133A75A00000C0DE01 /* JWSpectrumScreen.h */,
+				B7A1C3143A75A00000C0DE01 /* JWSpectrumScreen.m */,
+				B7A1C3153A75A00000C0DE01 /* AttributeManager.h */,
+				B7A1C3163A75A00000C0DE01 /* ColourMacros.h */,
+				B7A1C3173A75A00000C0DE01 /* JWSpectrumScreenConstants.h */,
+			);
+			name = JWSpectrumScreen;
+			sourceTree = "<group>";
+		};
+		B7A1C3223A75A00000C0DE01 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B7A1C3103A75A00000C0DE01 /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 		B6DCBB5D114FA0E700DC9A11 /* libspectrum */ = {
 			isa = PBXGroup;
 			children = (
@@ -1627,6 +1707,24 @@
 			productReference = B61F46AA09121DF200C8096C /* Fuse.app */;
 			productType = "com.apple.product-type.application";
 		};
+		B7A1C3253A75A00000C0DE01 /* FuseGenerator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B7A1C3293A75A00000C0DE01 /* Build configuration list for PBXNativeTarget "FuseGenerator" */;
+			buildPhases = (
+				B7A1C3263A75A00000C0DE01 /* Resources */,
+				B7A1C3273A75A00000C0DE01 /* Sources */,
+				B7A1C3233A75A00000C0DE01 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FuseGenerator;
+			productInstallPath = /Library/QuickLook;
+			productName = FuseGenerator;
+			productReference = B7A1C3113A75A00000C0DE01 /* FuseGenerator.qlgenerator */;
+			productType = "com.apple.product-type.bundle";
+		};
 		B7A1C11F3A75380000C0DE01 /* FuseImporter */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B7A1C11E3A75380000C0DE01 /* Build configuration list for PBXNativeTarget "FuseImporter" */;
@@ -1695,6 +1793,7 @@
 			projectRoot = "";
 			targets = (
 				B61F459009121DF100C8096C /* Fuse */,
+				B7A1C3253A75A00000C0DE01 /* FuseGenerator */,
 				B7A1C11F3A75380000C0DE01 /* FuseImporter */,
 				B6D670441DD6CB6B0014914E /* FuseHelp */,
 			);
@@ -1702,6 +1801,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B7A1C3263A75A00000C0DE01 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7A1C3093A75A00000C0DE01 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B7A1C11A3A75380000C0DE01 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2089,6 +2196,18 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B7A1C3273A75A00000C0DE01 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B7A1C3013A75A00000C0DE01 /* main.c in Sources */,
+				B7A1C3023A75A00000C0DE01 /* GeneratePreviewForURL.m in Sources */,
+				B7A1C3033A75A00000C0DE01 /* GenerateThumbnailForURL.m in Sources */,
+				B7A1C3043A75A00000C0DE01 /* LibspectrumSCRExtractor.m in Sources */,
+				B7A1C3053A75A00000C0DE01 /* JWSpectrumScreen.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B7A1C1183A75380000C0DE01 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2298,6 +2417,26 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		B7A1C3283A75A00000C0DE01 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				INFOPLIST_FILE = ../../FuseGenerator/Info.plist;
+				INSTALL_PATH = /Library/QuickLook;
+				LLVM_LTO = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.quicklookgenerator";
+				PRODUCT_NAME = FuseGenerator;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+				);
+				WRAPPER_EXTENSION = qlgenerator;
+			};
+			name = Default;
+		};
 		B61F46A609121DF100C8096C /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2851,6 +2990,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B7A1C3293A75A00000C0DE01 /* Build configuration list for PBXNativeTarget "FuseGenerator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7A1C3283A75A00000C0DE01 /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
 		B61F46A509121DF100C8096C /* Build configuration list for PBXNativeTarget "Fuse" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
