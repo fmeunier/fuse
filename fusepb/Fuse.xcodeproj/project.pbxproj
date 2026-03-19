@@ -1710,9 +1710,39 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/Makefile",
+				"$(SRCROOT)/config.h",
+				"$(SRCROOT)/../settings.dat",
+				"$(SRCROOT)/../settings.pl",
+				"$(SRCROOT)/settings-cocoa-header.pl",
+				"$(SRCROOT)/settings-header.pl",
+				"$(SRCROOT)/../perl/cpp-perl.pl",
+				"$(SRCROOT)/../perl/Fuse.pm",
+				"$(SRCROOT)/../perl/Fuse/Dialog.pm",
+				"$(SRCROOT)/../ui/cocoa/options-cocoa-header.pl",
+				"$(SRCROOT)/../ui/cocoa/options-header.pl",
+				"$(SRCROOT)/../ui/cocoa/options.pl",
+				"$(SRCROOT)/../ui/options.dat",
+				"$(SRCROOT)/../z80/z80.pl",
+				"$(SRCROOT)/../z80/opcodes_base.dat",
+				"$(SRCROOT)/../z80/opcodes_cb.dat",
+				"$(SRCROOT)/../z80/opcodes_ddfd.dat",
+				"$(SRCROOT)/../z80/opcodes_ddfdcb.dat",
+				"$(SRCROOT)/../z80/opcodes_ed.dat",
 			);
 			name = "Run Script";
 			outputPaths = (
+				"$(SRCROOT)/settings.h",
+				"$(SRCROOT)/settings.m",
+				"$(SRCROOT)/settings_cocoa.h",
+				"$(SRCROOT)/options.h",
+				"$(SRCROOT)/options.m",
+				"$(SRCROOT)/options_cocoa.h",
+				"$(SRCROOT)/../z80/opcodes_base.c",
+				"$(SRCROOT)/../z80/z80_cb.c",
+				"$(SRCROOT)/../z80/z80_ddfd.c",
+				"$(SRCROOT)/../z80/z80_ddfdcb.c",
+				"$(SRCROOT)/../z80/z80_ed.c",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1779,13 +1809,25 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/xcfilelists/build-libspectrum-inputs.xcfilelist",
+			);
 			inputPaths = (
+				"$(SRCROOT)/libspectrum",
+				"$(SRCROOT)/libspectrum/libspectrum.c",
 				"$(SRCROOT)/../../scripts/autotools-common.sh",
 				"$(SRCROOT)/../../scripts/build-libspectrum.sh",
 				"$(SRCROOT)/libspectrum/configure",
 				"$(SRCROOT)/libspectrum/Makefile.in",
 				"$(SRCROOT)/libspectrum/aclocal.m4",
 				"$(SRCROOT)/libspectrum/config.h.in",
+				"$(SRCROOT)/libspectrum/config.guess",
+				"$(SRCROOT)/libspectrum/config.sub",
+				"$(SRCROOT)/libspectrum/install-sh",
+				"$(SRCROOT)/libspectrum/missing",
+				"$(SRCROOT)/libspectrum/compile",
+				"$(SRCROOT)/libspectrum/depcomp",
+				"$(SRCROOT)/libspectrum/ltmain.sh",
 				"$(SRCROOT)/libspectrum/Makefile.am",
 				"$(SRCROOT)/libspectrum/libspectrum.h.in",
 				"$(SRCROOT)/libspectrum/generate.pl.in",
@@ -1818,8 +1860,22 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/FuseHelp/Makefile",
+				"$(SRCROOT)/FuseHelp/_config.yml",
+				"$(SRCROOT)/FuseHelp/Info.plist",
+				"$(SRCROOT)/FuseHelp/book-icon.png",
+				"$(SRCROOT)/FuseHelp/nav.js",
+				"$(SRCROOT)/FuseHelp/_English.lproj",
+				"$(SRCROOT)/FuseHelp/_includes",
+				"$(SRCROOT)/FuseHelp/_layouts",
+				"$(SRCROOT)/FuseHelp/_plugins",
+				"$(SRCROOT)/FuseHelp/_sass",
+				"$(SRCROOT)/FuseHelp/css",
 			);
 			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/English.lproj/index.html",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/css/main.css",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/book-icon.png",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
