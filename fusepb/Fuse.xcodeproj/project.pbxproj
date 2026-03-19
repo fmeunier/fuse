@@ -459,7 +459,6 @@
 		B61700F3163EAF8D00142336 /* PokeMemory.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PokeMemory.xib; sourceTree = "<group>"; };
 		B61700F5163EAFC600142336 /* PokeMemoryController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PokeMemoryController.h; path = controllers/PokeMemoryController.h; sourceTree = "<group>"; };
 		B61700F6163EAFC600142336 /* PokeMemoryController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PokeMemoryController.m; path = controllers/PokeMemoryController.m; sourceTree = "<group>"; };
-		B61EEB950D1A917D006FEA80 /* FuseGenerator.qlgenerator */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.bundle"; name = FuseGenerator.qlgenerator; path = ../../FuseGenerator/build/Release/FuseGenerator.qlgenerator; sourceTree = SOURCE_ROOT; };
 		B61F46A909121DF100C8096C /* Info-Fuse.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Fuse.plist"; sourceTree = "<group>"; };
 		B61F46AA09121DF200C8096C /* Fuse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fuse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B688FD9E2F54500000A08A6D /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
@@ -508,7 +507,6 @@
 		B64BD1640FF8D284000B82AE /* options.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = options.m; sourceTree = SOURCE_ROOT; };
 		B64BD1780FF8E89B000B82AE /* options_cocoa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = options_cocoa.h; sourceTree = SOURCE_ROOT; };
 		B64E2A160A6534A3006863D9 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
-		B64FEA96084F8EC300879389 /* FuseImporter.mdimporter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.bundle"; name = FuseImporter.mdimporter; path = ../../FuseImporter/build/deployment/FuseImporter.mdimporter; sourceTree = SOURCE_ROOT; };
 		B6501DF211AABD6800898AD1 /* blipbuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = blipbuffer.c; path = sound/blipbuffer.c; sourceTree = "<group>"; };
 		B6501DF311AABD6800898AD1 /* blipbuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = blipbuffer.h; path = sound/blipbuffer.h; sourceTree = "<group>"; };
 		B6501DF611AABD9300898AD1 /* sound.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sound.c; sourceTree = "<group>"; };
@@ -1000,8 +998,6 @@
 			isa = PBXGroup;
 			children = (
 				B665EE051052A2D100FCFED8 /* xibs */,
-				B61EEB950D1A917D006FEA80 /* FuseGenerator.qlgenerator */,
-				B64FEA96084F8EC300879389 /* FuseImporter.mdimporter */,
 				B643BB8C0403A0D300A864FD /* resources */,
 				F559854A038920FD01A804BA /* roms */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
