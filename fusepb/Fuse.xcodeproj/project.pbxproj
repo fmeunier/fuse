@@ -6,6 +6,22 @@
 	objectVersion = 47;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		B7A1C4003A75C00000C0DE01 /* FuseDependencies */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = B7A1C40A3A75C00000C0DE01 /* Build configuration list for PBXAggregateTarget "FuseDependencies" */;
+			buildPhases = (
+				B7A1C0013A74D20000C0DE01 /* Build libgpg-error */,
+				B7A1C0023A74D20000C0DE01 /* Build libgcrypt */,
+				B7A1C0033A74D20000C0DE01 /* Build libspectrum */,
+			);
+			dependencies = (
+			);
+			name = FuseDependencies;
+			productName = FuseDependencies;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		B6013812164692F5005FD3AE /* Fuse.iconset in Resources */ = {isa = PBXBuildFile; fileRef = B6013811164692F5005FD3AE /* Fuse.iconset */; };
 		B604B21B0DC182BE00981CC7 /* FuseGenerator.qlgenerator in CopyFiles */ = {isa = PBXBuildFile; fileRef = B7A1C3113A75A00000C0DE01 /* FuseGenerator.qlgenerator */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -319,6 +335,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = B6D670441DD6CB6B0014914E;
 			remoteInfo = FuseHelp;
+		};
+		B7A1C40B3A75C00000C0DE01 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B7A1C4003A75C00000C0DE01;
+			remoteInfo = FuseDependencies;
 		};
 		B7A1C3303A75A20000C0DE01 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1696,9 +1719,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B61F46A509121DF100C8096C /* Build configuration list for PBXNativeTarget "Fuse" */;
 			buildPhases = (
-				B7A1C0013A74D20000C0DE01 /* Build libgpg-error */,
-				B7A1C0023A74D20000C0DE01 /* Build libgcrypt */,
-				B7A1C0033A74D20000C0DE01 /* Build libspectrum */,
 				B61F459109121DF100C8096C /* Run Script */,
 				B61F459209121DF100C8096C /* CopyFiles */,
 				B61F45A109121DF100C8096C /* CopyFiles */,
@@ -1711,6 +1731,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B7A1C40C3A75C00000C0DE01 /* PBXTargetDependency */,
 				B7A1C3313A75A20000C0DE01 /* PBXTargetDependency */,
 				B7A1C2013A754B0000C0DE01 /* PBXTargetDependency */,
 				B6D6704F1DD6D1430014914E /* PBXTargetDependency */,
@@ -1725,9 +1746,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B7A1C3293A75A00000C0DE01 /* Build configuration list for PBXNativeTarget "FuseGenerator" */;
 			buildPhases = (
-				B7A1C3323A75A20000C0DE01 /* Build libgpg-error */,
-				B7A1C3333A75A20000C0DE01 /* Build libgcrypt */,
-				B7A1C3343A75A20000C0DE01 /* Build libspectrum */,
 				B7A1C3263A75A00000C0DE01 /* Resources */,
 				B7A1C3273A75A00000C0DE01 /* Sources */,
 				B7A1C3233A75A00000C0DE01 /* Frameworks */,
@@ -1735,6 +1753,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B7A1C40E3A75C00000C0DE01 /* PBXTargetDependency */,
 			);
 			name = FuseGenerator;
 			productInstallPath = /Library/QuickLook;
@@ -1746,9 +1765,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B7A1C11E3A75380000C0DE01 /* Build configuration list for PBXNativeTarget "FuseImporter" */;
 			buildPhases = (
-				B7A1C2023A754B0000C0DE01 /* Build libgpg-error */,
-				B7A1C2033A754B0000C0DE01 /* Build libgcrypt */,
-				B7A1C2043A754B0000C0DE01 /* Build libspectrum */,
 				B7A1C11A3A75380000C0DE01 /* Resources */,
 				B7A1C1183A75380000C0DE01 /* Sources */,
 				B7A1C1193A75380000C0DE01 /* Frameworks */,
@@ -1756,6 +1772,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B7A1C40D3A75C00000C0DE01 /* PBXTargetDependency */,
 			);
 			name = FuseImporter;
 			productInstallPath = /Library/Spotlight;
@@ -1809,6 +1826,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				B7A1C4003A75C00000C0DE01 /* FuseDependencies */,
 				B61F459009121DF100C8096C /* Fuse */,
 				B7A1C3253A75A00000C0DE01 /* FuseGenerator */,
 				B7A1C11F3A75380000C0DE01 /* FuseImporter */,
@@ -1988,14 +2006,14 @@
 			);
 			name = "Build libgpg-error";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$SRCROOT/../../scripts/build-libgpg-error.sh\"";
+			shellScript = "TARGET_TEMP_DIR=\"$CONFIGURATION_TEMP_DIR/deps-shared\" DERIVED_FILE_DIR=\"$PROJECT_DERIVED_FILE_DIR\" STAMP_FILE=\"$PROJECT_DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$SRCROOT/../../scripts/build-libgpg-error.sh\"";
 		};
 		B7A1C0023A74D20000C0DE01 /* Build libgcrypt */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2011,21 +2029,21 @@
 				"$(SRCROOT)/../../third_party/libgcrypt/config.h.in",
 				"$(SRCROOT)/../../third_party/libgcrypt/src/Makefile.in",
 				"$(SRCROOT)/../../third_party/libgcrypt/src/gcrypt-module.h",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
 			);
 			name = "Build libgcrypt";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h",
-				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt-module.h",
-				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a",
-				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt-module.h",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$SRCROOT/../../scripts/build-libgcrypt.sh\"";
+			shellScript = "TARGET_TEMP_DIR=\"$CONFIGURATION_TEMP_DIR/deps-shared\" DERIVED_FILE_DIR=\"$PROJECT_DERIVED_FILE_DIR\" STAMP_FILE=\"$PROJECT_DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$SRCROOT/../../scripts/build-libgcrypt.sh\"";
 		};
 		B7A1C0033A74D20000C0DE01 /* Build libspectrum */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2060,22 +2078,22 @@
 				"$(SRCROOT)/libspectrum/accessor.pl",
 				"$(SRCROOT)/libspectrum/tape_accessors.pl",
 				"$(SRCROOT)/libspectrum/tape_set.pl",
-				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h",
-				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a",
-				"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
-				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp",
 			);
 			name = "Build libspectrum";
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include/libspectrum.h",
-				"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib/libspectrum.a",
-				"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/.build-libspectrum.stamp",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include/libspectrum.h",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib/libspectrum.a",
+				"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/.build-libspectrum.stamp",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$SRCROOT/../../scripts/build-libspectrum.sh\"";
+			shellScript = "TARGET_TEMP_DIR=\"$CONFIGURATION_TEMP_DIR/deps-shared\" DERIVED_FILE_DIR=\"$PROJECT_DERIVED_FILE_DIR\" STAMP_FILE=\"$PROJECT_DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$SRCROOT/../../scripts/build-libspectrum.sh\"";
 		};
 		B7A1C2023A754B0000C0DE01 /* Build libgpg-error */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2523,6 +2541,21 @@
 			target = B7A1C3253A75A00000C0DE01 /* FuseGenerator */;
 			targetProxy = B7A1C3303A75A20000C0DE01 /* PBXContainerItemProxy */;
 		};
+		B7A1C40C3A75C00000C0DE01 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B7A1C4003A75C00000C0DE01 /* FuseDependencies */;
+			targetProxy = B7A1C40B3A75C00000C0DE01 /* PBXContainerItemProxy */;
+		};
+		B7A1C40D3A75C00000C0DE01 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B7A1C4003A75C00000C0DE01 /* FuseDependencies */;
+			targetProxy = B7A1C40B3A75C00000C0DE01 /* PBXContainerItemProxy */;
+		};
+		B7A1C40E3A75C00000C0DE01 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B7A1C4003A75C00000C0DE01 /* FuseDependencies */;
+			targetProxy = B7A1C40B3A75C00000C0DE01 /* PBXContainerItemProxy */;
+		};
 		B7A1C2013A754B0000C0DE01 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = B7A1C11F3A75380000C0DE01 /* FuseImporter */;
@@ -2547,22 +2580,43 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		B7A1C4093A75C00000C0DE01 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Default;
+		};
+		B7A1C40F3A75C10000C0DE01 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Development;
+		};
+		B7A1C4103A75C10000C0DE01 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Deployment;
+		};
 		B7A1C3283A75A00000C0DE01 /* Default */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 				);
 				INFOPLIST_FILE = ../../FuseGenerator/Info.plist;
 				INSTALL_PATH = /Library/QuickLook;
 				LIBRARY_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 				);
 				LLVM_LTO = YES;
@@ -2591,16 +2645,16 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				HEADER_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 				);
 				INFOPLIST_FILE = ../../FuseGenerator/Info.plist;
 				INSTALL_PATH = /Library/QuickLook;
 				LIBRARY_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 				);
 				LLVM_LTO = YES;
@@ -2629,16 +2683,16 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 				);
 				INFOPLIST_FILE = ../../FuseGenerator/Info.plist;
 				INSTALL_PATH = /Library/QuickLook;
 				LIBRARY_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 				);
 				LLVM_LTO = YES;
@@ -2679,18 +2733,18 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 					"$(SRCROOT)/..",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 					".",
 				);
@@ -2736,18 +2790,18 @@
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 					"$(SRCROOT)/..",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 					".",
 				);
@@ -2788,18 +2842,18 @@
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 					"$(SRCROOT)/..",
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 					".",
 				);
@@ -3075,16 +3129,16 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 				);
 				INFOPLIST_FILE = ../../FuseImporter/Info.plist;
 				INSTALL_PATH = /Library/Spotlight;
 				LIBRARY_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 				);
 				LIBRARY_STYLE = Bundle;
@@ -3125,16 +3179,16 @@
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 				);
 				INFOPLIST_FILE = ../../FuseImporter/Info.plist;
 				INSTALL_PATH = /Library/Spotlight;
 				LIBRARY_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 				);
 				LIBRARY_STYLE = Bundle;
@@ -3174,16 +3228,16 @@
 				GCC_WARN_UNKNOWN_PRAGMAS = NO;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
 				);
 				INFOPLIST_FILE = ../../FuseImporter/Info.plist;
 				INSTALL_PATH = /Library/Spotlight;
 				LIBRARY_SEARCH_PATHS = (
-					"$(DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
-					"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib",
+					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib",
 					"$(inherited)",
 				);
 				LIBRARY_STYLE = Bundle;
@@ -3214,6 +3268,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B7A1C40A3A75C00000C0DE01 /* Build configuration list for PBXAggregateTarget "FuseDependencies" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7A1C40F3A75C10000C0DE01 /* Development */,
+				B7A1C4103A75C10000C0DE01 /* Deployment */,
+				B7A1C4093A75C00000C0DE01 /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
 		B7A1C3293A75A00000C0DE01 /* Build configuration list for PBXNativeTarget "FuseGenerator" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

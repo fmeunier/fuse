@@ -111,10 +111,10 @@ $(SRCROOT)/libspectrum/m4/ltsugar.m4
 $(SRCROOT)/libspectrum/m4/ltversion.m4
 $(SRCROOT)/libspectrum/m4/lt~obsolete.m4
 $(SRCROOT)/libspectrum/m4/pkg.m4
-$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h
-$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt-module.h
-$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a
-$(DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp
-$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h
-$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a
-$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp
+$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt.h
+$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include/gcrypt-module.h
+$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/lib/libgcrypt.a
+$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/.build-libgcrypt.stamp
+$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h
+$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a
+$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/.build-libgpg-error.stamp
