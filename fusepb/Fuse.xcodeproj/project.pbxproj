@@ -34,6 +34,7 @@
 		B61159C70EEE9A080029FEA3 /* RZX.png in Resources */ = {isa = PBXBuildFile; fileRef = B61159C60EEE9A080029FEA3 /* RZX.png */; };
 		B61159C90EEE9A140029FEA3 /* Select_ROMs.png in Resources */ = {isa = PBXBuildFile; fileRef = B61159C80EEE9A140029FEA3 /* Select_ROMs.png */; };
 		B61159CB0EEE9A1E0029FEA3 /* Sound.png in Resources */ = {isa = PBXBuildFile; fileRef = B61159CA0EEE9A1E0029FEA3 /* Sound.png */; };
+		B61159CD3A76400000C0DE01 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B61159CC3A76400000C0DE01 /* AudioToolbox.framework */; };
 		B615BFE80B4261E50082D535 /* HIDJoysticks.m in Sources */ = {isa = PBXBuildFile; fileRef = B615BFE60B4261E50082D535 /* HIDJoysticks.m */; };
 		B6168CE91F0BC0AC008C99E6 /* buffer.c in Sources */ = {isa = PBXBuildFile; fileRef = B6168CE81F0BC0AC008C99E6 /* buffer.c */; };
 		B6168CEC1F0BC50D008C99E6 /* multiface.c in Sources */ = {isa = PBXBuildFile; fileRef = B6168CEA1F0BC50D008C99E6 /* multiface.c */; };
@@ -146,6 +147,7 @@
 		B61F469A09121DF100C8096C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		B61F469B09121DF100C8096C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
 		B61F469C09121DF100C8096C /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97324FDCFA39411CA2CEA /* AppKit.framework */; };
+		B61F469D3A76400000C0DE01 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B61F469E3A76400000C0DE01 /* AudioToolbox.framework */; };
 		B61F46A409121DF100C8096C /* FuseImporter.mdimporter in CopyFiles */ = {isa = PBXBuildFile; fileRef = B7A1C1133A75380000C0DE01 /* FuseImporter.mdimporter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B7A1C1013A75380000C0DE01 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C10A3A75380000C0DE01 /* main.m */; };
 		B7A1C1023A75380000C0DE01 /* GetMetadataForFile.m in Sources */ = {isa = PBXBuildFile; fileRef = B7A1C10B3A75380000C0DE01 /* GetMetadataForFile.m */; };
@@ -153,6 +155,7 @@
 		B7A1C1043A75380000C0DE01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
 		B7A1C1053A75380000C0DE01 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C1143A75380000C0DE01 /* CoreServices.framework */; };
 		B7A1C1063A75380000C0DE01 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C1153A75380000C0DE01 /* CoreFoundation.framework */; };
+		B7A1C10F3A76400000C0DE01 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B61F469E3A76400000C0DE01 /* AudioToolbox.framework */; };
 		B7A1C1073A75380000C0DE01 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C1103A75380000C0DE01 /* InfoPlist.strings */; };
 		B7A1C1083A75380000C0DE01 /* schema.xml in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C1113A75380000C0DE01 /* schema.xml */; };
 		B7A1C1093A75380000C0DE01 /* schema.strings in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C1123A75380000C0DE01 /* schema.strings */; };
@@ -164,6 +167,7 @@
 		B7A1C3063A75A00000C0DE01 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
 		B7A1C3073A75A00000C0DE01 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C1143A75380000C0DE01 /* CoreServices.framework */; };
 		B7A1C3083A75A00000C0DE01 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C1153A75380000C0DE01 /* CoreFoundation.framework */; };
+		B7A1C30F3A76400000C0DE01 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B61F469E3A76400000C0DE01 /* AudioToolbox.framework */; };
 		B7A1C3093A75A00000C0DE01 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B7A1C3103A75A00000C0DE01 /* InfoPlist.strings */; };
 		B7A1C31A3A75A00000C0DE01 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		B7A1C31B3A75A00000C0DE01 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7A1C3193A75A00000C0DE01 /* ApplicationServices.framework */; };
@@ -451,6 +455,7 @@
 		B61159C60EEE9A080029FEA3 /* RZX.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = RZX.png; sourceTree = "<group>"; };
 		B61159C80EEE9A140029FEA3 /* Select_ROMs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Select_ROMs.png; sourceTree = "<group>"; };
 		B61159CA0EEE9A1E0029FEA3 /* Sound.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Sound.png; sourceTree = "<group>"; };
+		B61159CC3A76400000C0DE01 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = /System/Library/Frameworks/AudioToolbox.framework; sourceTree = "<absolute>"; };
 		B615BFE50B4261E50082D535 /* HIDJoysticks.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = HIDJoysticks.h; path = content_arrays/HIDJoysticks.h; sourceTree = "<group>"; };
 		B615BFE60B4261E50082D535 /* HIDJoysticks.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = HIDJoysticks.m; path = content_arrays/HIDJoysticks.m; sourceTree = "<group>"; };
 		B6168CE81F0BC0AC008C99E6 /* buffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = buffer.c; sourceTree = "<group>"; };
@@ -856,6 +861,7 @@
 				B61F469A09121DF100C8096C /* Cocoa.framework in Frameworks */,
 				B61F469B09121DF100C8096C /* Foundation.framework in Frameworks */,
 				B61F469C09121DF100C8096C /* AppKit.framework in Frameworks */,
+				B61F469D3A76400000C0DE01 /* AudioToolbox.framework in Frameworks */,
 				B64E2A170A6534A3006863D9 /* Carbon.framework in Frameworks */,
 				B6A6F0EE0B3D5F9E000B88E9 /* CoreAudio.framework in Frameworks */,
 				B6A6F0F30B3D602F000B88E9 /* AudioUnit.framework in Frameworks */,
@@ -876,6 +882,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7A1C10F3A76400000C0DE01 /* AudioToolbox.framework in Frameworks */,
 				B7A1C1063A75380000C0DE01 /* CoreFoundation.framework in Frameworks */,
 				B7A1C1053A75380000C0DE01 /* CoreServices.framework in Frameworks */,
 				B7A1C1043A75380000C0DE01 /* Foundation.framework in Frameworks */,
@@ -886,6 +893,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7A1C30F3A76400000C0DE01 /* AudioToolbox.framework in Frameworks */,
 				B7A1C3083A75A00000C0DE01 /* CoreFoundation.framework in Frameworks */,
 				B7A1C3073A75A00000C0DE01 /* CoreServices.framework in Frameworks */,
 				B7A1C31B3A75A00000C0DE01 /* ApplicationServices.framework in Frameworks */,
@@ -925,6 +933,7 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B61159CC3A76400000C0DE01 /* AudioToolbox.framework */,
 				B7A1C3193A75A00000C0DE01 /* ApplicationServices.framework */,
 				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
 				B6A6F0F20B3D602F000B88E9 /* AudioUnit.framework */,
@@ -2623,6 +2632,8 @@
 					"-lgpg-error",
 					"-lbz2",
 					"-lz",
+					"-framework",
+					AudioToolbox,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.quicklookgenerator";
 				PRODUCT_NAME = FuseGenerator;
@@ -2661,6 +2672,8 @@
 					"-lgpg-error",
 					"-lbz2",
 					"-lz",
+					"-framework",
+					AudioToolbox,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.quicklookgenerator";
 				PRODUCT_NAME = FuseGenerator;
@@ -2699,6 +2712,8 @@
 					"-lgpg-error",
 					"-lbz2",
 					"-lz",
+					"-framework",
+					AudioToolbox,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.quicklookgenerator";
 				PRODUCT_NAME = FuseGenerator;
@@ -2752,6 +2767,8 @@
 					"-lgpg-error",
 					"-lbz2",
 					"-lz",
+					"-framework",
+					AudioToolbox,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.fuse-for-macosx.Fuse";
 				PRODUCT_NAME = Fuse;
@@ -2809,6 +2826,8 @@
 					"-lgpg-error",
 					"-lbz2",
 					"-lz",
+					"-framework",
+					AudioToolbox,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.fuse-for-macosx.Fuse";
 				PRODUCT_NAME = Fuse;
@@ -2861,6 +2880,8 @@
 					"-lgpg-error",
 					"-lbz2",
 					"-lz",
+					"-framework",
+					AudioToolbox,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.fuse-for-macosx.Fuse";
 				PRODUCT_NAME = Fuse;
@@ -3147,6 +3168,8 @@
 					"-lgpg-error",
 					"-lbz2",
 					"-lz",
+					"-framework",
+					AudioToolbox,
 				);
 				OTHER_REZFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.importer";
@@ -3197,6 +3220,8 @@
 					"-lgpg-error",
 					"-lbz2",
 					"-lz",
+					"-framework",
+					AudioToolbox,
 				);
 				OTHER_REZFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.importer";
@@ -3246,6 +3271,8 @@
 					"-lgpg-error",
 					"-lbz2",
 					"-lz",
+					"-framework",
+					AudioToolbox,
 				);
 				OTHER_REZFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "net.sourceforge.projects.fuse-emulator.importer";
