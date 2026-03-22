@@ -37,18 +37,6 @@
 /* Define to 1 if you have the <libgen.h> header file. */
 #define HAVE_LIBGEN_H 1
 
-/* Define to 1 if you have the <libspectrum.h> header file. */
-#define HAVE_LIBSPECTRUM_H 1
-
-/* Define to 1 if you have the <gcrypt.h> header file. */
-#define HAVE_GCRYPT_H 1
-
-/* Define to 1 if you have the `bz2' library (-lbz2). */
-#define HAVE_LIBBZ2 1
-
-/* Defined if we've got audiofile */
-#define HAVE_LIB_AUDIOFILE 1
-
 /* Defined if we've got glib */
 /* #undef HAVE_LIB_GLIB */
 
@@ -166,7 +154,7 @@
 /* Defined if we're using a widget-based UI */
 /* #undef USE_WIDGET */
 
-/* Version number of libspectrum package (encoded in snapshots etc.)*/
+/* Define to the version of this package. */
 #define VERSION "1.4.4"
 
 /* Define to 1 if your processor stores words with the most significant byte
