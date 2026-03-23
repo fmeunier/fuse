@@ -2,11 +2,16 @@
 TARGET_BUILD_DIR ?= _site
 
 HELP := $(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)
+STAMP := $(HELP)/.build-stamp
 
 # Xcode shells have a default environment with no locale settings, so set if undefined (needed by Jekyll to process UTF-8 SCSS)
 export LANG ?= en_US.UTF-8
 
-$(HELP) : * **/*
+all: $(STAMP)
+
+$(STAMP) : * **/*
+	rm -rf "$(HELP)"
+	mkdir -p "$(HELP)"
 	[ -s "$(HOME)/.rvm/environments/default" ] && . "$(HOME)/.rvm/environments/default" ; \
 	PATH="/opt/homebrew/bin:/opt/homebrew/opt/ruby/bin:/usr/local/bin:/usr/local/opt/ruby/bin:$$PATH" ; export PATH ; \
 	for GEM_BIN in /opt/homebrew/lib/ruby/gems/*/bin /usr/local/lib/ruby/gems/*/bin ; do \
@@ -23,3 +28,6 @@ $(HELP) : * **/*
 		hiutil -1 -vv --create --anchors --locale=$$LOCALE --file "$$LPROJ/search.helpindex" "$$LPROJ" 2>&1 | \
 		awk "{ if (/error:/) {printf \"error: \" ; err = 1} else {printf \"warning: \"} ; print} END {exit err}" ; \
 	done
+	touch "$(STAMP)"
+
+.PHONY: all
