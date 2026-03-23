@@ -303,7 +303,7 @@
       break;
     }
 
-    // Update underlying model
+    /* Update underlying model */
     [[machineRomsController selection] setValue:romString forKey:key];
   }
 }
@@ -335,7 +335,7 @@
 
   romString = [[machineRomsController selection] valueForKey:source_key];
 
-  // Update underlying model
+  /* Update underlying model */
   [[machineRomsController selection] setValue:romString forKey:dest_key];
 }
 
@@ -422,7 +422,7 @@
   case 11: // Didaktik 80
     settings_current.didaktik80 = 1;
     break;
-  case 12: // Currah �Source
+  case 12: // Currah µSource
     settings_current.usource = 1;
     break;
   case 13: // DivMMC
@@ -461,6 +461,7 @@
   settings_current.melodik = 0;
   settings_current.specdrum = 0;
   settings_current.covox = 0;
+  settings_current.uspeech = 0;
 
   // Read external sound interface type box and set text boxes appropriately
   switch( [[externalSoundType selectedCell] tag] ) {
@@ -478,6 +479,9 @@
   case 4: // Covox
     settings_current.covox = 1;
     break;
+  case 5: // Currah µSpeech
+    settings_current.uspeech = 1;
+    break;
   default: // WTF?
     break;
   }
@@ -486,6 +490,7 @@
   [self setCurrentValue:settings_current.melodik forKey:@"melodik" inValues:currentValues];
   [self setCurrentValue:settings_current.specdrum forKey:@"specdrum" inValues:currentValues];
   [self setCurrentValue:settings_current.covox forKey:@"covox" inValues:currentValues];
+  [self setCurrentValue:settings_current.uspeech forKey:@"uspeech" inValues:currentValues];
 
   [currentValues synchronize];
 }
@@ -633,6 +638,8 @@
     value = 3;
   } else if ( settings_current.covox ) {
     value = 4;
+  } else if ( settings_current.uspeech ) {
+    value = 5;
   }
 
   [externalSoundType selectCellWithTag:value];

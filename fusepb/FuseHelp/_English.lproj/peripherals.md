@@ -121,6 +121,7 @@ OPTION | DESCRIPTION
 *Melodik* | If this option is selected, Fuse will emulate a Melodik AY sound interface. These interfaces and many similar ones were produced to make the 48K Spectrum compatible with the same AY music as the 128K Spectrum. This emulation is only  available  for  the  16k,  48k  and  TC2048 machines.
 *SpecDrum* | If this option is selected, Fuse will emulate a Cheetah SpecDrum sound interface.  See the [World of Spectrum Infoseek web page](http://www.worldofspectrum.org/infoseekid.cgi?id=1000062) for manuals, software and more. This emulation is only available for the 48k, 128k and TC2048 machines.
 *Covox* | If this option is selected, Fuse will emulate a Covox digital sound interface. This emulation is only available for the Pentagon, Pentagon 512k, Pentagon 1024k and Scorpion machines. The Pentagon variants use port 0xfb and the Scorpion version uses port 0xdd.
+*μSpeech* | If this option is selected, Fuse will emulate a Currah μSpeech interface. See the [World of Spectrum Infoseek web page](http://www.worldofspectrum.org/infoseekid.cgi?id=1000081) for the manual, software and more. This interface uses both the μSpeech interface ROM and the SP0256-AL2 speech ROM; these ROMs are not supplied with Fuse for macOS and must be configured in the [ROM Preferences](roms.html) pane before the interface can be used.
 
 <br>
 ### Romantic Robot Multiface options

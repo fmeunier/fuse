@@ -9,6 +9,15 @@ An individual setting is available for each Spectrum variant emulated by Fuse
 which allows selection of the ROM(s) used by that machine. Simply select the ROM
 you wish to use, and then reset the Spectrum for the change to take effect.
 
+Fuse also provides ROM settings for peripherals that require their own ROMs.
+The Currah μSpeech interface requires both the μSpeech interface ROM and the
+SP0256-AL2 speech ROM. These ROM files are not supplied with Fuse for macOS.
+
+The SP0256-AL2 ROM should be named `sp0256-al2.rom`; the ROM expected by Fuse
+has CRC-32 `b504ac15`. An alternative authorised ROM distributed by Joe Zbiciak
+has CRC-32 `df8de0b0`; when using that ROM, bit ordering in the data bytes must
+be reversed.
+
 ## Copyrights
 
 Note that the ROM files distributed with this emulator are not covered by the
