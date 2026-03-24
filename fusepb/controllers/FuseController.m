@@ -231,9 +231,9 @@ static NSMutableArray *recentSnapFileNames = nil;
                                      @"ZIP"];
 
     snapFileTypes = [NSMutableArray arrayWithObjects:@"mgtsnp", @"MGTSNP",
-                      @"slt", @"SLT", @"sna", @"SNA", @"sp", @"SP", @"szx",
-                      @"SZX", @"snp", @"SNP", @"z80", @"Z80", @"zxs", @"ZXS",
-                      nil];
+                      @"s", @"S", @"slt", @"SLT", @"sna", @"SNA",
+                      @"sp", @"SP", @"szx", @"SZX", @"snp", @"SNP",
+                      @"z80", @"Z80", @"zxs", @"ZXS", nil];
     [snapFileTypes retain];
 
     dckFileTypes = [NSMutableArray arrayWithObjects:@"dck", @"DCK", nil];

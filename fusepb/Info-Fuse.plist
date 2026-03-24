@@ -429,6 +429,23 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>s</string>
+				<string>S</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>blank</string>
+			<key>CFBundleTypeName</key>
+			<string>ZX Spectrum Snapshot</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>net.sourceforge.projects.fuse-emulator.s</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>mgtsnp</string>
 				<string>MGTSNP</string>
 			</array>
@@ -1001,6 +1018,25 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>zxs</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>net.sourceforge.projects.fuse-emulator.Snapshot</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>ZX Spectrum D40/D80 Snapshot</string>
+			<key>UTTypeIconFile</key>
+			<string>blank</string>
+			<key>UTTypeIdentifier</key>
+			<string>net.sourceforge.projects.fuse-emulator.s</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>s</string>
 				</array>
 			</dict>
 		</dict>
