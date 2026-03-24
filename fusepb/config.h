@@ -6,7 +6,7 @@
 #define BUILD_SPECTRANET 1
 
 /* Define copyright of Fuse */
-#define FUSE_COPYRIGHT "(c) 1999-2018 Philip Kendall and others"
+#define FUSE_COPYRIGHT "(c) 1999-2026 Philip Kendall and others"
 
 /* Define version information for win32 executables */
 #define FUSE_RC_VERSION 1,7,0,0
@@ -105,16 +105,16 @@
 #define PACKAGE "fuse"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT ""
+#define PACKAGE_BUGREPORT "http://sourceforge.net/p/fuse-emulator/bugs/"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME ""
+#define PACKAGE_NAME "fuse"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING ""
+#define PACKAGE_STRING "fuse 1.7.0"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME ""
+#define PACKAGE_TARNAME "fuse"
 
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "1.7.0"
