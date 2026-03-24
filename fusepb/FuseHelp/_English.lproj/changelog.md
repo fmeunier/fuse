@@ -1,12 +1,22 @@
 ---
 title: What's New In Fuse?
-description: This section describes the changes for version 1.5.6 of the Fuse emulator.
+description: This section describes the changes for version 1.7.0 of the Fuse emulator.
 ---
 
-## What's new in Fuse for macOS 1.6.0
+## What's new in Fuse for macOS 1.7.0
+
+### New features:
+* Add Currah μSpeech emulation (Stuart Brady, Vic Chwe and Sergio Baldoví).
 
 ### Emulation core improvements:
+* Z80 flags register is now correct after SCF and CCF (Sergio Baldoví).
 * Fix activation of joystick and IF2 peripherals when loading a snapshot (thanks, ICEknight) (Sergio Baldoví).
+* More accurate emulation of AM29F010B flash ROM (Guesser).
+* EDSK disk images: allow loading unformatted disk images (fixes bug #455) (Gergely Szasz).
+* EDSK disk images: allow merging disk sides with different bytes per track (fixes bug #454) (Gergely Szasz).
+* EDSK disk images: handle special "Stored data length" extension per Simon Owen's spec, fixing load of Cabal, NARC and Robin of Sherlock (fixes bug #452) (Gergely Szasz).
+* EDSK disk images: pad disk tracks to a multiple of 256 bytes, fixing Action Countdown, Discology +3, Genial, Gonzzalezz, SP5 and Trigger (Lightgun) (fixes bug #451) (Gergely Szasz).
+* Fix SCAN bug in uPD765 FDC, allowing formatting on CP/M Plus and Fuzix (fixes bug #453) (thanks, Phil Reynolds and Vic Chwe) (Gergely Szasz).
 
 ### Scaler improvements:
 * Fix display corruption with HQ 3x scaler (thanks, Philip Kendall) (Sergio Baldoví).
@@ -14,6 +24,11 @@ description: This section describes the changes for version 1.5.6 of the Fuse em
 
 ### Miscellaneous improvements:
 * Fix resize window crash (Fredrick Meunier).
+* "Save binary" can once again save 65536 bytes (regression introduced in 1.5.6; thanks, thrice) (Philip Kendall).
+* Saving and loading binary data no longer increments tstate count or triggers breakpoints (thanks, Sergio Baldoví) (Philip Kendall).
+* More improvements disabling phantom typist after finishing loading TAP or standard ROM TZX files (thanks, Alberto Garcia) (Fredrick Meunier).
+* "Variant" Alkatraz loaders (e.g. Gauntlet 3 and Shadow Dancer), "Variant" Search Loader programs (e.g. Lotus Esprit Turbo Challenge and Space Crusade) and Dinaload loaders (e.g. Astro Marine Corps) are now accelerated (Philip Kendall).
+* Stop RZX playback/recording on machine reset/change (Sergio Baldoví).
 
 ### Various other minor bugfixes.
 

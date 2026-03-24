@@ -9,7 +9,7 @@
 #define FUSE_COPYRIGHT "(c) 1999-2018 Philip Kendall and others"
 
 /* Define version information for win32 executables */
-#define FUSE_RC_VERSION 1,3,5,0
+#define FUSE_RC_VERSION 1,7,0,0
 
 /* Define to 1 if you have the `dirname' function. */
 #define HAVE_DIRNAME 1
@@ -117,7 +117,7 @@
 #define PACKAGE_TARNAME ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION ""
+#define PACKAGE_VERSION "1.7.0"
 
 /* Location of the ROM images */
 /* #undef ROMSDIR */
@@ -155,8 +155,8 @@
 /* Defined if we're using a widget-based UI */
 /* #undef USE_WIDGET */
 
-/* Define to the version of this package. */
-#define VERSION "1.4.4"
+/* Version number of package */
+#define VERSION "1.7.0"
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
