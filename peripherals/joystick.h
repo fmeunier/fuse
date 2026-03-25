@@ -31,9 +31,11 @@
 /* Number of joysticks known about & initialised */
 extern int joysticks_supported;
 
+void joystick_register_startup( void );
+/* macOS: we want to be able to reset joystick devices when preferences
+   change, so make joystick_init() and joystick_end() available */
 int joystick_init( void *context );
 void joystick_end( void );
-void joystick_register_startup( void );
 
 /* A constant to identify the joystick emulated via the keyboard */
 #define JOYSTICK_KEYBOARD 2
