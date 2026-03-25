@@ -653,6 +653,7 @@ print "  NSMutableArray *machineroms = [NSMutableArray arrayWithCapacity:machine
 foreach my $machine ( sort keys %machineRoms ) {
   print "  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:\n";
   print '    [Machine machineForType:machine_get_type("'.$machine.'")], @"machine",'."\n";
+  print '    [[Machine machineForType:machine_get_type("'.$machine.'")] machineName], @"display_name",' . "\n";
   for( my $i = 0; $i <= $#{ $machineRoms{$machine} }; $i++ ) {
     print '    @(settings->rom_'.$machine."_".$i.'), @"rom'.$i."\",\n";
     print '    @(settings_default.rom_'.$machine."_".$i.'), @"default_rom'.$i."\",\n";
@@ -666,6 +667,16 @@ print << 'CODE';
   /* We assume that we got all machines in the array, this should always be
      true*/
   [machineroms sortUsingFunction:machineroms_compare context:nil];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"Currah \u03bcSpeech", @"display_name",
+    @"uspeech", @"special_type",
+    @(settings->rom_uspeech), @"rom0",
+    @(settings_default.rom_uspeech), @"default_rom0",
+    @(settings->rom_sp0256), @"rom1",
+    @(settings_default.rom_sp0256), @"default_rom1",
+    NULL];
+  [machineroms addObject:roms];
 
   return machineroms;
 }
@@ -685,7 +696,18 @@ settings_get_rom_array( settings_info *settings, NSArray *machineroms )
 CODE
 
 print "  for ( roms in machineroms ) {\n";
-print "    int machineType = [[roms valueForKey:@\"machine\"] machineType];\n    ";
+print "    Machine *machine = [roms valueForKey:@\"machine\"];\n";
+print "    NSString *special_type = [roms valueForKey:@\"special_type\"];\n";
+print "    NSString *display_name = [roms valueForKey:@\"display_name\"];\n\n";
+print "    if( [special_type isEqualToString:@\"uspeech\"] ||\n";
+print "        [display_name isEqualToString:@\"Currah \\\\u03bcSpeech\"] ||\n";
+print "        [display_name isEqualToString:@\"Currah \\\\u00b5Speech\"] ) {\n";
+print '      settings_set_string( &settings->rom_uspeech, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print '      settings_set_string( &settings->rom_sp0256, [[roms valueForKey:@"rom1"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( !machine ) continue;\n\n";
+print "    int machineType = [machine machineType];\n    ";
 my $first=0;
 foreach my $machine ( sort keys %machineRoms ) {
   if ( $first ) {

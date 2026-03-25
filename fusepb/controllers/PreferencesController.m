@@ -131,12 +131,15 @@
   /* Values in Fuse may have been updated, put them in saved settings */
   settings_write_config( &settings_current );
 
+  if( machineRoms ) {
+    [machineRoms release];
+    machineRoms = nil;
+  }
+
   machineRoms = settings_set_rom_array( &settings_current );
   [machineRoms retain];
 
   [super showWindow:sender];
-
-  self = [super initWithWindowNibName:@"Preferences"];
 
   [self setMassStorageType];
   [self setExternalSoundType];
@@ -200,7 +203,6 @@
   }
 
   settings_get_rom_array( &settings_current, machineRoms );
-  [machineRoms release];
 
   joystick_end();
   joystick_init( NULL );
