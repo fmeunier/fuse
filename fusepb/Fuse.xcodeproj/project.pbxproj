@@ -469,6 +469,7 @@
 		B61F46A909121DF100C8096C /* Info-Fuse.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Fuse.plist"; sourceTree = "<group>"; };
 		B61F46AA09121DF200C8096C /* Fuse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fuse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B688FD9E2F54500000A08A6D /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
+		B688FDA12F54500000A08A6D /* FuseDependencyPaths.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = FuseDependencyPaths.xcconfig; sourceTree = "<group>"; };
 		B688FD9F2F54500000A08A6D /* FuseGeneratorPaths.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = FuseGeneratorPaths.xcconfig; sourceTree = "<group>"; };
 		B688FDA02F54500000A08A6D /* FuseImporterPaths.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = FuseImporterPaths.xcconfig; sourceTree = "<group>"; };
 		B621A11E062E92FB00F63DBC /* if2.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = if2.c; sourceTree = "<group>"; };
@@ -982,6 +983,7 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				B61F46A909121DF100C8096C /* Info-Fuse.plist */,
+				B688FDA12F54500000A08A6D /* FuseDependencyPaths.xcconfig */,
 				B688FD9E2F54500000A08A6D /* Signing.xcconfig */,
 				B688FD9F2F54500000A08A6D /* FuseGeneratorPaths.xcconfig */,
 				B688FDA02F54500000A08A6D /* FuseImporterPaths.xcconfig */,
@@ -2018,14 +2020,14 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/../../scripts/autotools-common.sh",
-				"$(SRCROOT)/../../scripts/build-libgpg-error.sh",
-				"$(SRCROOT)/../../third_party/libgpg-error/configure",
-				"$(SRCROOT)/../../third_party/libgpg-error/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgpg-error/aclocal.m4",
-				"$(SRCROOT)/../../third_party/libgpg-error/config.h.in",
-				"$(SRCROOT)/../../third_party/libgpg-error/src/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgpg-error/src/gpg-error.h.in",
+				"$(FUSE_SCRIPTS_ROOT)/autotools-common.sh",
+				"$(FUSE_SCRIPTS_ROOT)/build-libgpg-error.sh",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/configure",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/aclocal.m4",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/config.h.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/src/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/src/gpg-error.h.in",
 			);
 			name = "Build libgpg-error";
 			outputPaths = (
@@ -2036,7 +2038,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "TARGET_TEMP_DIR=\"$CONFIGURATION_TEMP_DIR/deps-shared\" DERIVED_FILE_DIR=\"$PROJECT_DERIVED_FILE_DIR\" STAMP_FILE=\"$PROJECT_DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$SRCROOT/../../scripts/build-libgpg-error.sh\"";
+			shellScript = "TARGET_TEMP_DIR=\"$CONFIGURATION_TEMP_DIR/deps-shared\" DERIVED_FILE_DIR=\"$PROJECT_DERIVED_FILE_DIR\" STAMP_FILE=\"$PROJECT_DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$FUSE_SCRIPTS_ROOT/build-libgpg-error.sh\"";
 		};
 		B7A1C0023A74D20000C0DE01 /* Build libgcrypt */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2044,14 +2046,14 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/../../scripts/autotools-common.sh",
-				"$(SRCROOT)/../../scripts/build-libgcrypt.sh",
-				"$(SRCROOT)/../../third_party/libgcrypt/configure",
-				"$(SRCROOT)/../../third_party/libgcrypt/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgcrypt/aclocal.m4",
-				"$(SRCROOT)/../../third_party/libgcrypt/config.h.in",
-				"$(SRCROOT)/../../third_party/libgcrypt/src/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgcrypt/src/gcrypt-module.h",
+				"$(FUSE_SCRIPTS_ROOT)/autotools-common.sh",
+				"$(FUSE_SCRIPTS_ROOT)/build-libgcrypt.sh",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/configure",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/aclocal.m4",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/config.h.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/src/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/src/gcrypt-module.h",
 				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
 				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
 				"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
@@ -2066,7 +2068,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "TARGET_TEMP_DIR=\"$CONFIGURATION_TEMP_DIR/deps-shared\" DERIVED_FILE_DIR=\"$PROJECT_DERIVED_FILE_DIR\" STAMP_FILE=\"$PROJECT_DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$SRCROOT/../../scripts/build-libgcrypt.sh\"";
+			shellScript = "TARGET_TEMP_DIR=\"$CONFIGURATION_TEMP_DIR/deps-shared\" DERIVED_FILE_DIR=\"$PROJECT_DERIVED_FILE_DIR\" STAMP_FILE=\"$PROJECT_DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$FUSE_SCRIPTS_ROOT/build-libgcrypt.sh\"";
 		};
 		B7A1C0033A74D20000C0DE01 /* Build libspectrum */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2079,8 +2081,8 @@
 			inputPaths = (
 				"$(SRCROOT)/libspectrum",
 				"$(SRCROOT)/libspectrum/libspectrum.c",
-				"$(SRCROOT)/../../scripts/autotools-common.sh",
-				"$(SRCROOT)/../../scripts/build-libspectrum.sh",
+				"$(FUSE_SCRIPTS_ROOT)/autotools-common.sh",
+				"$(FUSE_SCRIPTS_ROOT)/build-libspectrum.sh",
 				"$(SRCROOT)/libspectrum/configure",
 				"$(SRCROOT)/libspectrum/Makefile.in",
 				"$(SRCROOT)/libspectrum/aclocal.m4",
@@ -2116,7 +2118,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "TARGET_TEMP_DIR=\"$CONFIGURATION_TEMP_DIR/deps-shared\" DERIVED_FILE_DIR=\"$PROJECT_DERIVED_FILE_DIR\" STAMP_FILE=\"$PROJECT_DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$SRCROOT/../../scripts/build-libspectrum.sh\"";
+			shellScript = "TARGET_TEMP_DIR=\"$CONFIGURATION_TEMP_DIR/deps-shared\" DERIVED_FILE_DIR=\"$PROJECT_DERIVED_FILE_DIR\" STAMP_FILE=\"$PROJECT_DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$FUSE_SCRIPTS_ROOT/build-libspectrum.sh\"";
 		};
 		B7A1C2023A754B0000C0DE01 /* Build libgpg-error */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2124,14 +2126,14 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/../../scripts/autotools-common.sh",
-				"$(SRCROOT)/../../scripts/build-libgpg-error.sh",
-				"$(SRCROOT)/../../third_party/libgpg-error/configure",
-				"$(SRCROOT)/../../third_party/libgpg-error/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgpg-error/aclocal.m4",
-				"$(SRCROOT)/../../third_party/libgpg-error/config.h.in",
-				"$(SRCROOT)/../../third_party/libgpg-error/src/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgpg-error/src/gpg-error.h.in",
+				"$(FUSE_SCRIPTS_ROOT)/autotools-common.sh",
+				"$(FUSE_SCRIPTS_ROOT)/build-libgpg-error.sh",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/configure",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/aclocal.m4",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/config.h.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/src/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/src/gpg-error.h.in",
 			);
 			name = "Build libgpg-error";
 			outputPaths = (
@@ -2142,7 +2144,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$SRCROOT/../../scripts/build-libgpg-error.sh\"";
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$FUSE_SCRIPTS_ROOT/build-libgpg-error.sh\"";
 		};
 		B7A1C2033A754B0000C0DE01 /* Build libgcrypt */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2150,14 +2152,14 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/../../scripts/autotools-common.sh",
-				"$(SRCROOT)/../../scripts/build-libgcrypt.sh",
-				"$(SRCROOT)/../../third_party/libgcrypt/configure",
-				"$(SRCROOT)/../../third_party/libgcrypt/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgcrypt/aclocal.m4",
-				"$(SRCROOT)/../../third_party/libgcrypt/config.h.in",
-				"$(SRCROOT)/../../third_party/libgcrypt/src/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgcrypt/src/gcrypt-module.h",
+				"$(FUSE_SCRIPTS_ROOT)/autotools-common.sh",
+				"$(FUSE_SCRIPTS_ROOT)/build-libgcrypt.sh",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/configure",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/aclocal.m4",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/config.h.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/src/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/src/gcrypt-module.h",
 				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
 				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
 				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
@@ -2172,7 +2174,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$SRCROOT/../../scripts/build-libgcrypt.sh\"";
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$FUSE_SCRIPTS_ROOT/build-libgcrypt.sh\"";
 		};
 		B7A1C2043A754B0000C0DE01 /* Build libspectrum */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2185,8 +2187,8 @@
 			inputPaths = (
 				"$(SRCROOT)/libspectrum",
 				"$(SRCROOT)/libspectrum/libspectrum.c",
-				"$(SRCROOT)/../../scripts/autotools-common.sh",
-				"$(SRCROOT)/../../scripts/build-libspectrum.sh",
+				"$(FUSE_SCRIPTS_ROOT)/autotools-common.sh",
+				"$(FUSE_SCRIPTS_ROOT)/build-libspectrum.sh",
 				"$(SRCROOT)/libspectrum/configure",
 				"$(SRCROOT)/libspectrum/Makefile.in",
 				"$(SRCROOT)/libspectrum/aclocal.m4",
@@ -2222,7 +2224,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$SRCROOT/../../scripts/build-libspectrum.sh\"";
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$FUSE_SCRIPTS_ROOT/build-libspectrum.sh\"";
 		};
 		B7A1C3323A75A20000C0DE01 /* Build libgpg-error */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2230,14 +2232,14 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/../../scripts/autotools-common.sh",
-				"$(SRCROOT)/../../scripts/build-libgpg-error.sh",
-				"$(SRCROOT)/../../third_party/libgpg-error/configure",
-				"$(SRCROOT)/../../third_party/libgpg-error/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgpg-error/aclocal.m4",
-				"$(SRCROOT)/../../third_party/libgpg-error/config.h.in",
-				"$(SRCROOT)/../../third_party/libgpg-error/src/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgpg-error/src/gpg-error.h.in",
+				"$(FUSE_SCRIPTS_ROOT)/autotools-common.sh",
+				"$(FUSE_SCRIPTS_ROOT)/build-libgpg-error.sh",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/configure",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/aclocal.m4",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/config.h.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/src/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgpg-error/src/gpg-error.h.in",
 			);
 			name = "Build libgpg-error";
 			outputPaths = (
@@ -2248,7 +2250,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$SRCROOT/../../scripts/build-libgpg-error.sh\"";
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgpg-error-prefix/.build-libgpg-error.stamp\" \"$FUSE_SCRIPTS_ROOT/build-libgpg-error.sh\"";
 		};
 		B7A1C3333A75A20000C0DE01 /* Build libgcrypt */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2256,14 +2258,14 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/../../scripts/autotools-common.sh",
-				"$(SRCROOT)/../../scripts/build-libgcrypt.sh",
-				"$(SRCROOT)/../../third_party/libgcrypt/configure",
-				"$(SRCROOT)/../../third_party/libgcrypt/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgcrypt/aclocal.m4",
-				"$(SRCROOT)/../../third_party/libgcrypt/config.h.in",
-				"$(SRCROOT)/../../third_party/libgcrypt/src/Makefile.in",
-				"$(SRCROOT)/../../third_party/libgcrypt/src/gcrypt-module.h",
+				"$(FUSE_SCRIPTS_ROOT)/autotools-common.sh",
+				"$(FUSE_SCRIPTS_ROOT)/build-libgcrypt.sh",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/configure",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/aclocal.m4",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/config.h.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/src/Makefile.in",
+				"$(FUSE_THIRD_PARTY_ROOT)/libgcrypt/src/gcrypt-module.h",
 				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include/gpg-error.h",
 				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/lib/libgpg-error.a",
 				"$(DERIVED_FILE_DIR)/deps/libgpg-error-prefix/bin/gpg-error-config",
@@ -2278,7 +2280,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$SRCROOT/../../scripts/build-libgcrypt.sh\"";
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libgcrypt-prefix/.build-libgcrypt.stamp\" \"$FUSE_SCRIPTS_ROOT/build-libgcrypt.sh\"";
 		};
 		B7A1C3343A75A20000C0DE01 /* Build libspectrum */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2291,8 +2293,8 @@
 			inputPaths = (
 				"$(SRCROOT)/libspectrum",
 				"$(SRCROOT)/libspectrum/libspectrum.c",
-				"$(SRCROOT)/../../scripts/autotools-common.sh",
-				"$(SRCROOT)/../../scripts/build-libspectrum.sh",
+				"$(FUSE_SCRIPTS_ROOT)/autotools-common.sh",
+				"$(FUSE_SCRIPTS_ROOT)/build-libspectrum.sh",
 				"$(SRCROOT)/libspectrum/configure",
 				"$(SRCROOT)/libspectrum/Makefile.in",
 				"$(SRCROOT)/libspectrum/aclocal.m4",
@@ -2328,7 +2330,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$SRCROOT/../../scripts/build-libspectrum.sh\"";
+			shellScript = "STAMP_FILE=\"$DERIVED_FILE_DIR/deps/libspectrum-prefix/.build-libspectrum.stamp\" \"$FUSE_SCRIPTS_ROOT/build-libspectrum.sh\"";
 		};
 		B6D6704D1DD6CEF10014914E /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2917,6 +2919,7 @@
 		};
 		B63319B4086803BA00732AA3 /* Development */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B688FDA12F54500000A08A6D /* FuseDependencyPaths.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = arm64;
@@ -2946,6 +2949,7 @@
 		};
 		B63319B5086803BA00732AA3 /* Deployment */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B688FDA12F54500000A08A6D /* FuseDependencyPaths.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = arm64;
@@ -2974,6 +2978,7 @@
 		};
 		B63319B6086803BA00732AA3 /* Default */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B688FDA12F54500000A08A6D /* FuseDependencyPaths.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = arm64;
