@@ -446,7 +446,7 @@
 		B601847B065A586900B0BE59 /* zxcf.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = zxcf.c; sourceTree = "<group>"; };
 		B601847C065A586900B0BE59 /* zxcf.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = zxcf.h; sourceTree = "<group>"; };
 		B604635E04C5F37B00C225C9 /* expression.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = expression.c; path = ../debugger/expression.c; sourceTree = SOURCE_ROOT; };
-		B60A6A3A042BEECE00D41533 /* scaler_internals.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = scaler_internals.h; path = ../ui/scaler/scaler_internals.h; sourceTree = SOURCE_ROOT; };
+		B60A6A3A042BEECE00D41533 /* scaler_internals.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = scaler_internals.h; path = scaler_internals.h; sourceTree = "<group>"; };
 		B60B11F7059BC7E70048B64B /* machine.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = machine.c; path = ../machine.c; sourceTree = SOURCE_ROOT; };
 		B611190206A1FA12006D2711 /* JoystickConfigurationController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = JoystickConfigurationController.h; path = controllers/JoystickConfigurationController.h; sourceTree = SOURCE_ROOT; };
 		B611190306A1FA12006D2711 /* JoystickConfigurationController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = JoystickConfigurationController.m; path = controllers/JoystickConfigurationController.m; sourceTree = SOURCE_ROOT; };
@@ -494,7 +494,7 @@
 		B637929A060AA0D300246736 /* se-1.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "se-1.rom"; path = "../roms/se-1.rom"; sourceTree = SOURCE_ROOT; };
 		B639B7670A6BAFCF00927E24 /* csw.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = csw.icns; sourceTree = "<group>"; };
 		B639B7D00A6BB45600927E24 /* raw.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = raw.icns; sourceTree = "<group>"; };
-		B63ABD8D042F175200A864FD /* scaler.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = scaler.c; path = ../ui/scaler/scaler.c; sourceTree = SOURCE_ROOT; };
+		B63ABD8D042F175200A864FD /* scaler.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = scaler.c; path = scaler.c; sourceTree = "<group>"; };
 		B63F9949077182B4004D6DFA /* RollbackController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = RollbackController.h; path = controllers/RollbackController.h; sourceTree = SOURCE_ROOT; };
 		B63F994A077182B4004D6DFA /* RollbackController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = RollbackController.m; path = controllers/RollbackController.m; sourceTree = SOURCE_ROOT; };
 		B6403FD60A7E4B1A00E00B11 /* loader.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = loader.c; sourceTree = "<group>"; };
@@ -797,7 +797,7 @@
 		B6FEA44F0444C3370013916D /* tc2068.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = tc2068.c; sourceTree = "<group>"; };
 		F520C8BC038D022E01A804BA /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		F536B56503A0C275011517A0 /* utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utils.c; path = ../utils.c; sourceTree = SOURCE_ROOT; };
-		F541FB5E03B0B33401FF8235 /* scaler.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = scaler.h; path = ../ui/scaler/scaler.h; sourceTree = SOURCE_ROOT; };
+		F541FB5E03B0B33401FF8235 /* scaler.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = scaler.h; path = scaler.h; sourceTree = "<group>"; };
 		F54670EB03A3F3E70143EC2C /* settings.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = settings.m; sourceTree = SOURCE_ROOT; };
 		F559854C0389212301A804BA /* 48.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = 48.rom; path = ../roms/48.rom; sourceTree = SOURCE_ROOT; };
 		F559854D0389212301A804BA /* 128-0.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "128-0.rom"; path = "../roms/128-0.rom"; sourceTree = SOURCE_ROOT; };
