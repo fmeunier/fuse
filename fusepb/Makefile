@@ -3,10 +3,10 @@ all: settings.h settings.m \
 ../z80/z80_ed.c settings_cocoa.h options.h options_cocoa.h options.m
 
 settings_cocoa.h: ../settings.dat settings-cocoa-header.pl
-	cd .. && perl -Iperl fusepb/settings-cocoa-header.pl settings.dat > fusepb/settings_cocoa.h
+	cd .. && perl -Iperl fusepb/settings-cocoa-header.pl settings.dat > fusepb/$@.tmp && mv fusepb/$@.tmp fusepb/$@
 
 settings.h: ../settings.dat settings-header.pl
-	cd .. && perl -Iperl fusepb/settings-header.pl settings.dat > fusepb/settings.h
+	cd .. && perl -Iperl fusepb/settings-header.pl settings.dat > fusepb/$@.tmp && mv fusepb/$@.tmp fusepb/$@
 
 settings.m: ../settings.dat ../settings.pl
 	cd .. && perl -Iperl settings.pl settings.dat > fusepb/settings.m
