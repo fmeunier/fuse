@@ -1,3 +1,5 @@
+#include? "FuseUpstreamPaths.xcconfig"
+
 // Shared signing defaults for contributor builds.
 // Maintainers can override these values locally in LocalSigning.xcconfig.
 
