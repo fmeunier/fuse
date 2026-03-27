@@ -544,8 +544,8 @@
 		B66050ED0606AAF500247454 /* breakpoint.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = breakpoint.h; path = breakpoint.h; sourceTree = "<group>"; };
 		B66050F80606AB0B00247454 /* scorpion.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = scorpion.c; sourceTree = "<group>"; };
 		B66050F90606AB0B00247454 /* scorpion.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = scorpion.h; sourceTree = "<group>"; };
-		B66051080606ABDC00247454 /* input.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = input.c; path = ../input.c; sourceTree = SOURCE_ROOT; };
-		B66051090606ABDC00247454 /* input.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = input.h; path = ../input.h; sourceTree = SOURCE_ROOT; };
+		B66051080606ABDC00247454 /* input.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = input.c; path = input.c; sourceTree = "<group>"; };
+		B66051090606ABDC00247454 /* input.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = input.h; path = input.h; sourceTree = "<group>"; };
 		B665EE021052A29F00FCFED8 /* Debugger.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Debugger.xib; sourceTree = "<group>"; };
 		B665EE071052A34700FCFED8 /* JoystickConfiguration.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = JoystickConfiguration.xib; sourceTree = "<group>"; };
 		B665EE0A1052A39000FCFED8 /* Keyboard.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Keyboard.xib; sourceTree = "<group>"; };
