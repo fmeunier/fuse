@@ -818,10 +818,10 @@
 		F55985B40389224001A804BA /* z80.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = z80.h; path = z80.h; sourceTree = "<group>"; };
 		F55985CF038922A801A804BA /* ay.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ay.c; path = sound/ay.c; sourceTree = "<group>"; };
 		F55985D0038922A801A804BA /* ay.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ay.h; path = sound/ay.h; sourceTree = "<group>"; };
-		F55985D3038922B901A804BA /* display.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = display.c; path = ../display.c; sourceTree = SOURCE_ROOT; };
-		F55985D4038922B901A804BA /* display.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = display.h; path = ../display.h; sourceTree = SOURCE_ROOT; };
-		F55985D5038922B901A804BA /* event.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = event.c; path = ../event.c; sourceTree = SOURCE_ROOT; };
-		F55985D6038922B901A804BA /* event.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = event.h; path = ../event.h; sourceTree = SOURCE_ROOT; };
+		F55985D3038922B901A804BA /* display.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = display.c; path = display.c; sourceTree = "<group>"; };
+		F55985D4038922B901A804BA /* display.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = display.h; path = display.h; sourceTree = "<group>"; };
+		F55985D5038922B901A804BA /* event.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = event.c; path = event.c; sourceTree = "<group>"; };
+		F55985D6038922B901A804BA /* event.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = event.h; path = event.h; sourceTree = "<group>"; };
 		F55985DC038922C501A804BA /* fuse.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = fuse.h; path = ../fuse.h; sourceTree = SOURCE_ROOT; };
 		F55985E0038922D401A804BA /* joystick.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = joystick.h; sourceTree = "<group>"; };
 		F55985E1038922D401A804BA /* keyboard.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = keyboard.c; path = ../keyboard.c; sourceTree = SOURCE_ROOT; };
