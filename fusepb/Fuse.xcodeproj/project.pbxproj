@@ -584,7 +584,7 @@
 		B684A19D0E93A8CD00A5B097 /* event.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = event.c; sourceTree = "<group>"; };
 		B684A19F0E93A8D700A5B097 /* variable.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = variable.c; sourceTree = "<group>"; };
 		B684A1A10E93A8FC00A5B097 /* file.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = file.c; sourceTree = "<group>"; };
-		B6871C9D04AF7BEF00C24D83 /* compat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = compat.h; path = ../compat.h; sourceTree = SOURCE_ROOT; };
+		B6871C9D04AF7BEF00C24D83 /* compat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = compat.h; path = compat.h; sourceTree = "<group>"; };
 		B688FD9B2F544D6000A08A6D /* ttx2000s.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ttx2000s.h; sourceTree = "<group>"; };
 		B688FD9C2F544D6000A08A6D /* ttx2000s.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ttx2000s.c; sourceTree = "<group>"; };
 		B688FD9E2F54522E00A08A6D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -595,8 +595,8 @@
 		B68C32951D3BBF2D0082CBD4 /* startup_manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = startup_manager.h; sourceTree = "<group>"; };
 		B68C32971D3BBF620082CBD4 /* z80_debugger_variables.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = z80_debugger_variables.c; path = z80_debugger_variables.c; sourceTree = "<group>"; };
 		B68C32981D3BBF620082CBD4 /* z80_internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = z80_internals.h; path = z80_internals.h; sourceTree = "<group>"; };
-		B68C40C106749716009ED517 /* slt.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = slt.c; path = ../slt.c; sourceTree = SOURCE_ROOT; };
-		B68C40C206749716009ED517 /* slt.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = slt.h; path = ../slt.h; sourceTree = SOURCE_ROOT; };
+		B68C40C106749716009ED517 /* slt.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = slt.c; path = slt.c; sourceTree = "<group>"; };
+		B68C40C206749716009ED517 /* slt.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = slt.h; path = slt.h; sourceTree = "<group>"; };
 		B68CB2BD03DD91ED00A804BA /* command.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = command.c; path = command.c; sourceTree = "<group>"; };
 		B68CB2BE03DD91ED00A804BA /* commandl.l */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.lex; name = commandl.l; path = commandl.l; sourceTree = "<group>"; };
 		B68CB2BF03DD91ED00A804BA /* commandy.y */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.yacc; name = commandy.y; path = commandy.y; sourceTree = "<group>"; };
