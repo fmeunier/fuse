@@ -646,7 +646,7 @@
 		B6B076B10B59FE9A00D4F95C /* Emulator.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = Emulator.m; sourceTree = "<group>"; };
 		B6B274051672AC8C00FC209B /* paths.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = paths.c; sourceTree = "<group>"; };
 		B6B99F890B5F798700EE408F /* cocoadisplay.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = cocoadisplay.m; sourceTree = "<group>"; };
-		B6BA1A9404E4F88F0017354F /* uijoystick.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uijoystick.h; path = ../ui/uijoystick.h; sourceTree = SOURCE_ROOT; };
+		B6BA1A9404E4F88F0017354F /* uijoystick.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uijoystick.h; path = uijoystick.h; sourceTree = "<group>"; };
 		B6BDE2DA125DF4A800B81C58 /* spec48_ntsc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = spec48_ntsc.c; sourceTree = "<group>"; };
 		B6C3479F044B091100E1BBA7 /* ts2068.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ts2068.png; path = resources/ts2068.png; sourceTree = SOURCE_ROOT; };
 		B6C57E0005ECA05B0056F1D0 /* periph.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = periph.c; path = ../periph.c; sourceTree = SOURCE_ROOT; };
@@ -810,8 +810,8 @@
 		F55985570389213E01A804BA /* plus3-3.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "plus3-3.rom"; path = "../roms/plus3-3.rom"; sourceTree = SOURCE_ROOT; };
 		F55985580389213E01A804BA /* tc2048.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = tc2048.rom; path = ../roms/tc2048.rom; sourceTree = SOURCE_ROOT; };
 		F5598598038921C501A804BA /* config.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = SOURCE_ROOT; };
-		F55985AD0389222701A804BA /* ui.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../ui/ui.h; sourceTree = SOURCE_ROOT; };
-		F55985AE0389222701A804BA /* uidisplay.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uidisplay.h; path = ../ui/uidisplay.h; sourceTree = SOURCE_ROOT; };
+		F55985AD0389222701A804BA /* ui.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ui.h; sourceTree = "<group>"; };
+		F55985AE0389222701A804BA /* uidisplay.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uidisplay.h; path = uidisplay.h; sourceTree = "<group>"; };
 		F55985B10389224001A804BA /* z80_macros.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = z80_macros.h; path = z80_macros.h; sourceTree = "<group>"; };
 		F55985B20389224001A804BA /* z80_ops.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = z80_ops.c; path = z80_ops.c; sourceTree = "<group>"; };
 		F55985B30389224001A804BA /* z80.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = z80.c; path = z80.c; sourceTree = "<group>"; };
