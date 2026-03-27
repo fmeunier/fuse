@@ -1,0 +1,2 @@
+FUSE_GENERATOR_ROOT = $(SRCROOT)/../../FuseGenerator
+INFOPLIST_FILE = $(FUSE_GENERATOR_ROOT)/Info.plist
