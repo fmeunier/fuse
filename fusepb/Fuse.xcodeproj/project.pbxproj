@@ -767,8 +767,8 @@
 		B6E1F1AF14F6555400600EB0 /* disciple.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = disciple.c; sourceTree = "<group>"; };
 		B6E1F1B014F6555400600EB0 /* disciple.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = disciple.h; sourceTree = "<group>"; };
 		B6E1F26D14F85BD500600EB0 /* speccyboot-1.4.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "speccyboot-1.4.rom"; path = "../roms/speccyboot-1.4.rom"; sourceTree = "<group>"; };
-		B6E811F0084B5117008CF718 /* profile.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = profile.c; path = ../profile.c; sourceTree = SOURCE_ROOT; };
-		B6E811F1084B5117008CF718 /* profile.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = profile.h; path = ../profile.h; sourceTree = SOURCE_ROOT; };
+		B6E811F0084B5117008CF718 /* profile.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = profile.c; path = profile.c; sourceTree = "<group>"; };
+		B6E811F1084B5117008CF718 /* profile.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = profile.h; path = profile.h; sourceTree = "<group>"; };
 		B6E811F4084B5148008CF718 /* ide.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = ide.c; sourceTree = "<group>"; };
 		B6E811F5084B5148008CF718 /* ide.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ide.h; sourceTree = "<group>"; };
 		B6EEA76F03CEF1D500FE73F2 /* spec16.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = spec16.c; sourceTree = "<group>"; };
