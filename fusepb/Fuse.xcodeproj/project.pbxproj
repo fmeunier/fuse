@@ -410,36 +410,36 @@
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		B7A1C10A3A75380000C0DE01 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseImporter/main.m; sourceTree = SOURCE_ROOT; };
-		B7A1C10B3A75380000C0DE01 /* GetMetadataForFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseImporter/GetMetadataForFile.m; sourceTree = SOURCE_ROOT; };
-		B7A1C10C3A75380000C0DE01 /* GetMetadataForFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseImporter/GetMetadataForFile.h; sourceTree = SOURCE_ROOT; };
-		B7A1C10D3A75380000C0DE01 /* LibspectrumMetadataImporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseImporter/LibspectrumMetadataImporter.m; sourceTree = SOURCE_ROOT; };
-		B7A1C10E3A75380000C0DE01 /* LibspectrumMetadataImporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseImporter/LibspectrumMetadataImporter.h; sourceTree = SOURCE_ROOT; };
-		B7A1C10F3A75380000C0DE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ../../FuseImporter/Info.plist; sourceTree = SOURCE_ROOT; };
-		B7A1C1103A75380000C0DE01 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = ../../FuseImporter/en.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
-		B7A1C1113A75380000C0DE01 /* schema.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = ../../FuseImporter/schema.xml; sourceTree = SOURCE_ROOT; };
-		B7A1C1123A75380000C0DE01 /* schema.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = ../../FuseImporter/en.lproj/schema.strings; sourceTree = SOURCE_ROOT; };
+		B7A1C10A3A75380000C0DE01 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		B7A1C10B3A75380000C0DE01 /* GetMetadataForFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GetMetadataForFile.m; sourceTree = "<group>"; };
+		B7A1C10C3A75380000C0DE01 /* GetMetadataForFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GetMetadataForFile.h; sourceTree = "<group>"; };
+		B7A1C10D3A75380000C0DE01 /* LibspectrumMetadataImporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LibspectrumMetadataImporter.m; sourceTree = "<group>"; };
+		B7A1C10E3A75380000C0DE01 /* LibspectrumMetadataImporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibspectrumMetadataImporter.h; sourceTree = "<group>"; };
+		B7A1C10F3A75380000C0DE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B7A1C1103A75380000C0DE01 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B7A1C1113A75380000C0DE01 /* schema.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = schema.xml; sourceTree = "<group>"; };
+		B7A1C1123A75380000C0DE01 /* schema.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = en.lproj/schema.strings; sourceTree = "<group>"; };
 		B7A1C1133A75380000C0DE01 /* FuseImporter.mdimporter */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FuseImporter.mdimporter; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7A1C1143A75380000C0DE01 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		B7A1C1153A75380000C0DE01 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
-		B7A1C30A3A75A00000C0DE01 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ../../FuseGenerator/main.c; sourceTree = SOURCE_ROOT; };
-		B7A1C30B3A75A00000C0DE01 /* GeneratePreviewForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseGenerator/GeneratePreviewForURL.m; sourceTree = SOURCE_ROOT; };
-		B7A1C30C3A75A00000C0DE01 /* GenerateThumbnailForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseGenerator/GenerateThumbnailForURL.m; sourceTree = SOURCE_ROOT; };
-		B7A1C30D3A75A00000C0DE01 /* LibspectrumSCRExtractor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/LibspectrumSCRExtractor.h; sourceTree = SOURCE_ROOT; };
-		B7A1C30E3A75A00000C0DE01 /* LibspectrumSCRExtractor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseGenerator/LibspectrumSCRExtractor.m; sourceTree = SOURCE_ROOT; };
-		B7A1C30F3A75A00000C0DE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ../../FuseGenerator/Info.plist; sourceTree = SOURCE_ROOT; };
-		B7A1C3103A75A00000C0DE01 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = ../../FuseGenerator/en.lproj/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
+		B7A1C30A3A75A00000C0DE01 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		B7A1C30B3A75A00000C0DE01 /* GeneratePreviewForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratePreviewForURL.m; sourceTree = "<group>"; };
+		B7A1C30C3A75A00000C0DE01 /* GenerateThumbnailForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GenerateThumbnailForURL.m; sourceTree = "<group>"; };
+		B7A1C30D3A75A00000C0DE01 /* LibspectrumSCRExtractor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibspectrumSCRExtractor.h; sourceTree = "<group>"; };
+		B7A1C30E3A75A00000C0DE01 /* LibspectrumSCRExtractor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LibspectrumSCRExtractor.m; sourceTree = "<group>"; };
+		B7A1C30F3A75A00000C0DE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B7A1C3103A75A00000C0DE01 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
 		B7A1C3113A75A00000C0DE01 /* FuseGenerator.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FuseGenerator.qlgenerator; sourceTree = BUILT_PRODUCTS_DIR; };
-		B7A1C3123A75A00000C0DE01 /* JWSpectrumScreen */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ../../FuseGenerator/JWSpectrumScreen; sourceTree = SOURCE_ROOT; };
-		B7A1C3133A75A00000C0DE01 /* JWSpectrumScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/JWSpectrumScreen/JWSpectrumScreen.h; sourceTree = SOURCE_ROOT; };
-		B7A1C3143A75A00000C0DE01 /* JWSpectrumScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ../../FuseGenerator/JWSpectrumScreen/JWSpectrumScreen.m; sourceTree = SOURCE_ROOT; };
-		B7A1C3153A75A00000C0DE01 /* AttributeManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/JWSpectrumScreen/AttributeManager.h; sourceTree = SOURCE_ROOT; };
-		B7A1C3163A75A00000C0DE01 /* ColourMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/JWSpectrumScreen/ColourMacros.h; sourceTree = SOURCE_ROOT; };
-		B7A1C3173A75A00000C0DE01 /* JWSpectrumScreenConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ../../FuseGenerator/JWSpectrumScreen/JWSpectrumScreenConstants.h; sourceTree = SOURCE_ROOT; };
+		B7A1C3123A75A00000C0DE01 /* JWSpectrumScreen */ = {isa = PBXFileReference; lastKnownFileType = folder; path = JWSpectrumScreen; sourceTree = "<group>"; };
+		B7A1C3133A75A00000C0DE01 /* JWSpectrumScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JWSpectrumScreen.h; sourceTree = "<group>"; };
+		B7A1C3143A75A00000C0DE01 /* JWSpectrumScreen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JWSpectrumScreen.m; sourceTree = "<group>"; };
+		B7A1C3153A75A00000C0DE01 /* AttributeManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AttributeManager.h; sourceTree = "<group>"; };
+		B7A1C3163A75A00000C0DE01 /* ColourMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColourMacros.h; sourceTree = "<group>"; };
+		B7A1C3173A75A00000C0DE01 /* JWSpectrumScreenConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JWSpectrumScreenConstants.h; sourceTree = "<group>"; };
 		B7A1C3183A75A00000C0DE01 /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = /System/Library/Frameworks/QuickLook.framework; sourceTree = "<absolute>"; };
 		B7A1C3193A75A00000C0DE01 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
-		B7A1C31E3A75A10000C0DE01 /* AttributeManager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ../../FuseGenerator/JWSpectrumScreen/AttributeManager.c; sourceTree = SOURCE_ROOT; };
-		B7A1C3203A75A10000C0DE01 /* ColourMacros.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ../../FuseGenerator/JWSpectrumScreen/ColourMacros.c; sourceTree = SOURCE_ROOT; };
+		B7A1C31E3A75A10000C0DE01 /* AttributeManager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = AttributeManager.c; sourceTree = "<group>"; };
+		B7A1C3203A75A10000C0DE01 /* ColourMacros.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ColourMacros.c; sourceTree = "<group>"; };
 		B6013811164692F5005FD3AE /* Fuse.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = Fuse.iconset; path = ../Fuse.iconset; sourceTree = "<group>"; };
 		B6018479065A586900B0BE59 /* zxatasp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = zxatasp.c; sourceTree = "<group>"; };
 		B601847A065A586900B0BE59 /* zxatasp.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = zxatasp.h; sourceTree = "<group>"; };
@@ -1402,7 +1402,8 @@
 				B7A1C10F3A75380000C0DE01 /* Info.plist */,
 			);
 			name = FuseImporter;
-			sourceTree = "<group>";
+			path = ../../FuseImporter;
+			sourceTree = SOURCE_ROOT;
 		};
 		B7A1C1173A75380000C0DE01 /* Resources */ = {
 			isa = PBXGroup;
@@ -1427,7 +1428,8 @@
 				B7A1C30F3A75A00000C0DE01 /* Info.plist */,
 			);
 			name = FuseGenerator;
-			sourceTree = "<group>";
+			path = ../../FuseGenerator;
+			sourceTree = SOURCE_ROOT;
 		};
 		B7A1C3213A75A00000C0DE01 /* JWSpectrumScreen */ = {
 			isa = PBXGroup;
@@ -1441,6 +1443,7 @@
 				B7A1C3173A75A00000C0DE01 /* JWSpectrumScreenConstants.h */,
 			);
 			name = JWSpectrumScreen;
+			path = JWSpectrumScreen;
 			sourceTree = "<group>";
 		};
 		B7A1C3223A75A00000C0DE01 /* Resources */ = {
@@ -1449,6 +1452,7 @@
 				B7A1C3103A75A00000C0DE01 /* InfoPlist.strings */,
 			);
 			name = Resources;
+			path = en.lproj;
 			sourceTree = "<group>";
 		};
 		B6DCBB5D114FA0E700DC9A11 /* libspectrum */ = {
