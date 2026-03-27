@@ -799,7 +799,7 @@
 		F536B56503A0C275011517A0 /* utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utils.c; path = utils.c; sourceTree = "<group>"; };
 		F541FB5E03B0B33401FF8235 /* scaler.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = scaler.h; path = scaler.h; sourceTree = "<group>"; };
 		F54670EB03A3F3E70143EC2C /* settings.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = settings.m; sourceTree = SOURCE_ROOT; };
-		F559854C0389212301A804BA /* 48.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = 48.rom; path = ../roms/48.rom; sourceTree = SOURCE_ROOT; };
+		F559854C0389212301A804BA /* 48.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = 48.rom; path = 48.rom; sourceTree = "<group>"; };
 		F559854D0389212301A804BA /* 128-0.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "128-0.rom"; path = "../roms/128-0.rom"; sourceTree = SOURCE_ROOT; };
 		F559854E0389212301A804BA /* 128-1.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "128-1.rom"; path = "../roms/128-1.rom"; sourceTree = SOURCE_ROOT; };
 		F55985520389213E01A804BA /* plus2-0.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "plus2-0.rom"; path = "../roms/plus2-0.rom"; sourceTree = SOURCE_ROOT; };
@@ -808,7 +808,7 @@
 		F55985550389213E01A804BA /* plus3-1.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "plus3-1.rom"; path = "../roms/plus3-1.rom"; sourceTree = SOURCE_ROOT; };
 		F55985560389213E01A804BA /* plus3-2.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "plus3-2.rom"; path = "../roms/plus3-2.rom"; sourceTree = SOURCE_ROOT; };
 		F55985570389213E01A804BA /* plus3-3.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "plus3-3.rom"; path = "../roms/plus3-3.rom"; sourceTree = SOURCE_ROOT; };
-		F55985580389213E01A804BA /* tc2048.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = tc2048.rom; path = ../roms/tc2048.rom; sourceTree = SOURCE_ROOT; };
+		F55985580389213E01A804BA /* tc2048.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = tc2048.rom; path = tc2048.rom; sourceTree = "<group>"; };
 		F5598598038921C501A804BA /* config.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = SOURCE_ROOT; };
 		F55985AD0389222701A804BA /* ui.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ui.h; sourceTree = "<group>"; };
 		F55985AE0389222701A804BA /* uidisplay.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uidisplay.h; path = uidisplay.h; sourceTree = "<group>"; };
@@ -1643,6 +1643,7 @@
 				B6FEA44C0444C2CC0013916D /* tc2068-1.rom */,
 			);
 			name = roms;
+			path = ../roms;
 			sourceTree = "<group>";
 		};
 		F559859A038921CA01A804BA /* ui */ = {
