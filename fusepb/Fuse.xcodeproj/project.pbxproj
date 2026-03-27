@@ -829,8 +829,8 @@
 		F55985EA038922ED01A804BA /* machine.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = machine.h; path = machine.h; sourceTree = "<group>"; };
 		F55985F10389230E01A804BA /* printer.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = printer.c; sourceTree = "<group>"; };
 		F55985F20389230E01A804BA /* printer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = printer.h; sourceTree = "<group>"; };
-		F55985F50389231E01A804BA /* rzx.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = rzx.c; path = ../rzx.c; sourceTree = SOURCE_ROOT; };
-		F55985F60389231E01A804BA /* rzx.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = rzx.h; path = ../rzx.h; sourceTree = SOURCE_ROOT; };
+		F55985F50389231E01A804BA /* rzx.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = rzx.c; path = rzx.c; sourceTree = "<group>"; };
+		F55985F60389231E01A804BA /* rzx.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = rzx.h; path = rzx.h; sourceTree = "<group>"; };
 		F55985F70389231E01A804BA /* scld.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = scld.c; sourceTree = "<group>"; };
 		F55985F80389231E01A804BA /* scld.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = scld.h; sourceTree = "<group>"; };
 		F55985F90389231E01A804BA /* screenshot.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = screenshot.c; path = ../screenshot.c; sourceTree = SOURCE_ROOT; };
