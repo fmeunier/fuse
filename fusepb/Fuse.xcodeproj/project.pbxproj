@@ -593,8 +593,8 @@
 		B68C32911D3BBEC20082CBD4 /* system_variable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = system_variable.c; sourceTree = "<group>"; };
 		B68C32941D3BBF2D0082CBD4 /* startup_manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = startup_manager.c; sourceTree = "<group>"; };
 		B68C32951D3BBF2D0082CBD4 /* startup_manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = startup_manager.h; sourceTree = "<group>"; };
-		B68C32971D3BBF620082CBD4 /* z80_debugger_variables.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = z80_debugger_variables.c; path = z80/z80_debugger_variables.c; sourceTree = "<group>"; };
-		B68C32981D3BBF620082CBD4 /* z80_internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = z80_internals.h; path = z80/z80_internals.h; sourceTree = "<group>"; };
+		B68C32971D3BBF620082CBD4 /* z80_debugger_variables.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = z80_debugger_variables.c; path = z80_debugger_variables.c; sourceTree = "<group>"; };
+		B68C32981D3BBF620082CBD4 /* z80_internals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = z80_internals.h; path = z80_internals.h; sourceTree = "<group>"; };
 		B68C40C106749716009ED517 /* slt.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = slt.c; path = ../slt.c; sourceTree = SOURCE_ROOT; };
 		B68C40C206749716009ED517 /* slt.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = slt.h; path = ../slt.h; sourceTree = SOURCE_ROOT; };
 		B68CB2BD03DD91ED00A804BA /* command.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = command.c; path = ../debugger/command.c; sourceTree = "<group>"; };
@@ -687,7 +687,7 @@
 		B6CE3A0F0CD21617005ACDC8 /* wd_fdc.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = wd_fdc.h; sourceTree = "<group>"; };
 		B6CE3A120CD217C2005ACDC8 /* pentagon1024.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = pentagon1024.c; sourceTree = "<group>"; };
 		B6CE3A140CD21838005ACDC8 /* bitmap.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = bitmap.h; sourceTree = "<group>"; };
-		B6CE3A160CD21853005ACDC8 /* z80_checks.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = z80_checks.h; path = z80/z80_checks.h; sourceTree = "<group>"; };
+		B6CE3A160CD21853005ACDC8 /* z80_checks.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = z80_checks.h; path = z80_checks.h; sourceTree = "<group>"; };
 		B6CE7F3B0B2830A300EB65B3 /* cocoadisplay.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = cocoadisplay.h; sourceTree = "<group>"; };
 		B6CE7F3C0B2830A300EB65B3 /* cocoajoystick.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = cocoajoystick.c; sourceTree = "<group>"; };
 		B6CE7F3E0B2830A300EB65B3 /* cocoaui.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = cocoaui.h; sourceTree = "<group>"; };
@@ -812,10 +812,10 @@
 		F5598598038921C501A804BA /* config.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = SOURCE_ROOT; };
 		F55985AD0389222701A804BA /* ui.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../ui/ui.h; sourceTree = SOURCE_ROOT; };
 		F55985AE0389222701A804BA /* uidisplay.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uidisplay.h; path = ../ui/uidisplay.h; sourceTree = SOURCE_ROOT; };
-		F55985B10389224001A804BA /* z80_macros.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = z80_macros.h; path = ../z80/z80_macros.h; sourceTree = SOURCE_ROOT; };
-		F55985B20389224001A804BA /* z80_ops.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = z80_ops.c; path = ../z80/z80_ops.c; sourceTree = SOURCE_ROOT; };
-		F55985B30389224001A804BA /* z80.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = z80.c; path = ../z80/z80.c; sourceTree = SOURCE_ROOT; };
-		F55985B40389224001A804BA /* z80.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = z80.h; path = ../z80/z80.h; sourceTree = SOURCE_ROOT; };
+		F55985B10389224001A804BA /* z80_macros.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = z80_macros.h; path = z80_macros.h; sourceTree = "<group>"; };
+		F55985B20389224001A804BA /* z80_ops.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = z80_ops.c; path = z80_ops.c; sourceTree = "<group>"; };
+		F55985B30389224001A804BA /* z80.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = z80.c; path = z80.c; sourceTree = "<group>"; };
+		F55985B40389224001A804BA /* z80.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = z80.h; path = z80.h; sourceTree = "<group>"; };
 		F55985CF038922A801A804BA /* ay.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ay.c; path = sound/ay.c; sourceTree = "<group>"; };
 		F55985D0038922A801A804BA /* ay.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ay.h; path = sound/ay.h; sourceTree = "<group>"; };
 		F55985D3038922B901A804BA /* display.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = display.c; path = ../display.c; sourceTree = SOURCE_ROOT; };
@@ -1670,6 +1670,7 @@
 				F55985B20389224001A804BA /* z80_ops.c */,
 			);
 			name = z80;
+			path = z80;
 			sourceTree = "<group>";
 		};
 		F559859E038921E201A804BA /* fuse */ = {
