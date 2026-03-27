@@ -447,7 +447,7 @@
 		B601847C065A586900B0BE59 /* zxcf.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = zxcf.h; sourceTree = "<group>"; };
 		B604635E04C5F37B00C225C9 /* expression.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = expression.c; path = expression.c; sourceTree = "<group>"; };
 		B60A6A3A042BEECE00D41533 /* scaler_internals.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = scaler_internals.h; path = scaler_internals.h; sourceTree = "<group>"; };
-		B60B11F7059BC7E70048B64B /* machine.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = machine.c; path = ../machine.c; sourceTree = SOURCE_ROOT; };
+		B60B11F7059BC7E70048B64B /* machine.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = machine.c; path = machine.c; sourceTree = "<group>"; };
 		B611190206A1FA12006D2711 /* JoystickConfigurationController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = JoystickConfigurationController.h; path = controllers/JoystickConfigurationController.h; sourceTree = SOURCE_ROOT; };
 		B611190306A1FA12006D2711 /* JoystickConfigurationController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = JoystickConfigurationController.m; path = controllers/JoystickConfigurationController.m; sourceTree = SOURCE_ROOT; };
 		B61159BE0EEE99D50029FEA3 /* Graphics_Filter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Graphics_Filter.png; sourceTree = "<group>"; };
@@ -826,7 +826,7 @@
 		F55985E0038922D401A804BA /* joystick.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = joystick.h; sourceTree = "<group>"; };
 		F55985E1038922D401A804BA /* keyboard.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = keyboard.c; path = ../keyboard.c; sourceTree = SOURCE_ROOT; };
 		F55985E2038922D401A804BA /* keyboard.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = keyboard.h; path = ../keyboard.h; sourceTree = SOURCE_ROOT; };
-		F55985EA038922ED01A804BA /* machine.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = machine.h; path = ../machine.h; sourceTree = SOURCE_ROOT; };
+		F55985EA038922ED01A804BA /* machine.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = machine.h; path = machine.h; sourceTree = "<group>"; };
 		F55985F10389230E01A804BA /* printer.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = printer.c; sourceTree = "<group>"; };
 		F55985F20389230E01A804BA /* printer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = printer.h; sourceTree = "<group>"; };
 		F55985F50389231E01A804BA /* rzx.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = rzx.c; path = ../rzx.c; sourceTree = SOURCE_ROOT; };
