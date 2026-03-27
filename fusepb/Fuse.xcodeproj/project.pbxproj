@@ -791,12 +791,12 @@
 		B6F74F9704B855D40059D51C /* LoadBinaryController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = LoadBinaryController.m; path = controllers/LoadBinaryController.m; sourceTree = "<group>"; };
 		B6F74F9C04B85B660059D51C /* SaveBinaryController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SaveBinaryController.h; path = controllers/SaveBinaryController.h; sourceTree = "<group>"; };
 		B6F74F9D04B85B660059D51C /* SaveBinaryController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = SaveBinaryController.m; path = controllers/SaveBinaryController.m; sourceTree = "<group>"; };
-		B6FD5C7A05A4F5B600A6C4FC /* utils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = utils.h; path = ../utils.h; sourceTree = SOURCE_ROOT; };
+		B6FD5C7A05A4F5B600A6C4FC /* utils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = utils.h; path = utils.h; sourceTree = "<group>"; };
 		B6FEA44B0444C2CC0013916D /* tc2068-0.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "tc2068-0.rom"; path = "../roms/tc2068-0.rom"; sourceTree = SOURCE_ROOT; };
 		B6FEA44C0444C2CC0013916D /* tc2068-1.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "tc2068-1.rom"; path = "../roms/tc2068-1.rom"; sourceTree = SOURCE_ROOT; };
 		B6FEA44F0444C3370013916D /* tc2068.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = tc2068.c; sourceTree = "<group>"; };
 		F520C8BC038D022E01A804BA /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
-		F536B56503A0C275011517A0 /* utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utils.c; path = ../utils.c; sourceTree = SOURCE_ROOT; };
+		F536B56503A0C275011517A0 /* utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utils.c; path = utils.c; sourceTree = "<group>"; };
 		F541FB5E03B0B33401FF8235 /* scaler.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = scaler.h; path = scaler.h; sourceTree = "<group>"; };
 		F54670EB03A3F3E70143EC2C /* settings.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = settings.m; sourceTree = SOURCE_ROOT; };
 		F559854C0389212301A804BA /* 48.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = 48.rom; path = ../roms/48.rom; sourceTree = SOURCE_ROOT; };
@@ -852,7 +852,7 @@
 		F559862B0389235F01A804BA /* tape.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = tape.c; path = tape.c; sourceTree = "<group>"; };
 		F559862C0389235F01A804BA /* tape.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = tape.h; path = tape.h; sourceTree = "<group>"; };
 		F559862D0389235F01A804BA /* tc2048.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = tc2048.c; sourceTree = "<group>"; };
-		F559863C0389238101A804BA /* uidisplay.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = uidisplay.c; path = ../uidisplay.c; sourceTree = SOURCE_ROOT; };
+		F559863C0389238101A804BA /* uidisplay.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = uidisplay.c; path = uidisplay.c; sourceTree = "<group>"; };
 		F56B6A5E03A6273801CA65B5 /* KeyboardController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = KeyboardController.h; path = controllers/KeyboardController.h; sourceTree = SOURCE_ROOT; };
 		F56B6A5F03A6273801CA65B5 /* KeyboardController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = KeyboardController.m; path = controllers/KeyboardController.m; sourceTree = SOURCE_ROOT; };
 		F56B6A6203A628A901CA65B5 /* 48k.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = 48k.png; path = resources/48k.png; sourceTree = "<group>"; };
