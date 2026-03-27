@@ -836,8 +836,8 @@
 		F55985F90389231E01A804BA /* screenshot.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = screenshot.c; path = screenshot.c; sourceTree = "<group>"; };
 		F55985FA0389231E01A804BA /* screenshot.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = screenshot.h; path = screenshot.h; sourceTree = "<group>"; };
 		F55986070389233901A804BA /* settings.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = settings.h; sourceTree = SOURCE_ROOT; };
-		F55986090389234A01A804BA /* snapshot.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = snapshot.c; path = ../snapshot.c; sourceTree = SOURCE_ROOT; };
-		F559860A0389234A01A804BA /* snapshot.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = snapshot.h; path = ../snapshot.h; sourceTree = SOURCE_ROOT; };
+		F55986090389234A01A804BA /* snapshot.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = snapshot.c; path = snapshot.c; sourceTree = "<group>"; };
+		F559860A0389234A01A804BA /* snapshot.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = snapshot.h; path = snapshot.h; sourceTree = "<group>"; };
 		F559860C0389234A01A804BA /* sound.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = sound.h; path = ../sound.h; sourceTree = SOURCE_ROOT; };
 		F559860D0389234A01A804BA /* spec48.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = spec48.c; sourceTree = "<group>"; };
 		F559860E0389234A01A804BA /* spec48.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = spec48.h; sourceTree = "<group>"; };
@@ -847,8 +847,8 @@
 		F55986130389234A01A804BA /* specplus2a.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = specplus2a.c; sourceTree = "<group>"; };
 		F55986150389234A01A804BA /* specplus3.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = specplus3.c; sourceTree = "<group>"; };
 		F55986160389234A01A804BA /* specplus3.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = specplus3.h; sourceTree = "<group>"; };
-		F55986170389234A01A804BA /* spectrum.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = spectrum.c; path = ../spectrum.c; sourceTree = SOURCE_ROOT; };
-		F55986180389234A01A804BA /* spectrum.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = spectrum.h; path = ../spectrum.h; sourceTree = SOURCE_ROOT; };
+		F55986170389234A01A804BA /* spectrum.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = spectrum.c; path = spectrum.c; sourceTree = "<group>"; };
+		F55986180389234A01A804BA /* spectrum.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = spectrum.h; path = spectrum.h; sourceTree = "<group>"; };
 		F559862B0389235F01A804BA /* tape.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = tape.c; path = ../tape.c; sourceTree = SOURCE_ROOT; };
 		F559862C0389235F01A804BA /* tape.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = tape.h; path = ../tape.h; sourceTree = SOURCE_ROOT; };
 		F559862D0389235F01A804BA /* tc2048.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = tc2048.c; sourceTree = "<group>"; };
