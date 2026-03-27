@@ -2759,7 +2759,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
-					../../,
+					"$(FUSE_SUPERPROJECT_ROOT)",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu89;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -2773,8 +2773,8 @@
 					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
 					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
 					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
-					"$(SRCROOT)/..",
-					"$(PROJECT_DIR)",
+					"$(FUSE_UPSTREAM_ROOT)",
+					"$(FUSE_COCOA_ROOT)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -2819,7 +2819,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
-					../../,
+					"$(FUSE_SUPERPROJECT_ROOT)",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu89;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -2832,8 +2832,8 @@
 					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
 					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
 					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
-					"$(SRCROOT)/..",
-					"$(PROJECT_DIR)",
+					"$(FUSE_UPSTREAM_ROOT)",
+					"$(FUSE_COCOA_ROOT)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -2874,7 +2874,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
-					../../,
+					"$(FUSE_SUPERPROJECT_ROOT)",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu89;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -2887,8 +2887,8 @@
 					"$(PROJECT_DERIVED_FILE_DIR)/deps/libspectrum-prefix/include",
 					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgcrypt-prefix/include",
 					"$(PROJECT_DERIVED_FILE_DIR)/deps/libgpg-error-prefix/include",
-					"$(SRCROOT)/..",
-					"$(PROJECT_DIR)",
+					"$(FUSE_UPSTREAM_ROOT)",
+					"$(FUSE_COCOA_ROOT)",
 				);
 				INFOPLIST_FILE = "Info-Fuse.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
