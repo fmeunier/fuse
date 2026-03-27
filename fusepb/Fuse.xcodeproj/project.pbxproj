@@ -649,8 +649,8 @@
 		B6BA1A9404E4F88F0017354F /* uijoystick.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uijoystick.h; path = uijoystick.h; sourceTree = "<group>"; };
 		B6BDE2DA125DF4A800B81C58 /* spec48_ntsc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = spec48_ntsc.c; sourceTree = "<group>"; };
 		B6C3479F044B091100E1BBA7 /* ts2068.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ts2068.png; path = resources/ts2068.png; sourceTree = SOURCE_ROOT; };
-		B6C57E0005ECA05B0056F1D0 /* periph.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = periph.c; path = ../periph.c; sourceTree = SOURCE_ROOT; };
-		B6C57E0105ECA05B0056F1D0 /* periph.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = periph.h; path = ../periph.h; sourceTree = SOURCE_ROOT; };
+		B6C57E0005ECA05B0056F1D0 /* periph.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = periph.c; path = periph.c; sourceTree = "<group>"; };
+		B6C57E0105ECA05B0056F1D0 /* periph.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = periph.h; path = periph.h; sourceTree = "<group>"; };
 		B6C691B704C20A42005EE041 /* joystick.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = joystick.c; sourceTree = "<group>"; };
 		B6C740D90810BB0500AB170C /* Joysticks.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Joysticks.h; path = content_arrays/Joysticks.h; sourceTree = SOURCE_ROOT; };
 		B6C740DA0810BB0500AB170C /* Joysticks.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = Joysticks.m; path = content_arrays/Joysticks.m; sourceTree = SOURCE_ROOT; };
@@ -663,8 +663,8 @@
 		B6CA2A250C33F8800003CF90 /* plusd.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = plusd.rom; path = ../roms/plusd.rom; sourceTree = "<group>"; };
 		B6CA2A2A0C33F8C10003CF90 /* plusd.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = plusd.c; sourceTree = "<group>"; };
 		B6CA2A2B0C33F8C10003CF90 /* plusd.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = plusd.h; sourceTree = "<group>"; };
-		B6CA304C049CEC410037E9F2 /* psg.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = psg.c; path = ../psg.c; sourceTree = SOURCE_ROOT; };
-		B6CA304D049CEC410037E9F2 /* psg.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = psg.h; path = ../psg.h; sourceTree = SOURCE_ROOT; };
+		B6CA304C049CEC410037E9F2 /* psg.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = psg.c; path = psg.c; sourceTree = "<group>"; };
+		B6CA304D049CEC410037E9F2 /* psg.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = psg.h; path = psg.h; sourceTree = "<group>"; };
 		B6CADD550C47AD90004BA954 /* Texture.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Texture.h; sourceTree = "<group>"; };
 		B6CADD560C47AD90004BA954 /* Texture.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = Texture.m; sourceTree = "<group>"; };
 		B6CADD670C48E188004BA954 /* cassette_green.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cassette_green.png; sourceTree = "<group>"; };
