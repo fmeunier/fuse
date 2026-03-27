@@ -824,8 +824,8 @@
 		F55985D6038922B901A804BA /* event.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = event.h; path = event.h; sourceTree = "<group>"; };
 		F55985DC038922C501A804BA /* fuse.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = fuse.h; path = ../fuse.h; sourceTree = SOURCE_ROOT; };
 		F55985E0038922D401A804BA /* joystick.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = joystick.h; sourceTree = "<group>"; };
-		F55985E1038922D401A804BA /* keyboard.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = keyboard.c; path = ../keyboard.c; sourceTree = SOURCE_ROOT; };
-		F55985E2038922D401A804BA /* keyboard.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = keyboard.h; path = ../keyboard.h; sourceTree = SOURCE_ROOT; };
+		F55985E1038922D401A804BA /* keyboard.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = keyboard.c; path = keyboard.c; sourceTree = "<group>"; };
+		F55985E2038922D401A804BA /* keyboard.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = keyboard.h; path = keyboard.h; sourceTree = "<group>"; };
 		F55985EA038922ED01A804BA /* machine.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = machine.h; path = machine.h; sourceTree = "<group>"; };
 		F55985F10389230E01A804BA /* printer.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = printer.c; sourceTree = "<group>"; };
 		F55985F20389230E01A804BA /* printer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = printer.h; sourceTree = "<group>"; };
@@ -849,8 +849,8 @@
 		F55986160389234A01A804BA /* specplus3.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = specplus3.h; sourceTree = "<group>"; };
 		F55986170389234A01A804BA /* spectrum.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = spectrum.c; path = spectrum.c; sourceTree = "<group>"; };
 		F55986180389234A01A804BA /* spectrum.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = spectrum.h; path = spectrum.h; sourceTree = "<group>"; };
-		F559862B0389235F01A804BA /* tape.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = tape.c; path = ../tape.c; sourceTree = SOURCE_ROOT; };
-		F559862C0389235F01A804BA /* tape.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = tape.h; path = ../tape.h; sourceTree = SOURCE_ROOT; };
+		F559862B0389235F01A804BA /* tape.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = tape.c; path = tape.c; sourceTree = "<group>"; };
+		F559862C0389235F01A804BA /* tape.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = tape.h; path = tape.h; sourceTree = "<group>"; };
 		F559862D0389235F01A804BA /* tc2048.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = tc2048.c; sourceTree = "<group>"; };
 		F559863C0389238101A804BA /* uidisplay.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = uidisplay.c; path = ../uidisplay.c; sourceTree = SOURCE_ROOT; };
 		F56B6A5E03A6273801CA65B5 /* KeyboardController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = KeyboardController.h; path = controllers/KeyboardController.h; sourceTree = SOURCE_ROOT; };
