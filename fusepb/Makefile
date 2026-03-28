@@ -1,4 +1,10 @@
+ifeq ($(wildcard ../settings.dat),../settings.dat)
 UPSTREAM_ROOT ?= ..
+else ifeq ($(wildcard ../fuse/settings.dat),../fuse/settings.dat)
+UPSTREAM_ROOT ?= ../fuse
+else
+UPSTREAM_ROOT ?= ..
+endif
 COCOA_ROOT ?= .
 PERL_ROOT = $(UPSTREAM_ROOT)/perl
 UI_ROOT = $(UPSTREAM_ROOT)/ui
