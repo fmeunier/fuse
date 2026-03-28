@@ -1509,7 +1509,7 @@
 				B6DCBBBA114FA0E700DC9A11 /* zxs.c */,
 			);
 			name = libspectrum;
-			path = fusepb/libspectrum;
+			path = "$(FUSE_COCOA_ROOT)/libspectrum";
 			sourceTree = "<group>";
 		};
 		B6DCBB80114FA0E700DC9A11 /* myglib */ = {

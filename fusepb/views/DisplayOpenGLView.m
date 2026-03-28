@@ -32,7 +32,7 @@
 #include <OpenGL/glu.h>
 
 #include "fuse.h"
-#include "fusepb/main.h"
+#include "main.h"
 #include "settings.h"
 #include "ui/cocoa/cocoaui.h"
 #include "ui/cocoa/dirty.h"

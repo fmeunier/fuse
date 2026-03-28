@@ -30,7 +30,7 @@
 #include "divmmc.h"
 #include "event.h"
 #include "fuse.h"
-#include "fusepb/main.h"
+#include "main.h"
 #include "if1.h"
 #include "if2.h"
 #include "keyboard.h"

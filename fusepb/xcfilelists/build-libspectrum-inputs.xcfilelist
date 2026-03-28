@@ -1,5 +1,5 @@
-$(SRCROOT)/../../scripts/autotools-common.sh
-$(SRCROOT)/../../scripts/build-libspectrum.sh
+$(FUSE_SCRIPTS_ROOT)/autotools-common.sh
+$(FUSE_SCRIPTS_ROOT)/build-libspectrum.sh
 $(SRCROOT)/libspectrum/configure
 $(SRCROOT)/libspectrum/Makefile.in
 $(SRCROOT)/libspectrum/aclocal.m4
