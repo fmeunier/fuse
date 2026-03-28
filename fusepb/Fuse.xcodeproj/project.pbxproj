@@ -490,8 +490,8 @@
 		B635EAE5116A0FE500A166F2 /* keystate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = keystate.c; sourceTree = SOURCE_ROOT; };
 		B635EAE6116A0FE500A166F2 /* keystate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keystate.h; sourceTree = SOURCE_ROOT; };
 		B6374FA40F178298003CE6E2 /* timer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = timer.c; path = timer/timer.c; sourceTree = SOURCE_ROOT; };
-		B6379299060AA0D300246736 /* se-0.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "se-0.rom"; path = "../roms/se-0.rom"; sourceTree = SOURCE_ROOT; };
-		B637929A060AA0D300246736 /* se-1.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "se-1.rom"; path = "../roms/se-1.rom"; sourceTree = SOURCE_ROOT; };
+		B6379299060AA0D300246736 /* se-0.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "se-0.rom"; path = "se-0.rom"; sourceTree = "<group>"; };
+		B637929A060AA0D300246736 /* se-1.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "se-1.rom"; path = "se-1.rom"; sourceTree = "<group>"; };
 		B639B7670A6BAFCF00927E24 /* csw.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = csw.icns; sourceTree = "<group>"; };
 		B639B7D00A6BB45600927E24 /* raw.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = raw.icns; sourceTree = "<group>"; };
 		B63ABD8D042F175200A864FD /* scaler.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = scaler.c; path = scaler.c; sourceTree = "<group>"; };
@@ -604,7 +604,7 @@
 		B68CB2C403DD920300A804BA /* debugger.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = debugger.c; path = debugger.c; sourceTree = "<group>"; };
 		B68CB2C503DD920300A804BA /* debugger.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = debugger.h; path = debugger.h; sourceTree = "<group>"; };
 		B68CB2C603DD920300A804BA /* disassemble.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = disassemble.c; path = disassemble.c; sourceTree = "<group>"; };
-		B69A00411723B8F300FF201C /* disciple.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = disciple.rom; path = ../roms/disciple.rom; sourceTree = SOURCE_ROOT; };
+		B69A00411723B8F300FF201C /* disciple.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = disciple.rom; path = disciple.rom; sourceTree = "<group>"; };
 		B69BE5321660DF5300C5D0CE /* socket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = socket.c; sourceTree = "<group>"; };
 		B69BE5351660DF8B00C5D0CE /* movie_tables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = movie_tables.h; sourceTree = "<group>"; };
 		B69BE5361660DF8B00C5D0CE /* movie.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = movie.c; sourceTree = "<group>"; };
@@ -660,7 +660,7 @@
 		B6CA27A60C2CDBC500F06FB3 /* dirty.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = dirty.h; sourceTree = "<group>"; };
 		B6CA2A210C33F8490003CF90 /* module.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = module.c; sourceTree = "<group>"; };
 		B6CA2A220C33F84A0003CF90 /* module.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = module.h; sourceTree = "<group>"; };
-		B6CA2A250C33F8800003CF90 /* plusd.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = plusd.rom; path = ../roms/plusd.rom; sourceTree = "<group>"; };
+		B6CA2A250C33F8800003CF90 /* plusd.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = plusd.rom; path = plusd.rom; sourceTree = "<group>"; };
 		B6CA2A2A0C33F8C10003CF90 /* plusd.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = plusd.c; sourceTree = "<group>"; };
 		B6CA2A2B0C33F8C10003CF90 /* plusd.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = plusd.h; sourceTree = "<group>"; };
 		B6CA304C049CEC410037E9F2 /* psg.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = psg.c; path = psg.c; sourceTree = "<group>"; };
@@ -766,7 +766,7 @@
 		B6E1F1AA14F653FB00600EB0 /* specdrum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = specdrum.h; path = sound/specdrum.h; sourceTree = "<group>"; };
 		B6E1F1AF14F6555400600EB0 /* disciple.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = disciple.c; sourceTree = "<group>"; };
 		B6E1F1B014F6555400600EB0 /* disciple.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = disciple.h; sourceTree = "<group>"; };
-		B6E1F26D14F85BD500600EB0 /* speccyboot-1.4.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "speccyboot-1.4.rom"; path = "../roms/speccyboot-1.4.rom"; sourceTree = "<group>"; };
+		B6E1F26D14F85BD500600EB0 /* speccyboot-1.4.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "speccyboot-1.4.rom"; path = "speccyboot-1.4.rom"; sourceTree = "<group>"; };
 		B6E811F0084B5117008CF718 /* profile.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = profile.c; path = profile.c; sourceTree = "<group>"; };
 		B6E811F1084B5117008CF718 /* profile.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = profile.h; path = profile.h; sourceTree = "<group>"; };
 		B6E811F4084B5148008CF718 /* ide.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = ide.c; sourceTree = "<group>"; };
@@ -792,8 +792,8 @@
 		B6F74F9C04B85B660059D51C /* SaveBinaryController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SaveBinaryController.h; path = controllers/SaveBinaryController.h; sourceTree = "<group>"; };
 		B6F74F9D04B85B660059D51C /* SaveBinaryController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = SaveBinaryController.m; path = controllers/SaveBinaryController.m; sourceTree = "<group>"; };
 		B6FD5C7A05A4F5B600A6C4FC /* utils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = utils.h; path = utils.h; sourceTree = "<group>"; };
-		B6FEA44B0444C2CC0013916D /* tc2068-0.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "tc2068-0.rom"; path = "../roms/tc2068-0.rom"; sourceTree = SOURCE_ROOT; };
-		B6FEA44C0444C2CC0013916D /* tc2068-1.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "tc2068-1.rom"; path = "../roms/tc2068-1.rom"; sourceTree = SOURCE_ROOT; };
+		B6FEA44B0444C2CC0013916D /* tc2068-0.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "tc2068-0.rom"; path = "tc2068-0.rom"; sourceTree = "<group>"; };
+		B6FEA44C0444C2CC0013916D /* tc2068-1.rom */ = {isa = PBXFileReference; lastKnownFileType = file; name = "tc2068-1.rom"; path = "tc2068-1.rom"; sourceTree = "<group>"; };
 		B6FEA44F0444C3370013916D /* tc2068.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = tc2068.c; sourceTree = "<group>"; };
 		F520C8BC038D022E01A804BA /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		F536B56503A0C275011517A0 /* utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utils.c; path = utils.c; sourceTree = "<group>"; };
