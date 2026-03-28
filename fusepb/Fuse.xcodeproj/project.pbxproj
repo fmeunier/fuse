@@ -1014,7 +1014,7 @@
 				F5598598038921C501A804BA /* config.h */,
 			);
 			name = "Other Sources";
-			path = ..;
+			path = "$(FUSE_UPSTREAM_ROOT)";
 			sourceTree = "<group>";
 		};
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
@@ -1643,7 +1643,7 @@
 				B6FEA44C0444C2CC0013916D /* tc2068-1.rom */,
 			);
 			name = roms;
-			path = ../roms;
+			path = "$(FUSE_UPSTREAM_ROOT)/roms";
 			sourceTree = "<group>";
 		};
 		F559859A038921CA01A804BA /* ui */ = {
