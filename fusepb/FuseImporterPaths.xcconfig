@@ -1,2 +1,4 @@
-FUSE_IMPORTER_ROOT = $(SRCROOT)/../../FuseImporter
+#include? "FuseDependencyPaths.xcconfig"
+
+FUSE_IMPORTER_ROOT = $(FUSE_REPO_ROOT)/FuseImporter
 INFOPLIST_FILE = $(FUSE_IMPORTER_ROOT)/Info.plist
