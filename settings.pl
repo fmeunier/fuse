@@ -669,12 +669,92 @@ print << 'CODE';
   [machineroms sortUsingFunction:machineroms_compare context:nil];
 
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"Beta 128", @"display_name",
+    @"beta128", @"special_type",
+    @(settings->rom_beta128), @"rom0",
+    @(settings_default.rom_beta128), @"default_rom0",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"Didaktik 80", @"display_name",
+    @"didaktik80", @"special_type",
+    @(settings->rom_didaktik80), @"rom0",
+    @(settings_default.rom_didaktik80), @"default_rom0",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"DISCiPLE", @"display_name",
+    @"disciple", @"special_type",
+    @(settings->rom_disciple), @"rom0",
+    @(settings_default.rom_disciple), @"default_rom0",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"Sinclair Interface 1", @"display_name",
+    @"interface1", @"special_type",
+    @(settings->rom_interface1), @"rom0",
+    @(settings_default.rom_interface1), @"default_rom0",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"Multiface One", @"display_name",
+    @"multiface1", @"special_type",
+    @(settings->rom_multiface1), @"rom0",
+    @(settings_default.rom_multiface1), @"default_rom0",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"Multiface 128", @"display_name",
+    @"multiface128", @"special_type",
+    @(settings->rom_multiface128), @"rom0",
+    @(settings_default.rom_multiface128), @"default_rom0",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"Multiface 3", @"display_name",
+    @"multiface3", @"special_type",
+    @(settings->rom_multiface3), @"rom0",
+    @(settings_default.rom_multiface3), @"default_rom0",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"Opus Discovery", @"display_name",
+    @"opus", @"special_type",
+    @(settings->rom_opus), @"rom0",
+    @(settings_default.rom_opus), @"default_rom0",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"+D", @"display_name",
+    @"plusd", @"special_type",
+    @(settings->rom_plusd), @"rom0",
+    @(settings_default.rom_plusd), @"default_rom0",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Currah \u03bcSpeech", @"display_name",
     @"uspeech", @"special_type",
     @(settings->rom_uspeech), @"rom0",
     @(settings_default.rom_uspeech), @"default_rom0",
     @(settings->rom_sp0256), @"rom1",
     @(settings_default.rom_sp0256), @"default_rom1",
+    NULL];
+  [machineroms addObject:roms];
+
+  roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    @"Currah \u03bcSource", @"display_name",
+    @"usource", @"special_type",
+    @(settings->rom_usource), @"rom0",
+    @(settings_default.rom_usource), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
 
@@ -699,6 +779,46 @@ print "  for ( roms in machineroms ) {\n";
 print "    Machine *machine = [roms valueForKey:@\"machine\"];\n";
 print "    NSString *special_type = [roms valueForKey:@\"special_type\"];\n";
 print "    NSString *display_name = [roms valueForKey:@\"display_name\"];\n\n";
+print "    if( [special_type isEqualToString:@\"beta128\"] ) {\n";
+print '      settings_set_string( &settings->rom_beta128, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( [special_type isEqualToString:@\"didaktik80\"] ) {\n";
+print '      settings_set_string( &settings->rom_didaktik80, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( [special_type isEqualToString:@\"disciple\"] ) {\n";
+print '      settings_set_string( &settings->rom_disciple, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( [special_type isEqualToString:@\"interface1\"] ) {\n";
+print '      settings_set_string( &settings->rom_interface1, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( [special_type isEqualToString:@\"multiface1\"] ) {\n";
+print '      settings_set_string( &settings->rom_multiface1, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( [special_type isEqualToString:@\"multiface128\"] ) {\n";
+print '      settings_set_string( &settings->rom_multiface128, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( [special_type isEqualToString:@\"multiface3\"] ) {\n";
+print '      settings_set_string( &settings->rom_multiface3, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( [special_type isEqualToString:@\"opus\"] ) {\n";
+print '      settings_set_string( &settings->rom_opus, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( [special_type isEqualToString:@\"plusd\"] ) {\n";
+print '      settings_set_string( &settings->rom_plusd, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
+print "    if( [special_type isEqualToString:@\"usource\"] ) {\n";
+print '      settings_set_string( &settings->rom_usource, [[roms valueForKey:@"rom0"] UTF8String] );' . "\n";
+print "      continue;\n";
+print "    }\n\n";
 print "    if( [special_type isEqualToString:@\"uspeech\"] ||\n";
 print "        [display_name isEqualToString:@\"Currah \\\\u03bcSpeech\"] ||\n";
 print "        [display_name isEqualToString:@\"Currah \\\\u00b5Speech\"] ) {\n";
