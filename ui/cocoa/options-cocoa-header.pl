@@ -48,6 +48,7 @@ foreach( @dialogs ) {
         if( $widget->{type} eq "Combo" ) {
             print <<"CODE";
 NSArray * cocoa_$_->{name}_$widget->{value}( void );
+NSString * cocoa_string_$_->{name}_$widget->{value}( const char *value );
 
 CODE
         }

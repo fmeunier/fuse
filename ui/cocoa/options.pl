@@ -179,6 +179,11 @@ option_enumerate_string_$_->{name}_$widget->{value}( const char* value ) {
                                         $combo_default{$widget->{value}} );
 }
 
+NSString *
+cocoa_string_$_->{name}_$widget->{value}( const char* value ) {
+  return @( option_enumerate_string_$_->{name}_$widget->{value}( value ) );
+}
+
 CODE
 	    }
 	}
