@@ -35,6 +35,8 @@ static int fullscreen_x_off;
 static int fullscreen_y_off;
 static int fullscreen_width;
 static int fullscreen_height;
+static Uint32 fullscreen_format;
+static int fullscreen_refresh_rate;
 
 static SDL_Surface *red_cassette[ 2 ], *green_cassette[ 2 ];
 static SDL_Surface *red_mdr[ 2 ], *green_mdr[ 2 ];
@@ -172,6 +174,7 @@ sdl2display_get_fullscreen_modes( sdl2_fullscreen_mode_info **modes_out,
         if( sdl2display_compare_refresh( mode.refresh_rate,
                                          modes[j].refresh_rate ) < 0 ) {
           modes[j].refresh_rate = mode.refresh_rate;
+          modes[j].format = mode.format;
         }
         break;
       }
@@ -181,6 +184,7 @@ sdl2display_get_fullscreen_modes( sdl2_fullscreen_mode_info **modes_out,
       modes[count].width = mode.w;
       modes[count].height = mode.h;
       modes[count].refresh_rate = mode.refresh_rate;
+      modes[count].format = mode.format;
       modes[count].fit = sdl2display_mode_fit( current_scaler, image_width,
                                                image_height, mode.w, mode.h,
                                                supported, scales, SCALER_NUM );
@@ -216,19 +220,14 @@ sdl2display_init_fullscreen_mode( void )
 
   fullscreen_width = 0;
   fullscreen_height = 0;
+  fullscreen_format = 0;
+  fullscreen_refresh_rate = 0;
+
+  if( !settings_current.sdl_fullscreen_mode ) return;
 
   if( sdl2display_get_fullscreen_modes( &modes, &num_modes ) ) {
     modes = NULL;
     num_modes = 0;
-  }
-
-  if( !settings_current.sdl_fullscreen_mode ) {
-    if( num_modes > 0 ) {
-      fullscreen_width = modes[0].width;
-      fullscreen_height = modes[0].height;
-    }
-    free( modes );
-    return;
   }
 
   if( strcmp( settings_current.sdl_fullscreen_mode, "list" ) == 0 ) {
@@ -266,12 +265,24 @@ sdl2display_init_fullscreen_mode( void )
         mn > 0 && mn <= num_modes ) {
       mw = modes[mn - 1].width;
       mh = modes[mn - 1].height;
+      fullscreen_format = modes[mn - 1].format;
+      fullscreen_refresh_rate = modes[mn - 1].refresh_rate;
     }
   }
 
   if( mh > 0 ) {
     fullscreen_width = mw;
     fullscreen_height = mh;
+
+    if( !fullscreen_format ) {
+      for( i = 0; i < num_modes; i++ ) {
+        if( modes[i].width == mw && modes[i].height == mh ) {
+          fullscreen_format = modes[i].format;
+          fullscreen_refresh_rate = modes[i].refresh_rate;
+          break;
+        }
+      }
+    }
   }
 
   free( modes );
@@ -594,7 +605,9 @@ sdl2display_find_best_fullscreen_scaler( void )
 
   if( settings_current.full_screen ) {
     display_height = 0;
-    if( fullscreen_height ) {
+    if( sdl2_window_surface ) {
+      display_height = sdl2_window_surface->h;
+    } else if( fullscreen_height ) {
       display_height = fullscreen_height;
     } else if( !SDL_GetDesktopDisplayMode( 0, &mode ) ) {
       display_height = mode.h;
@@ -637,11 +650,8 @@ sdl2display_create_window( void )
 
   sdl2display_current_size = scaler_get_scaling_factor( current_scaler );
   sdl2display_find_best_fullscreen_scaler();
-  width = settings_current.full_screen && fullscreen_width ? fullscreen_width :
-          image_width * sdl2display_current_size;
-  height = settings_current.full_screen &&
-           fullscreen_height ? fullscreen_height :
-           image_height * sdl2display_current_size;
+  width = image_width * sdl2display_current_size;
+  height = image_height * sdl2display_current_size;
 
   sdl2_window = SDL_CreateWindow( "Fuse",
                                   SDL_WINDOWPOS_CENTERED,
@@ -661,8 +671,8 @@ sdl2display_create_window( void )
 
       mode.w = fullscreen_width;
       mode.h = fullscreen_height;
-      mode.format = 0;
-      mode.refresh_rate = 0;
+      mode.format = fullscreen_format;
+      mode.refresh_rate = fullscreen_refresh_rate;
       mode.driverdata = NULL;
 
       if( SDL_SetWindowDisplayMode( sdl2_window, &mode ) ||
@@ -681,6 +691,8 @@ sdl2display_create_window( void )
 
   sdl2display_is_full_screen = settings_current.full_screen;
 
+  sdl2display_sync_presentation_surfaces();
+  sdl2display_find_best_fullscreen_scaler();
   sdl2display_sync_presentation_surfaces();
 }
 

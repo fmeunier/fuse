@@ -48,28 +48,28 @@ sdl2display_choose_fullscreen_scaler( scaler_type current,
                                       int *preserve_windowed )
 {
   scaler_type i;
+  scaler_type best = SCALER_NORMAL;
+  float best_scale = 0.0f;
 
   *preserve_windowed = 0;
 
   if( !display_height ) return current;
 
-  if( image_height * current_scale > display_height / 2 &&
-      image_height * current_scale <= display_height ) {
-    return current;
-  }
-
-  *preserve_windowed = 1;
-
   for( i = 0; i < scaler_count; i++ ) {
     if( !supported[i] ) continue;
 
-    if( image_height * scales[i] > display_height / 2 &&
-        image_height * scales[i] <= display_height ) {
-      return i;
+    if( image_height * scales[i] <= display_height &&
+        scales[i] > best_scale ) {
+      best = i;
+      best_scale = scales[i];
     }
   }
 
-  return SCALER_NORMAL;
+  if( best == current && best_scale == current_scale ) return current;
+
+  *preserve_windowed = 1;
+
+  return best;
 }
 
 void

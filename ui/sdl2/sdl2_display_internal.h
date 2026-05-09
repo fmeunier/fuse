@@ -33,6 +33,7 @@ typedef struct sdl2_fullscreen_mode_info {
   int width;
   int height;
   int refresh_rate;
+  unsigned int format;
   float fit;
 } sdl2_fullscreen_mode_info;
 

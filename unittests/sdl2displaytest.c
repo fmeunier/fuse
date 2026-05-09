@@ -150,7 +150,7 @@ surface_view_initialises_fields( void )
 }
 
 static int
-fullscreen_scaler_keeps_current_when_usable( void )
+fullscreen_scaler_keeps_current_when_largest_fit( void )
 {
   unsigned char supported[ SCALER_NUM ] = { 0 };
   float scales[ SCALER_NUM ];
@@ -161,14 +161,14 @@ fullscreen_scaler_keeps_current_when_usable( void )
   fill_test_scales( scales );
   for( i = 0; i < SCALER_NUM; i++ ) supported[i] = 1;
 
-  choice = sdl2display_choose_fullscreen_scaler( SCALER_TRIPLESIZE, 3.0f,
+  choice = sdl2display_choose_fullscreen_scaler( SCALER_QUADSIZE, 4.0f,
                                                  240, 1080,
                                                  supported, scales,
                                                  SCALER_NUM, &preserve );
 
-  if( choice != SCALER_TRIPLESIZE || preserve ) {
+  if( choice != SCALER_QUADSIZE || preserve ) {
     fprintf( stderr,
-             "usable current scaler: expected keep 3x without preserve\n" );
+             "largest-fit current scaler: expected keep 4x without preserve\n" );
     return 1;
   }
 
@@ -187,14 +187,15 @@ fullscreen_scaler_picks_larger_supported_scale( void )
   supported[ SCALER_NORMAL ] = 1;
   supported[ SCALER_DOUBLESIZE ] = 1;
   supported[ SCALER_TRIPLESIZE ] = 1;
+  supported[ SCALER_QUADSIZE ] = 1;
 
   choice = sdl2display_choose_fullscreen_scaler( SCALER_NORMAL, 1.0f,
                                                  240, 1080,
                                                  supported, scales,
                                                  SCALER_NUM, &preserve );
 
-  if( choice != SCALER_TRIPLESIZE || !preserve ) {
-    fprintf( stderr, "fullscreen scaler choice: expected 3x with preserve\n" );
+  if( choice != SCALER_QUADSIZE || !preserve ) {
+    fprintf( stderr, "fullscreen scaler choice: expected 4x with preserve\n" );
     return 1;
   }
 
@@ -442,9 +443,9 @@ mode_fit_uses_chosen_scaler( void )
                                        1512, 982, supported, scales,
                                        SCALER_NUM );
 
-  if( fit_960x600 <= fit_1512x982 ) {
+  if( fit_1512x982 <= fit_960x600 ) {
     fprintf( stderr,
-             "mode fit: expected 960x600 to beat 1512x982 for 2x scaler\n" );
+             "mode fit: expected 1512x982 to beat 960x600 with 4x scaler\n" );
     return 1;
   }
 
@@ -490,8 +491,8 @@ static const struct test_t tests[] = {
   { "update_rect_windowed", update_rect_windowed },
   { "update_rect_fullscreen_offset", update_rect_fullscreen_offset },
   { "surface_view_initialises_fields", surface_view_initialises_fields },
-  { "fullscreen_scaler_keeps_current_when_usable",
-    fullscreen_scaler_keeps_current_when_usable },
+  { "fullscreen_scaler_keeps_current_when_largest_fit",
+    fullscreen_scaler_keeps_current_when_largest_fit },
   { "fullscreen_scaler_picks_larger_supported_scale",
     fullscreen_scaler_picks_larger_supported_scale },
   { "fullscreen_scaler_falls_back_to_normal",
