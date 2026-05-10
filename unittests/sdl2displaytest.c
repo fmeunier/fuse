@@ -30,38 +30,6 @@ fill_test_scales( float *scales )
 }
 
 static int
-compute_offsets_windowed( void )
-{
-  int x_off, y_off;
-
-  sdl2display_compute_offsets( 960, 720, 320, 240, 3.0f, 0, &x_off, &y_off );
-
-  if( x_off != 0 || y_off != 0 ) {
-    fprintf( stderr, "windowed offsets: expected 0,0 got %d,%d\n", x_off,
-             y_off );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-compute_offsets_fullscreen( void )
-{
-  int x_off, y_off;
-
-  sdl2display_compute_offsets( 1920, 1080, 320, 240, 3.0f, 1, &x_off, &y_off );
-
-  if( x_off != 480 || y_off != 180 ) {
-    fprintf( stderr, "fullscreen offsets: expected 480,180 got %d,%d\n", x_off,
-             y_off );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
 scale_rect_applies_offset( void )
 {
   sdl2_display_rect src, dst;
@@ -162,7 +130,7 @@ fullscreen_scaler_keeps_current_when_largest_fit( void )
   for( i = 0; i < SCALER_NUM; i++ ) supported[i] = 1;
 
   choice = sdl2display_choose_fullscreen_scaler( SCALER_QUADSIZE, 4.0f,
-                                                 240, 1080,
+                                                 320, 240, 1920, 1080,
                                                  supported, scales,
                                                  SCALER_NUM, &preserve );
 
@@ -190,12 +158,63 @@ fullscreen_scaler_picks_larger_supported_scale( void )
   supported[ SCALER_QUADSIZE ] = 1;
 
   choice = sdl2display_choose_fullscreen_scaler( SCALER_NORMAL, 1.0f,
-                                                 240, 1080,
+                                                 320, 240, 1920, 1080,
                                                  supported, scales,
                                                  SCALER_NUM, &preserve );
 
   if( choice != SCALER_QUADSIZE || !preserve ) {
     fprintf( stderr, "fullscreen scaler choice: expected 4x with preserve\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+fullscreen_scaler_fits_wide_desktop( void )
+{
+  unsigned char supported[ SCALER_NUM ] = { 0 };
+  float scales[ SCALER_NUM ];
+  int preserve;
+  scaler_type choice;
+  int i;
+
+  fill_test_scales( scales );
+  for( i = 0; i < SCALER_NUM; i++ ) supported[i] = 1;
+
+  choice = sdl2display_choose_fullscreen_scaler( SCALER_NORMAL, 1.0f,
+                                                 320, 240, 3440, 1440,
+                                                 supported, scales,
+                                                 SCALER_NUM, &preserve );
+
+  if( choice != SCALER_QUADSIZE || !preserve ) {
+    fprintf( stderr, "wide desktop scaler: expected 4x with preserve\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+fullscreen_scaler_fits_tall_narrow_desktop( void )
+{
+  unsigned char supported[ SCALER_NUM ] = { 0 };
+  float scales[ SCALER_NUM ];
+  int preserve;
+  scaler_type choice;
+  int i;
+
+  fill_test_scales( scales );
+  for( i = 0; i < SCALER_NUM; i++ ) supported[i] = 1;
+
+  choice = sdl2display_choose_fullscreen_scaler( SCALER_NORMAL, 1.0f,
+                                                 320, 240, 1024, 1600,
+                                                 supported, scales,
+                                                 SCALER_NUM, &preserve );
+
+  if( choice != SCALER_TRIPLESIZE || !preserve ) {
+    fprintf( stderr,
+             "tall narrow desktop scaler: expected 3x with preserve\n" );
     return 1;
   }
 
@@ -214,7 +233,7 @@ fullscreen_scaler_falls_back_to_normal( void )
   supported[ SCALER_NORMAL ] = 1;
 
   choice = sdl2display_choose_fullscreen_scaler( SCALER_QUADSIZE, 4.0f,
-                                                 240, 300,
+                                                 320, 240, 400, 300,
                                                  supported, scales,
                                                  SCALER_NUM, &preserve );
 
@@ -239,237 +258,13 @@ fullscreen_scaler_keeps_current_when_display_height_zero( void )
   for( i = 0; i < SCALER_NUM; i++ ) supported[i] = 1;
 
   choice = sdl2display_choose_fullscreen_scaler( SCALER_DOUBLESIZE, 2.0f,
-                                                 240, 0,
+                                                 320, 240, 640, 0,
                                                  supported, scales,
                                                  SCALER_NUM, &preserve );
 
   if( choice != SCALER_DOUBLESIZE || preserve ) {
     fprintf( stderr,
              "zero display height: expected keep current without preserve\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-refresh_prefers_50hz_over_60hz( void )
-{
-  if( sdl2display_compare_refresh( 50, 60 ) >= 0 ) {
-    fprintf( stderr, "refresh ordering: expected 50Hz before 60Hz\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-refresh_prefers_multiple_of_50_over_60hz( void )
-{
-  if( sdl2display_compare_refresh( 100, 60 ) >= 0 ) {
-    fprintf( stderr, "refresh ordering: expected 100Hz before 60Hz\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-refresh_prefers_multiple_of_60_over_odd_rate( void )
-{
-  if( sdl2display_compare_refresh( 120, 75 ) >= 0 ) {
-    fprintf( stderr, "refresh ordering: expected 120Hz before 75Hz\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-refresh_treats_zero_or_negative_as_worst( void )
-{
-  if( sdl2display_compare_refresh( 50, 0 ) >= 0 ) {
-    fprintf( stderr, "refresh ordering: expected 50Hz before 0Hz\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-mode_compare_breaks_tie_by_refresh( void )
-{
-  sdl2_fullscreen_mode_info left, right;
-
-  left.width = 1920;
-  left.height = 1080;
-  left.refresh_rate = 50;
-  left.fit = 0.53f;
-
-  right.width = 1920;
-  right.height = 1080;
-  right.refresh_rate = 60;
-  right.fit = 0.53f;
-
-  if( sdl2display_compare_mode_info( &left, &right ) >= 0 ) {
-    fprintf( stderr,
-             "mode compare: expected 50Hz mode before 60Hz mode (same fit)\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-mode_compare_breaks_tie_by_height( void )
-{
-  sdl2_fullscreen_mode_info left, right;
-
-  /* fit and refresh equal; taller display should win */
-  left.width = 1920;
-  left.height = 1080;
-  left.refresh_rate = 50;
-  left.fit = 0.53f;
-
-  right.width = 1920;
-  right.height = 720;
-  right.refresh_rate = 50;
-  right.fit = 0.53f;
-
-  if( sdl2display_compare_mode_info( &left, &right ) >= 0 ) {
-    fprintf( stderr,
-             "mode compare: expected taller mode before shorter (same fit & refresh)\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-mode_compare_breaks_tie_by_width( void )
-{
-  sdl2_fullscreen_mode_info left, right;
-
-  /* fit, refresh, and height equal; wider display should win */
-  left.width = 1920;
-  left.height = 1080;
-  left.refresh_rate = 50;
-  left.fit = 0.53f;
-
-  right.width = 1280;
-  right.height = 1080;
-  right.refresh_rate = 50;
-  right.fit = 0.53f;
-
-  if( sdl2display_compare_mode_info( &left, &right ) >= 0 ) {
-    fprintf( stderr,
-             "mode compare: expected wider mode before narrower (same fit, refresh & height)\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-mode_compare_equal_modes_returns_zero( void )
-{
-  sdl2_fullscreen_mode_info mode;
-
-  mode.width = 1920;
-  mode.height = 1080;
-  mode.refresh_rate = 50;
-  mode.fit = 0.53f;
-
-  if( sdl2display_compare_mode_info( &mode, &mode ) != 0 ) {
-    fprintf( stderr, "mode compare: expected 0 for identical modes\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-mode_fit_returns_zero_when_image_doesnt_fit( void )
-{
-  unsigned char supported[ SCALER_NUM ] = { 0 };
-  float scales[ SCALER_NUM ];
-  float fit;
-
-  fill_test_scales( scales );
-  supported[ SCALER_DOUBLESIZE ] = 1;
-
-  /* 320*2=640 > 600: image does not fit horizontally */
-  fit = sdl2display_mode_fit( SCALER_DOUBLESIZE, 320, 240,
-                              600, 480, supported, scales, SCALER_NUM );
-
-  if( fit != 0.0f ) {
-    fprintf( stderr,
-             "mode fit: expected 0.0 when image exceeds display dimensions\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-refresh_equal_rates_compare_as_zero( void )
-{
-  if( sdl2display_compare_refresh( 50, 50 ) != 0 ) {
-    fprintf( stderr, "refresh compare: expected 0 for equal rates\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-mode_fit_uses_chosen_scaler( void )
-{
-  unsigned char supported[ SCALER_NUM ] = { 0 };
-  float scales[ SCALER_NUM ];
-  float fit_960x600;
-  float fit_1512x982;
-
-  fill_test_scales( scales );
-  supported[ SCALER_NORMAL ] = 1;
-  supported[ SCALER_DOUBLESIZE ] = 1;
-  supported[ SCALER_TRIPLESIZE ] = 1;
-  supported[ SCALER_QUADSIZE ] = 1;
-
-  fit_960x600 = sdl2display_mode_fit( SCALER_DOUBLESIZE, 320, 240,
-                                      960, 600, supported, scales,
-                                      SCALER_NUM );
-  fit_1512x982 = sdl2display_mode_fit( SCALER_DOUBLESIZE, 320, 240,
-                                       1512, 982, supported, scales,
-                                       SCALER_NUM );
-
-  if( fit_1512x982 <= fit_960x600 ) {
-    fprintf( stderr,
-             "mode fit: expected 1512x982 to beat 960x600 with 4x scaler\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-mode_compare_prefers_better_fit_before_size( void )
-{
-  sdl2_fullscreen_mode_info left, right;
-
-  left.width = 960;
-  left.height = 600;
-  left.refresh_rate = 50;
-  left.fit = 0.53f;
-
-  right.width = 3024;
-  right.height = 1964;
-  right.refresh_rate = 50;
-  right.fit = 0.21f;
-
-  if( sdl2display_compare_mode_info( &left, &right ) >= 0 ) {
-    fprintf( stderr,
-             "mode compare: expected better-fit mode before larger mode\n" );
     return 1;
   }
 
@@ -484,8 +279,6 @@ struct test_t {
 };
 
 static const struct test_t tests[] = {
-  { "compute_offsets_windowed", compute_offsets_windowed },
-  { "compute_offsets_fullscreen", compute_offsets_fullscreen },
   { "scale_rect_applies_offset", scale_rect_applies_offset },
   { "icon_rect_matches_scaled_rect", icon_rect_matches_scaled_rect },
   { "update_rect_windowed", update_rect_windowed },
@@ -495,29 +288,14 @@ static const struct test_t tests[] = {
     fullscreen_scaler_keeps_current_when_largest_fit },
   { "fullscreen_scaler_picks_larger_supported_scale",
     fullscreen_scaler_picks_larger_supported_scale },
+  { "fullscreen_scaler_fits_wide_desktop",
+    fullscreen_scaler_fits_wide_desktop },
+  { "fullscreen_scaler_fits_tall_narrow_desktop",
+    fullscreen_scaler_fits_tall_narrow_desktop },
   { "fullscreen_scaler_falls_back_to_normal",
     fullscreen_scaler_falls_back_to_normal },
   { "fullscreen_scaler_keeps_current_when_display_height_zero",
     fullscreen_scaler_keeps_current_when_display_height_zero },
-  { "refresh_prefers_50hz_over_60hz", refresh_prefers_50hz_over_60hz },
-  { "refresh_prefers_multiple_of_50_over_60hz",
-    refresh_prefers_multiple_of_50_over_60hz },
-  { "refresh_prefers_multiple_of_60_over_odd_rate",
-    refresh_prefers_multiple_of_60_over_odd_rate },
-  { "refresh_treats_zero_or_negative_as_worst",
-    refresh_treats_zero_or_negative_as_worst },
-  { "mode_fit_uses_chosen_scaler", mode_fit_uses_chosen_scaler },
-  { "mode_compare_prefers_better_fit_before_size",
-    mode_compare_prefers_better_fit_before_size },
-  { "mode_compare_breaks_tie_by_refresh", mode_compare_breaks_tie_by_refresh },
-  { "mode_compare_breaks_tie_by_height", mode_compare_breaks_tie_by_height },
-  { "mode_compare_breaks_tie_by_width", mode_compare_breaks_tie_by_width },
-  { "mode_compare_equal_modes_returns_zero",
-    mode_compare_equal_modes_returns_zero },
-  { "mode_fit_returns_zero_when_image_doesnt_fit",
-    mode_fit_returns_zero_when_image_doesnt_fit },
-  { "refresh_equal_rates_compare_as_zero",
-    refresh_equal_rates_compare_as_zero },
   { NULL, NULL }
 };
 

@@ -21,6 +21,7 @@
 #include "sdl2_joystick.h"
 #include "sdl2_keyboard.h"
 #include "sdl2_mouse_internal.h"
+#include "sdl2_ui.h"
 
 static SDL_Cursor *sdl2ui_blank_cursor;
 static SDL_Cursor *sdl2ui_default_cursor;
@@ -43,7 +44,7 @@ sdl2ui_init_blank_cursor( void )
   return 0;
 }
 
-static void
+void
 sdl2ui_set_cursor_visibility( int show_cursor )
 {
   if( show_cursor ) {

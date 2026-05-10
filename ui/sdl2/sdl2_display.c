@@ -12,7 +12,6 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <SDL.h>
-#include <string.h>
 
 #include "display.h"
 #include "fuse.h"
@@ -24,19 +23,19 @@
 #include "utils.h"
 #include "sdl2_display_internal.h"
 #include "sdl2_display.h"
+#include "sdl2_ui.h"
 
 static SDL_Window *sdl2_window;
-static SDL_Surface *sdl2_window_surface;
+static SDL_Renderer *sdl2_renderer;
+static SDL_Texture *sdl2_texture;
 static SDL_Surface *tmp_screen;
 static SDL_Surface *scaled_screen;
 static SDL_Surface *saved;
 static libspectrum_byte sdl2display_is_full_screen;
 static int fullscreen_x_off;
 static int fullscreen_y_off;
-static int fullscreen_width;
-static int fullscreen_height;
-static Uint32 fullscreen_format;
-static int fullscreen_refresh_rate;
+static int texture_width;
+static int texture_height;
 
 static SDL_Surface *red_cassette[ 2 ], *green_cassette[ 2 ];
 static SDL_Surface *red_mdr[ 2 ], *green_mdr[ 2 ];
@@ -56,11 +55,6 @@ static int image_width;
 static int image_height;
 static int tmp_screen_width;
 static float sdl2display_current_size = 1.0f;
-
-static void sdl2display_init_fullscreen_mode( void );
-static int sdl2display_get_fullscreen_modes(
-  sdl2_fullscreen_mode_info **modes_out,
-  int *count_out );
 
 static SDL_Color colour_palette[] = {
   {   0,   0,   0,   0 },
@@ -120,172 +114,6 @@ init_scalers( void )
   } else {
     scaler_select_scaler( SCALER_NORMAL );
   }
-}
-
-static int
-sdl2display_compare_fullscreen_modes( const void *left_raw,
-                                      const void *right_raw )
-{
-  const sdl2_fullscreen_mode_info *left = left_raw;
-  const sdl2_fullscreen_mode_info *right = right_raw;
-
-  return sdl2display_compare_mode_info( left, right );
-}
-
-static int
-sdl2display_get_fullscreen_modes( sdl2_fullscreen_mode_info **modes_out,
-                                  int *count_out )
-{
-  SDL_DisplayMode mode;
-  sdl2_fullscreen_mode_info *modes;
-  unsigned char supported[ SCALER_NUM ];
-  float scales[ SCALER_NUM ];
-  int num_modes;
-  int count;
-  int i;
-
-  *modes_out = NULL;
-  *count_out = 0;
-
-  num_modes = SDL_GetNumDisplayModes( 0 );
-  if( num_modes < 1 ) return 1;
-
-  modes = libspectrum_new0( sdl2_fullscreen_mode_info, num_modes );
-  if( !modes ) {
-    fprintf( stderr, "%s: out of memory enumerating SDL2 fullscreen modes\n",
-             fuse_progname );
-    fuse_abort();
-  }
-
-  count = 0;
-
-  for( i = 0; i < SCALER_NUM; i++ ) {
-    supported[i] = scaler_is_supported( i );
-    scales[i] = scaler_get_scaling_factor( i );
-  }
-
-  for( i = 0; i < num_modes; i++ ) {
-    int j;
-
-    if( SDL_GetDisplayMode( 0, i, &mode ) ) continue;
-
-    for( j = 0; j < count; j++ ) {
-      if( modes[j].width == mode.w && modes[j].height == mode.h ) {
-        if( sdl2display_compare_refresh( mode.refresh_rate,
-                                         modes[j].refresh_rate ) < 0 ) {
-          modes[j].refresh_rate = mode.refresh_rate;
-          modes[j].format = mode.format;
-        }
-        break;
-      }
-    }
-
-    if( j == count ) {
-      modes[count].width = mode.w;
-      modes[count].height = mode.h;
-      modes[count].refresh_rate = mode.refresh_rate;
-      modes[count].format = mode.format;
-      modes[count].fit = sdl2display_mode_fit( current_scaler, image_width,
-                                               image_height, mode.w, mode.h,
-                                               supported, scales, SCALER_NUM );
-      count++;
-    }
-  }
-
-  qsort( modes, count, sizeof( *modes ), sdl2display_compare_fullscreen_modes );
-
-  *modes_out = modes;
-  *count_out = count;
-  return 0;
-}
-
-static void
-sdl2display_refresh_window_surface( void )
-{
-  sdl2_window_surface = SDL_GetWindowSurface( sdl2_window );
-  if( !sdl2_window_surface ) {
-    fprintf( stderr, "%s: couldn't get SDL2 window surface: %s\n",
-             fuse_progname, SDL_GetError() );
-    fuse_abort();
-  }
-}
-
-static void
-sdl2display_init_fullscreen_mode( void )
-{
-  sdl2_fullscreen_mode_info *modes;
-  int num_modes;
-  int i;
-  int mw = 0, mh = 0, mn = 0;
-
-  fullscreen_width = 0;
-  fullscreen_height = 0;
-  fullscreen_format = 0;
-  fullscreen_refresh_rate = 0;
-
-  if( !settings_current.sdl_fullscreen_mode ) return;
-
-  if( sdl2display_get_fullscreen_modes( &modes, &num_modes ) ) {
-    modes = NULL;
-    num_modes = 0;
-  }
-
-  if( strcmp( settings_current.sdl_fullscreen_mode, "list" ) == 0 ) {
-    fprintf( stderr,
-             "=====================================================================\n"
-             " List of available SDL2 fullscreen modes:\n"
-             "---------------------------------------------------------------------\n"
-             "  No. width height\n"
-             "---------------------------------------------------------------------\n"
-             );
-    if( num_modes < 1 ) {
-      fprintf( stderr, "  ** The modes list is empty...\n" );
-    } else {
-      for( i = 0; i < num_modes; i++ ) {
-        fprintf( stderr, "% 3d  % 5d % 5d",
-                 i + 1, modes[i].width, modes[i].height );
-        if( modes[i].refresh_rate > 0 )
-          fprintf( stderr, " % 4dHz", modes[i].refresh_rate );
-        if( modes[i].fit > 0.0f )
-          fprintf( stderr, "  fit:%3.0f%%", modes[i].fit * 100.0f );
-        fprintf( stderr, "\n" );
-      }
-    }
-    fprintf( stderr,
-             "=====================================================================\n" );
-    free( modes );
-    fuse_exiting = 1;
-    return;
-  }
-
-  if( sscanf( settings_current.sdl_fullscreen_mode, " %dx%d", &mw,
-              &mh ) != 2 ){
-    if( num_modes > 0 &&
-        sscanf( settings_current.sdl_fullscreen_mode, " %d", &mn ) == 1 &&
-        mn > 0 && mn <= num_modes ) {
-      mw = modes[mn - 1].width;
-      mh = modes[mn - 1].height;
-      fullscreen_format = modes[mn - 1].format;
-      fullscreen_refresh_rate = modes[mn - 1].refresh_rate;
-    }
-  }
-
-  if( mh > 0 ) {
-    fullscreen_width = mw;
-    fullscreen_height = mh;
-
-    if( !fullscreen_format ) {
-      for( i = 0; i < num_modes; i++ ) {
-        if( modes[i].width == mw && modes[i].height == mh ) {
-          fullscreen_format = modes[i].format;
-          fullscreen_refresh_rate = modes[i].refresh_rate;
-          break;
-        }
-      }
-    }
-  }
-
-  free( modes );
 }
 
 static void
@@ -575,28 +403,45 @@ sdl2display_create_scaled_screen( int width, int height )
 static void
 sdl2display_sync_presentation_surfaces( void )
 {
-  sdl2display_refresh_window_surface();
+  int width = image_width * sdl2display_current_size;
+  int height = image_height * sdl2display_current_size;
 
-  if( !scaled_screen ||
-      scaled_screen->w != sdl2_window_surface->w ||
-      scaled_screen->h != sdl2_window_surface->h ) {
-    sdl2display_create_scaled_screen( sdl2_window_surface->w,
-                                      sdl2_window_surface->h );
+  if( !scaled_screen || scaled_screen->w != width ||
+      scaled_screen->h != height ) {
+    sdl2display_create_scaled_screen( width, height );
     sdl2display_force_full_refresh = 1;
   }
 
-  sdl2display_compute_offsets( sdl2_window_surface->w, sdl2_window_surface->h,
-                               image_width, image_height,
-                               sdl2display_current_size,
-                               sdl2display_is_full_screen,
-                               &fullscreen_x_off, &fullscreen_y_off );
+  if( !sdl2_texture || texture_width != width || texture_height != height ) {
+    if( sdl2_texture ) SDL_DestroyTexture( sdl2_texture );
+
+    sdl2_texture = SDL_CreateTexture( sdl2_renderer,
+                                      SDL_PIXELFORMAT_RGB565,
+                                      SDL_TEXTUREACCESS_STREAMING,
+                                      width, height );
+    if( !sdl2_texture ) {
+      fprintf( stderr, "%s: couldn't create SDL2 texture: %s\n",
+               fuse_progname, SDL_GetError() );
+      fuse_abort();
+    }
+
+    texture_width = width;
+    texture_height = height;
+    sdl2display_force_full_refresh = 1;
+  }
+
+  SDL_RenderSetLogicalSize( sdl2_renderer, width, height );
+
+  fullscreen_x_off = 0;
+  fullscreen_y_off = 0;
 }
 
 static void
-sdl2display_find_best_fullscreen_scaler( void )
+sdl2display_update_fullscreen_scaler( void )
 {
   static scaler_type windowed_scaler = SCALER_NUM;
   SDL_DisplayMode mode;
+  int display_width;
   int display_height;
   scaler_type i, target_scaler;
   unsigned char supported[ SCALER_NUM ];
@@ -604,15 +449,17 @@ sdl2display_find_best_fullscreen_scaler( void )
   int preserve_windowed;
 
   if( settings_current.full_screen ) {
+    display_width = 0;
     display_height = 0;
-    if( sdl2_window_surface ) {
-      display_height = sdl2_window_surface->h;
-    } else if( fullscreen_height ) {
-      display_height = fullscreen_height;
-    } else if( !SDL_GetDesktopDisplayMode( 0, &mode ) ) {
+    if( sdl2_renderer )
+      SDL_GetRendererOutputSize( sdl2_renderer, &display_width,
+                                 &display_height );
+    if( ( !display_width || !display_height ) &&
+        !SDL_GetDesktopDisplayMode( 0, &mode ) ) {
+      display_width = mode.w;
       display_height = mode.h;
     }
-    if( !display_height ) return;
+    if( !display_width || !display_height ) return;
 
     for( i = 0; i < SCALER_NUM; i++ ) {
       supported[i] = scaler_is_supported( i );
@@ -620,8 +467,9 @@ sdl2display_find_best_fullscreen_scaler( void )
     }
 
     target_scaler = sdl2display_choose_fullscreen_scaler(
-      current_scaler, sdl2display_current_size, image_height, display_height,
-      supported, scales, SCALER_NUM, &preserve_windowed );
+      current_scaler, sdl2display_current_size, image_width, image_height,
+      display_width, display_height, supported, scales, SCALER_NUM,
+      &preserve_windowed );
 
     if( preserve_windowed && windowed_scaler == SCALER_NUM )
       windowed_scaler = current_scaler;
@@ -642,14 +490,24 @@ sdl2display_create_window( void )
   int width;
   int height;
 
+  if( sdl2_texture ) {
+    SDL_DestroyTexture( sdl2_texture );
+    sdl2_texture = NULL;
+    texture_width = texture_height = 0;
+  }
+
+  if( sdl2_renderer ) {
+    SDL_DestroyRenderer( sdl2_renderer );
+    sdl2_renderer = NULL;
+  }
+
   if( sdl2_window ) {
     SDL_DestroyWindow( sdl2_window );
     sdl2_window = NULL;
-    sdl2_window_surface = NULL;
   }
 
   sdl2display_current_size = scaler_get_scaling_factor( current_scaler );
-  sdl2display_find_best_fullscreen_scaler();
+  sdl2display_update_fullscreen_scaler();
   width = image_width * sdl2display_current_size;
   height = image_height * sdl2display_current_size;
 
@@ -665,34 +523,28 @@ sdl2display_create_window( void )
     fuse_abort();
   }
 
-  if( settings_current.full_screen ) {
-    if( fullscreen_width && fullscreen_height ) {
-      SDL_DisplayMode mode;
-
-      mode.w = fullscreen_width;
-      mode.h = fullscreen_height;
-      mode.format = fullscreen_format;
-      mode.refresh_rate = fullscreen_refresh_rate;
-      mode.driverdata = NULL;
-
-      if( SDL_SetWindowDisplayMode( sdl2_window, &mode ) ||
-          SDL_SetWindowFullscreen( sdl2_window, SDL_WINDOW_FULLSCREEN ) ) {
-        fprintf( stderr, "%s: couldn't set SDL2 fixed fullscreen mode: %s\n",
-                 fuse_progname, SDL_GetError() );
-        fuse_abort();
-      }
-    } else if( SDL_SetWindowFullscreen( sdl2_window,
-                                        SDL_WINDOW_FULLSCREEN_DESKTOP ) ){
-      fprintf( stderr, "%s: couldn't set SDL2 desktop fullscreen mode: %s\n",
-               fuse_progname, SDL_GetError() );
-      fuse_abort();
-    }
+  if( settings_current.full_screen &&
+      SDL_SetWindowFullscreen( sdl2_window, SDL_WINDOW_FULLSCREEN_DESKTOP ) ){
+    fprintf( stderr, "%s: couldn't set SDL2 desktop fullscreen mode: %s\n",
+             fuse_progname, SDL_GetError() );
+    fuse_abort();
   }
 
   sdl2display_is_full_screen = settings_current.full_screen;
 
-  sdl2display_sync_presentation_surfaces();
-  sdl2display_find_best_fullscreen_scaler();
+  sdl2_renderer = SDL_CreateRenderer( sdl2_window, -1,
+                                      SDL_RENDERER_ACCELERATED );
+  if( !sdl2_renderer )
+    sdl2_renderer = SDL_CreateRenderer( sdl2_window, -1, 0 );
+  if( !sdl2_renderer ) {
+    fprintf( stderr, "%s: couldn't create SDL2 renderer: %s\n",
+             fuse_progname, SDL_GetError() );
+    fuse_abort();
+  }
+
+  SDL_SetRenderDrawColor( sdl2_renderer, 0, 0, 0, 255 );
+
+  sdl2display_update_fullscreen_scaler();
   sdl2display_sync_presentation_surfaces();
 }
 
@@ -709,6 +561,10 @@ sdl2display_recreate( void )
 
   /* Reapply mouse grab state after recreating the SDL window. */
   if( ui_mouse_grabbed ) ui_mouse_grabbed = ui_mouse_grab( 0 );
+
+  /* Match SDL1: fullscreen hides the host cursor even without a mouse grab. */
+  sdl2ui_set_cursor_visibility( !( settings_current.full_screen ||
+                                   ui_mouse_grabbed ) );
 
   display_refresh_all();
 }
@@ -733,8 +589,6 @@ uidisplay_init( int width, int height )
 
   init_scalers();
 
-  sdl2display_init_fullscreen_mode();
-  if( fuse_exiting ) return 0;
   if( scaler_select_scaler( current_scaler ) )
     scaler_select_scaler( SCALER_NORMAL );
 
@@ -930,11 +784,10 @@ uidisplay_area( int x, int y, int width, int height )
 void
 uidisplay_frame_end( void )
 {
-  SDL_Rect *rects;
   int i;
   int full_refresh;
 
-  if( !sdl2_window || !scaled_screen ) return;
+  if( !sdl2_window || !scaled_screen || !sdl2_renderer ) return;
 
   if( sdl2display_is_full_screen != settings_current.full_screen ) {
     if( uidisplay_hotswap_gfx_mode() ) {
@@ -995,26 +848,23 @@ uidisplay_frame_end( void )
 
   sdl2display_icon_overlay();
 
-  if( !full_refresh ) {
+  if( full_refresh ) {
+    SDL_UpdateTexture( sdl2_texture, NULL, scaled_screen->pixels,
+                       scaled_screen->pitch );
+  } else {
     for( i = 0; i < num_rects; i++ ) {
       SDL_Rect *r = &updated_rects[i];
-      SDL_Rect dst_rect = *r;
+      void *pixels = (libspectrum_byte *)scaled_screen->pixels +
+                     r->x * scaled_screen->format->BytesPerPixel +
+                     r->y * scaled_screen->pitch;
 
-      SDL_BlitSurface( scaled_screen, r, sdl2_window_surface, &dst_rect );
+      SDL_UpdateTexture( sdl2_texture, r, pixels, scaled_screen->pitch );
     }
   }
 
-  if( full_refresh ) {
-    SDL_BlitSurface( scaled_screen, NULL, sdl2_window_surface, NULL );
-    updated_rects[0].x = 0;
-    updated_rects[0].y = 0;
-    updated_rects[0].w = sdl2_window_surface->w;
-    updated_rects[0].h = sdl2_window_surface->h;
-    num_rects = 1;
-  }
-
-  rects = num_rects ? updated_rects : NULL;
-  SDL_UpdateWindowSurfaceRects( sdl2_window, rects, num_rects );
+  SDL_RenderClear( sdl2_renderer );
+  SDL_RenderCopy( sdl2_renderer, sdl2_texture, NULL, NULL );
+  SDL_RenderPresent( sdl2_renderer );
 
   num_rects = 0;
   sdl2display_force_full_refresh = 0;
@@ -1043,10 +893,20 @@ uidisplay_end( void )
     saved = NULL;
   }
 
+  if( sdl2_texture ) {
+    SDL_DestroyTexture( sdl2_texture );
+    sdl2_texture = NULL;
+    texture_width = texture_height = 0;
+  }
+
+  if( sdl2_renderer ) {
+    SDL_DestroyRenderer( sdl2_renderer );
+    sdl2_renderer = NULL;
+  }
+
   if( sdl2_window ) {
     SDL_DestroyWindow( sdl2_window );
     sdl2_window = NULL;
-    sdl2_window_surface = NULL;
   }
 
   return 0;

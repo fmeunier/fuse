@@ -34,4 +34,5 @@ ui_sdl2_files = \
                 ui/sdl2/sdl2_keyboard.h \
                 ui/sdl2/sdl2_mouse_internal.c \
                 ui/sdl2/sdl2_mouse_internal.h \
-                ui/sdl2/sdl2_ui.c
+                ui/sdl2/sdl2_ui.c \
+                ui/sdl2/sdl2_ui.h
