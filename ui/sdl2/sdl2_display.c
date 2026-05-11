@@ -110,9 +110,9 @@ init_scalers( void )
   }
 
   if( scaler_is_supported( current_scaler ) ) {
-    scaler_select_scaler( current_scaler );
+    scaler_activate_scaler( current_scaler );
   } else {
-    scaler_select_scaler( SCALER_NORMAL );
+    scaler_activate_scaler( SCALER_NORMAL );
   }
 }
 
@@ -477,7 +477,8 @@ sdl2display_update_fullscreen_scaler( void )
       display_width, display_height, supported, scales, SCALER_NUM,
       &preserve_windowed );
 
-    if( preserve_windowed && windowed_scaler == SCALER_NUM )
+    if( preserve_windowed && windowed_scaler == SCALER_NUM &&
+        display_ui_initialised )
       windowed_scaler = current_scaler;
 
     scaler_activate_scaler( target_scaler );
@@ -495,6 +496,8 @@ sdl2display_create_window( void )
   Uint32 flags = SDL_WINDOW_SHOWN;
   int width;
   int height;
+
+  if( settings_current.full_screen ) flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
   if( sdl2_texture ) {
     SDL_DestroyTexture( sdl2_texture );
@@ -525,13 +528,6 @@ sdl2display_create_window( void )
                                   flags );
   if( !sdl2_window ) {
     fprintf( stderr, "%s: couldn't create SDL2 window: %s\n",
-             fuse_progname, SDL_GetError() );
-    fuse_abort();
-  }
-
-  if( settings_current.full_screen &&
-      SDL_SetWindowFullscreen( sdl2_window, SDL_WINDOW_FULLSCREEN_DESKTOP ) ){
-    fprintf( stderr, "%s: couldn't set SDL2 desktop fullscreen mode: %s\n",
              fuse_progname, SDL_GetError() );
     fuse_abort();
   }
@@ -595,8 +591,8 @@ uidisplay_init( int width, int height )
 
   init_scalers();
 
-  if( scaler_select_scaler( current_scaler ) )
-    scaler_select_scaler( SCALER_NORMAL );
+  if( scaler_activate_scaler( current_scaler ) )
+    scaler_activate_scaler( SCALER_NORMAL );
 
   sdl2display_recreate();
   display_ui_initialised = 1;
