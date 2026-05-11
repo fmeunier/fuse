@@ -415,6 +415,12 @@ sdl2display_sync_presentation_surfaces( void )
   if( !sdl2_texture || texture_width != width || texture_height != height ) {
     if( sdl2_texture ) SDL_DestroyTexture( sdl2_texture );
 
+    /* Match sdl12-compat/SDL1-style fullscreen scaling: desktop fullscreen
+       still stretches the fixed Fuse software-scaled texture to the output,
+       but linear filtering avoids uneven nearest-neighbour pixel runs on
+       displays where that final stretch is not an integer scale. */
+    SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" );
+
     sdl2_texture = SDL_CreateTexture( sdl2_renderer,
                                       SDL_PIXELFORMAT_RGB565,
                                       SDL_TEXTUREACCESS_STREAMING,
