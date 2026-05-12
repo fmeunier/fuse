@@ -493,11 +493,8 @@ sdl2display_update_fullscreen_scaler( void )
 static void
 sdl2display_create_window( void )
 {
-  Uint32 flags = SDL_WINDOW_SHOWN;
   int width;
   int height;
-
-  if( settings_current.full_screen ) flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
   if( sdl2_texture ) {
     SDL_DestroyTexture( sdl2_texture );
@@ -510,26 +507,40 @@ sdl2display_create_window( void )
     sdl2_renderer = NULL;
   }
 
-  if( sdl2_window ) {
-    SDL_DestroyWindow( sdl2_window );
-    sdl2_window = NULL;
-  }
-
   sdl2display_current_size = scaler_get_scaling_factor( current_scaler );
   sdl2display_update_fullscreen_scaler();
   width = image_width * sdl2display_current_size;
   height = image_height * sdl2display_current_size;
 
-  sdl2_window = SDL_CreateWindow( "Fuse",
-                                  SDL_WINDOWPOS_CENTERED,
-                                  SDL_WINDOWPOS_CENTERED,
-                                  width,
-                                  height,
-                                  flags );
   if( !sdl2_window ) {
-    fprintf( stderr, "%s: couldn't create SDL2 window: %s\n",
-             fuse_progname, SDL_GetError() );
-    fuse_abort();
+    Uint32 flags = SDL_WINDOW_HIDDEN;
+
+    if( settings_current.full_screen ) flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+
+    sdl2_window = SDL_CreateWindow( "Fuse",
+                                    SDL_WINDOWPOS_CENTERED,
+                                    SDL_WINDOWPOS_CENTERED,
+                                    width,
+                                    height,
+                                    flags );
+    if( !sdl2_window ) {
+      fprintf( stderr, "%s: couldn't create SDL2 window: %s\n",
+               fuse_progname, SDL_GetError() );
+      fuse_abort();
+    }
+  } else {
+    SDL_SetWindowSize( sdl2_window, width, height );
+
+    if( sdl2display_is_full_screen != settings_current.full_screen ) {
+      Uint32 flags = settings_current.full_screen ?
+                     SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+
+      if( SDL_SetWindowFullscreen( sdl2_window, flags ) ) {
+        fprintf( stderr, "%s: couldn't set SDL2 fullscreen mode: %s\n",
+                 fuse_progname, SDL_GetError() );
+        fuse_abort();
+      }
+    }
   }
 
   sdl2display_is_full_screen = settings_current.full_screen;
@@ -548,6 +559,7 @@ sdl2display_create_window( void )
 
   sdl2display_update_fullscreen_scaler();
   sdl2display_sync_presentation_surfaces();
+  SDL_ShowWindow( sdl2_window );
 }
 
 static void
