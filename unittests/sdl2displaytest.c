@@ -144,7 +144,7 @@ fullscreen_scaler_keeps_current_when_largest_fit( void )
 }
 
 static int
-fullscreen_scaler_picks_larger_supported_scale( void )
+fullscreen_scaler_keeps_current_when_it_fits( void )
 {
   unsigned char supported[ SCALER_NUM ] = { 0 };
   float scales[ SCALER_NUM ];
@@ -162,8 +162,9 @@ fullscreen_scaler_picks_larger_supported_scale( void )
                                                  supported, scales,
                                                  SCALER_NUM, &preserve );
 
-  if( choice != SCALER_QUADSIZE || !preserve ) {
-    fprintf( stderr, "fullscreen scaler choice: expected 4x with preserve\n" );
+  if( choice != SCALER_NORMAL || preserve ) {
+    fprintf( stderr,
+             "fullscreen scaler choice: expected normal without preserve\n" );
     return 1;
   }
 
@@ -187,8 +188,8 @@ fullscreen_scaler_fits_wide_desktop( void )
                                                  supported, scales,
                                                  SCALER_NUM, &preserve );
 
-  if( choice != SCALER_QUADSIZE || !preserve ) {
-    fprintf( stderr, "wide desktop scaler: expected 4x with preserve\n" );
+  if( choice != SCALER_NORMAL || preserve ) {
+    fprintf( stderr, "wide desktop scaler: expected normal without preserve\n" );
     return 1;
   }
 
@@ -212,9 +213,9 @@ fullscreen_scaler_fits_tall_narrow_desktop( void )
                                                  supported, scales,
                                                  SCALER_NUM, &preserve );
 
-  if( choice != SCALER_TRIPLESIZE || !preserve ) {
+  if( choice != SCALER_NORMAL || preserve ) {
     fprintf( stderr,
-             "tall narrow desktop scaler: expected 3x with preserve\n" );
+             "tall narrow desktop scaler: expected normal without preserve\n" );
     return 1;
   }
 
@@ -286,8 +287,8 @@ static const struct test_t tests[] = {
   { "surface_view_initialises_fields", surface_view_initialises_fields },
   { "fullscreen_scaler_keeps_current_when_largest_fit",
     fullscreen_scaler_keeps_current_when_largest_fit },
-  { "fullscreen_scaler_picks_larger_supported_scale",
-    fullscreen_scaler_picks_larger_supported_scale },
+  { "fullscreen_scaler_keeps_current_when_it_fits",
+    fullscreen_scaler_keeps_current_when_it_fits },
   { "fullscreen_scaler_fits_wide_desktop",
     fullscreen_scaler_fits_wide_desktop },
   { "fullscreen_scaler_fits_tall_narrow_desktop",

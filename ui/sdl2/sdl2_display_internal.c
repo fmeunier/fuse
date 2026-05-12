@@ -34,6 +34,11 @@ sdl2display_choose_fullscreen_scaler( scaler_type current,
 
   if( !display_width || !display_height ) return current;
 
+  if( current < scaler_count && supported[current] &&
+      image_width * current_scale <= display_width &&
+      image_height * current_scale <= display_height )
+    return current;
+
   for( i = 0; i < scaler_count; i++ ) {
     if( !supported[i] ) continue;
 
