@@ -28,6 +28,7 @@ noinst_HEADERS += unittests/unittests.h
 
 noinst_PROGRAMS += unittests/displaytest
 noinst_PROGRAMS += unittests/sdl2displaytest
+noinst_PROGRAMS += unittests/sdl2scalerstatetest
 noinst_PROGRAMS += unittests/sdl2joysticktest
 noinst_PROGRAMS += unittests/sdl2mousetest
 
@@ -40,6 +41,12 @@ unittests_sdl2displaytest_SOURCES = \
         ui/sdl2/sdl2_display_internal.c
 unittests_sdl2displaytest_LDADD = $(LIBSPECTRUM_LIBS)
 unittests_sdl2displaytest_CPPFLAGS = $(AM_CPPFLAGS)
+
+unittests_sdl2scalerstatetest_SOURCES = \
+        unittests/sdl2scalerstatetest.c \
+        ui/sdl2/sdl2_scaler_state.c
+unittests_sdl2scalerstatetest_LDADD = $(LIBSPECTRUM_LIBS)
+unittests_sdl2scalerstatetest_CPPFLAGS = $(AM_CPPFLAGS)
 
 unittests_sdl2joysticktest_SOURCES = \
         unittests/sdl2joysticktest.c \

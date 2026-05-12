@@ -37,6 +37,7 @@
 #include "settings.h"
 #include "tape.h"
 #include "ui/ui.h"
+#include "ui/uidisplay.h"
 #include "ui/uimedia.h"
 #include "ui/widget/widget.h"
 
@@ -47,9 +48,26 @@ int ui_widget_level = -1;
 
 static char last_message[ MESSAGE_MAX_LENGTH ] = "";
 static size_t frames_since_last_message = 0;
+static uidisplay_hotswap_reason next_hotswap_reason =
+  UIDISPLAY_HOTSWAP_REASON_NONE;
 
 static int
 print_error_to_stderr( ui_error_level severity, const char *message );
+
+void
+uidisplay_set_next_hotswap_reason( uidisplay_hotswap_reason reason )
+{
+  next_hotswap_reason = reason;
+}
+
+uidisplay_hotswap_reason
+uidisplay_take_next_hotswap_reason( void )
+{
+  uidisplay_hotswap_reason reason = next_hotswap_reason;
+
+  next_hotswap_reason = UIDISPLAY_HOTSWAP_REASON_NONE;
+  return reason;
+}
 
 int
 ui_error( ui_error_level severity, const char *format, ... )

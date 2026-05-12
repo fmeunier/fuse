@@ -99,6 +99,7 @@ tags
 /ui/xlib/xpixmaps.c
 /unittests/displaytest
 /unittests/sdl2displaytest
+/unittests/sdl2scalerstatetest
 /unittests/sdl2joysticktest
 /unittests/sdl2mousetest
 /ylwrap

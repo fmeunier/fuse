@@ -24,6 +24,8 @@ endif
 ui_sdl2_files = \
                 ui/sdl2/sdl2_display_internal.c \
                 ui/sdl2/sdl2_display_internal.h \
+                ui/sdl2/sdl2_scaler_state.c \
+                ui/sdl2/sdl2_scaler_state.h \
                 ui/sdl2/sdl2_display.c \
                 ui/sdl2/sdl2_display.h \
                 ui/sdl2/sdl2_joystick_internal.c \

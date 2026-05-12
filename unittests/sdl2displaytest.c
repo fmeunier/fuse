@@ -11,23 +11,7 @@
 
 #include <stdio.h>
 
-#include "ui/scaler/scaler.h"
 #include "ui/sdl2/sdl2_display_internal.h"
-
-static void
-fill_test_scales( float *scales )
-{
-  int i;
-
-  for( i = 0; i < SCALER_NUM; i++ ) scales[i] = 0.0f;
-
-  scales[ SCALER_HALF ] = 0.5f;
-  scales[ SCALER_HALFSKIP ] = 0.5f;
-  scales[ SCALER_NORMAL ] = 1.0f;
-  scales[ SCALER_DOUBLESIZE ] = 2.0f;
-  scales[ SCALER_TRIPLESIZE ] = 3.0f;
-  scales[ SCALER_QUADSIZE ] = 4.0f;
-}
 
 static int
 scale_rect_applies_offset( void )
@@ -117,161 +101,6 @@ surface_view_initialises_fields( void )
   return 0;
 }
 
-static int
-fullscreen_scaler_keeps_current_when_largest_fit( void )
-{
-  unsigned char supported[ SCALER_NUM ] = { 0 };
-  float scales[ SCALER_NUM ];
-  int preserve;
-  scaler_type choice;
-  int i;
-
-  fill_test_scales( scales );
-  for( i = 0; i < SCALER_NUM; i++ ) supported[i] = 1;
-
-  choice = sdl2display_choose_fullscreen_scaler( SCALER_QUADSIZE, 4.0f,
-                                                 320, 240, 1920, 1080,
-                                                 supported, scales,
-                                                 SCALER_NUM, &preserve );
-
-  if( choice != SCALER_QUADSIZE || preserve ) {
-    fprintf( stderr,
-             "largest-fit current scaler: expected keep 4x without preserve\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-fullscreen_scaler_keeps_current_when_it_fits( void )
-{
-  unsigned char supported[ SCALER_NUM ] = { 0 };
-  float scales[ SCALER_NUM ];
-  int preserve;
-  scaler_type choice;
-  fill_test_scales( scales );
-
-  supported[ SCALER_NORMAL ] = 1;
-  supported[ SCALER_DOUBLESIZE ] = 1;
-  supported[ SCALER_TRIPLESIZE ] = 1;
-  supported[ SCALER_QUADSIZE ] = 1;
-
-  choice = sdl2display_choose_fullscreen_scaler( SCALER_NORMAL, 1.0f,
-                                                 320, 240, 1920, 1080,
-                                                 supported, scales,
-                                                 SCALER_NUM, &preserve );
-
-  if( choice != SCALER_NORMAL || preserve ) {
-    fprintf( stderr,
-             "fullscreen scaler choice: expected normal without preserve\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-fullscreen_scaler_fits_wide_desktop( void )
-{
-  unsigned char supported[ SCALER_NUM ] = { 0 };
-  float scales[ SCALER_NUM ];
-  int preserve;
-  scaler_type choice;
-  int i;
-
-  fill_test_scales( scales );
-  for( i = 0; i < SCALER_NUM; i++ ) supported[i] = 1;
-
-  choice = sdl2display_choose_fullscreen_scaler( SCALER_NORMAL, 1.0f,
-                                                 320, 240, 3440, 1440,
-                                                 supported, scales,
-                                                 SCALER_NUM, &preserve );
-
-  if( choice != SCALER_NORMAL || preserve ) {
-    fprintf( stderr, "wide desktop scaler: expected normal without preserve\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-fullscreen_scaler_fits_tall_narrow_desktop( void )
-{
-  unsigned char supported[ SCALER_NUM ] = { 0 };
-  float scales[ SCALER_NUM ];
-  int preserve;
-  scaler_type choice;
-  int i;
-
-  fill_test_scales( scales );
-  for( i = 0; i < SCALER_NUM; i++ ) supported[i] = 1;
-
-  choice = sdl2display_choose_fullscreen_scaler( SCALER_NORMAL, 1.0f,
-                                                 320, 240, 1024, 1600,
-                                                 supported, scales,
-                                                 SCALER_NUM, &preserve );
-
-  if( choice != SCALER_NORMAL || preserve ) {
-    fprintf( stderr,
-             "tall narrow desktop scaler: expected normal without preserve\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-fullscreen_scaler_falls_back_to_normal( void )
-{
-  unsigned char supported[ SCALER_NUM ] = { 0 };
-  float scales[ SCALER_NUM ];
-  int preserve;
-  scaler_type choice;
-  fill_test_scales( scales );
-
-  supported[ SCALER_NORMAL ] = 1;
-
-  choice = sdl2display_choose_fullscreen_scaler( SCALER_QUADSIZE, 4.0f,
-                                                 320, 240, 400, 300,
-                                                 supported, scales,
-                                                 SCALER_NUM, &preserve );
-
-  if( choice != SCALER_NORMAL || !preserve ) {
-    fprintf( stderr, "fullscreen fallback: expected normal with preserve\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
-static int
-fullscreen_scaler_keeps_current_when_display_height_zero( void )
-{
-  unsigned char supported[ SCALER_NUM ] = { 0 };
-  float scales[ SCALER_NUM ];
-  int preserve;
-  scaler_type choice;
-  int i;
-
-  fill_test_scales( scales );
-  for( i = 0; i < SCALER_NUM; i++ ) supported[i] = 1;
-
-  choice = sdl2display_choose_fullscreen_scaler( SCALER_DOUBLESIZE, 2.0f,
-                                                 320, 240, 640, 0,
-                                                 supported, scales,
-                                                 SCALER_NUM, &preserve );
-
-  if( choice != SCALER_DOUBLESIZE || preserve ) {
-    fprintf( stderr,
-             "zero display height: expected keep current without preserve\n" );
-    return 1;
-  }
-
-  return 0;
-}
-
 typedef int (*test_fn_t)( void );
 
 struct test_t {
@@ -285,18 +114,6 @@ static const struct test_t tests[] = {
   { "update_rect_windowed", update_rect_windowed },
   { "update_rect_fullscreen_offset", update_rect_fullscreen_offset },
   { "surface_view_initialises_fields", surface_view_initialises_fields },
-  { "fullscreen_scaler_keeps_current_when_largest_fit",
-    fullscreen_scaler_keeps_current_when_largest_fit },
-  { "fullscreen_scaler_keeps_current_when_it_fits",
-    fullscreen_scaler_keeps_current_when_it_fits },
-  { "fullscreen_scaler_fits_wide_desktop",
-    fullscreen_scaler_fits_wide_desktop },
-  { "fullscreen_scaler_fits_tall_narrow_desktop",
-    fullscreen_scaler_fits_tall_narrow_desktop },
-  { "fullscreen_scaler_falls_back_to_normal",
-    fullscreen_scaler_falls_back_to_normal },
-  { "fullscreen_scaler_keeps_current_when_display_height_zero",
-    fullscreen_scaler_keeps_current_when_display_height_zero },
   { NULL, NULL }
 };
 

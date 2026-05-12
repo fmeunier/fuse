@@ -22,6 +22,7 @@
 #include "ui/uidisplay.h"
 #include "utils.h"
 #include "sdl2_display_internal.h"
+#include "sdl2_scaler_state.h"
 #include "sdl2_display.h"
 #include "sdl2_ui.h"
 
@@ -55,6 +56,7 @@ static int image_width;
 static int image_height;
 static int tmp_screen_width;
 static float sdl2display_current_size = 1.0f;
+static sdl2_scaler_state scaler_state;
 
 static SDL_Color colour_palette[] = {
   {   0,   0,   0,   0 },
@@ -443,55 +445,67 @@ sdl2display_sync_presentation_surfaces( void )
 }
 
 static void
-sdl2display_update_fullscreen_scaler( void )
+sdl2display_get_scaler_env( sdl2_scaler_env *env,
+                            unsigned char *supported, float *scales )
 {
-  static scaler_type windowed_scaler = SCALER_NUM;
   SDL_DisplayMode mode;
-  int display_width;
-  int display_height;
-  scaler_type i, target_scaler;
-  unsigned char supported[ SCALER_NUM ];
-  float scales[ SCALER_NUM ];
-  int preserve_windowed;
+  scaler_type scaler;
 
-  if( settings_current.full_screen ) {
-    display_width = 0;
-    display_height = 0;
-    if( sdl2_renderer )
-      SDL_GetRendererOutputSize( sdl2_renderer, &display_width,
-                                 &display_height );
-    if( ( !display_width || !display_height ) &&
-        !SDL_GetDesktopDisplayMode( 0, &mode ) ) {
-      display_width = mode.w;
-      display_height = mode.h;
-    }
-    if( !display_width || !display_height ) return;
+  env->image_width = image_width;
+  env->image_height = image_height;
+  env->display_width = 0;
+  env->display_height = 0;
+  env->supported = supported;
+  env->scales = scales;
+  env->scaler_count = SCALER_NUM;
 
-    for( i = 0; i < SCALER_NUM; i++ ) {
-      supported[i] = scaler_is_supported( i );
-      scales[i] = scaler_get_scaling_factor( i );
-    }
+  if( sdl2_renderer )
+    SDL_GetRendererOutputSize( sdl2_renderer, &env->display_width,
+                               &env->display_height );
 
-    target_scaler = sdl2display_choose_fullscreen_scaler(
-      current_scaler, sdl2display_current_size, image_width, image_height,
-      display_width, display_height, supported, scales, SCALER_NUM,
-      &preserve_windowed );
+  if( ( !env->display_width || !env->display_height ) &&
+      !SDL_GetDesktopDisplayMode( 0, &mode ) ) {
+    env->display_width = mode.w;
+    env->display_height = mode.h;
+  }
 
-    if( preserve_windowed && windowed_scaler == SCALER_NUM &&
-        display_ui_initialised )
-      windowed_scaler = current_scaler;
-
-    scaler_activate_scaler( target_scaler );
-    sdl2display_current_size = scaler_get_scaling_factor( current_scaler );
-  } else if( windowed_scaler != SCALER_NUM ) {
-    scaler_activate_scaler( windowed_scaler );
-    windowed_scaler = SCALER_NUM;
-    sdl2display_current_size = scaler_get_scaling_factor( current_scaler );
+  for( scaler = 0; scaler < SCALER_NUM; scaler++ ) {
+    supported[ scaler ] = scaler_is_supported( scaler );
+    scales[ scaler ] = scaler_get_scaling_factor( scaler );
   }
 }
 
 static void
-sdl2display_create_window( void )
+sdl2display_apply_scaler_decision( const sdl2_scaler_decision *decision )
+{
+  scaler_activate_scaler( decision->scaler );
+  scaler_state = decision->next;
+  sdl2display_current_size = scaler_get_scaling_factor( current_scaler );
+}
+
+static void
+sdl2display_update_fullscreen_scaler( int startup,
+                                      int explicit_scaler_change )
+{
+  sdl2_scaler_env env;
+  sdl2_scaler_decision decision;
+  unsigned char supported[ SCALER_NUM ];
+  float scales[ SCALER_NUM ];
+
+  init_scalers();
+  sdl2display_get_scaler_env( &env, supported, scales );
+
+  decision = sdl2_scaler_state_transition( &scaler_state, current_scaler,
+                                           settings_current.full_screen,
+                                           sdl2display_is_full_screen,
+                                           startup, explicit_scaler_change,
+                                           &env );
+
+  sdl2display_apply_scaler_decision( &decision );
+}
+
+static void
+sdl2display_create_window( int startup, int explicit_scaler_change )
 {
   int width;
   int height;
@@ -508,7 +522,7 @@ sdl2display_create_window( void )
   }
 
   sdl2display_current_size = scaler_get_scaling_factor( current_scaler );
-  sdl2display_update_fullscreen_scaler();
+  sdl2display_update_fullscreen_scaler( startup, explicit_scaler_change );
   width = image_width * sdl2display_current_size;
   height = image_height * sdl2display_current_size;
 
@@ -529,17 +543,23 @@ sdl2display_create_window( void )
       fuse_abort();
     }
   } else {
-    SDL_SetWindowSize( sdl2_window, width, height );
-
     if( sdl2display_is_full_screen != settings_current.full_screen ) {
       Uint32 flags = settings_current.full_screen ?
                      SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+
+      if( settings_current.full_screen ) SDL_SetWindowSize( sdl2_window, width,
+                                                            height );
 
       if( SDL_SetWindowFullscreen( sdl2_window, flags ) ) {
         fprintf( stderr, "%s: couldn't set SDL2 fullscreen mode: %s\n",
                  fuse_progname, SDL_GetError() );
         fuse_abort();
       }
+
+      if( !settings_current.full_screen ) SDL_SetWindowSize( sdl2_window,
+                                                             width, height );
+    } else {
+      SDL_SetWindowSize( sdl2_window, width, height );
     }
   }
 
@@ -557,16 +577,16 @@ sdl2display_create_window( void )
 
   SDL_SetRenderDrawColor( sdl2_renderer, 0, 0, 0, 255 );
 
-  sdl2display_update_fullscreen_scaler();
+  sdl2display_update_fullscreen_scaler( 0, 0 );
   sdl2display_sync_presentation_surfaces();
   SDL_ShowWindow( sdl2_window );
 }
 
 static void
-sdl2display_recreate( void )
+sdl2display_recreate( int startup, int explicit_scaler_change )
 {
   sdl2display_force_full_refresh = 1;
-  sdl2display_create_window();
+  sdl2display_create_window( startup, explicit_scaler_change );
   sdl2display_create_tmp_screen();
   sdl2display_free_status_icons();
   sdl2display_load_status_icon( "cassette.bmp", red_cassette, green_cassette );
@@ -602,11 +622,13 @@ uidisplay_init( int width, int height )
   image_height = height;
 
   init_scalers();
+  sdl2_scaler_state_init( &scaler_state );
 
   if( scaler_activate_scaler( current_scaler ) )
     scaler_activate_scaler( SCALER_NORMAL );
 
-  sdl2display_recreate();
+  sdl2display_is_full_screen = settings_current.full_screen;
+  sdl2display_recreate( 1, 0 );
   display_ui_initialised = 1;
 
   return 0;
@@ -615,7 +637,13 @@ uidisplay_init( int width, int height )
 int
 uidisplay_hotswap_gfx_mode( void )
 {
-  sdl2display_recreate();
+  int explicit_scaler_change;
+
+  explicit_scaler_change =
+    uidisplay_take_next_hotswap_reason() ==
+    UIDISPLAY_HOTSWAP_REASON_SCALER_EXPLICIT;
+
+  sdl2display_recreate( 0, explicit_scaler_change );
   return 0;
 }
 

@@ -92,15 +92,4 @@ sdl2display_update_rect( int x, int y, int width, int height, float scale,
   sdl2display_scale_rect( &src, scale, x_off, y_off, dst );
 }
 
-scaler_type sdl2display_choose_fullscreen_scaler( scaler_type current,
-                                                  float current_scale,
-                                                  int image_width,
-                                                  int image_height,
-                                                  int display_width,
-                                                  int display_height,
-                                                  const unsigned char *supported,
-                                                  const float *scales,
-                                                  int scaler_count,
-                                                  int *preserve_windowed );
-
 #endif

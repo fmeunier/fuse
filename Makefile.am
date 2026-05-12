@@ -212,9 +212,10 @@ include ui/xlib/Makefile.am
 include unittests/Makefile.am
 include z80/Makefile.am
 
-check-local: fuse unittests/displaytest unittests/sdl2displaytest unittests/sdl2joysticktest unittests/sdl2mousetest
+check-local: fuse unittests/displaytest unittests/sdl2displaytest unittests/sdl2scalerstatetest unittests/sdl2joysticktest unittests/sdl2mousetest
 	$(top_builddir)/fuse --unittests
 	$(top_builddir)/unittests/displaytest
 	$(top_builddir)/unittests/sdl2displaytest
+	$(top_builddir)/unittests/sdl2scalerstatetest
 	$(top_builddir)/unittests/sdl2joysticktest
 	$(top_builddir)/unittests/sdl2mousetest
