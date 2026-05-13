@@ -17,6 +17,20 @@
     <category>Emulator</category>
   </categories>
   <releases>
+    <release date="2026-05-11" version="1.8.0">
+      <description>
+        <ul>
+          <li>Added SDL 2 compatibility</li>
+          <li>2× display scaler is now the default for better usability on modern screens</li>
+          <li>GTK2 support removed</li>
+          <li>Improved display rendering performance</li>
+          <li>Fixed redraw seams in GTK3</li>
+          <li>Debugger: removed $-prefixed hex digit syntax</li>
+          <li>Debugger: fixed missing bit number in DD/FD CB disassembly</li>
+          <li>Various compiler warning fixes and build improvements</li>
+        </ul>
+      </description>
+    </release>
     <release date="2026-03-24" version="1.7.0">
       <description>
         <ul>
