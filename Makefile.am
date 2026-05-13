@@ -213,6 +213,7 @@ include unittests/Makefile.am
 include z80/Makefile.am
 
 check-local: fuse unittests/displaytest unittests/sdl2displaytest unittests/sdl2scalerstatetest unittests/sdl2joysticktest unittests/sdl2mousetest
+	@test -e $(top_builddir)/roms || ln -sf "$(abs_top_srcdir)/roms" $(top_builddir)/roms
 	$(top_builddir)/fuse --unittests
 	$(top_builddir)/unittests/displaytest
 	$(top_builddir)/unittests/sdl2displaytest
