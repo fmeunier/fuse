@@ -27,13 +27,13 @@
 
 #include <string.h>
 
-#include "../compat.h"
-#include "../infrastructure/startup_manager.h"
-#include "../machine.h"
-#include "../memory_pages.h"
-#include "../peripherals/scld.h"
-#include "../rectangle.h"
-#include "../settings.h"
+#include "compat.h"
+#include "infrastructure/startup_manager.h"
+#include "machine.h"
+#include "memory_pages.h"
+#include "peripherals/scld.h"
+#include "rectangle.h"
+#include "settings.h"
 
 libspectrum_dword tstates;
 
