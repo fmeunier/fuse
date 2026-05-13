@@ -23,7 +23,7 @@
 !define FUSE_VERSION "@PACKAGE_VERSION@" ; could have letters like -RC1
 !define FUSE_FULL_VERSION "@FUSE_FULL_VERSION@" ; must have four numeric tokens
 !define DISPLAY_NAME "the Free Unix Spectrum Emulator (Fuse) ${FUSE_VERSION}"
-!define SETUP_FILENAME "@PACKAGE@-${FUSE_VERSION}-win32-setup"
+!define SETUP_FILENAME "@PACKAGE@-${FUSE_VERSION}-@UI@-setup"
 !define SETUP_FILE "${SETUP_FILENAME}.exe"
 !define HKLM_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Fuse"
 !define PROG_ID "Fuse.Files.1"
@@ -366,15 +366,21 @@ section "uninstall"
     Delete "$INSTDIR\COPYING.txt"
     Delete "$INSTDIR\fuse.exe"
     Delete "$INSTDIR\fuse.html"
+    Delete "$INSTDIR\LICENSES.txt"
     Delete "$INSTDIR\manual*.png"
     Delete "$INSTDIR\README.txt"
     Delete "$INSTDIR\README-win32.txt"
+    Delete "$INSTDIR\3rd-party\*"
+    RMDir  "$INSTDIR\3rd-party"
+    Delete "$INSTDIR\ui\widget\fuse.font"
+    RMDir  "$INSTDIR\ui\widget"
+    RMDir  "$INSTDIR\ui"
     Delete "$INSTDIR\*.dll"
-    RMDir "$INSTDIR"
 
     ; Delete the uninstaller and remove the uninstall keys for Windows
     DetailPrint "Deleting Uninstaller..."
     Delete "$INSTDIR\uninstall.exe"
+    RMDir "$INSTDIR"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Fuse"
 
 sectionEnd
