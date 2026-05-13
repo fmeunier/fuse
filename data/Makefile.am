@@ -112,6 +112,7 @@ endif
 
 EXTRA_DIST += \
               data/net.sourceforge.fuse_emulator.Fuse.desktop.in \
+              data/net.sourceforge.fuse_emulator.Fuse.metainfo.xml \
               data/fuse.xml.in \
               data/shell-completion/diff_options.sh \
               data/win32/fuse.manifest.in \
