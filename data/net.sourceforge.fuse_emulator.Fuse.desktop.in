@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Categories=Game;Emulator;GTK;
+Categories=Game;Emulator;@EXTRA_DESKTOP_CATEGORIES@
 Name=Fuse
 GenericName=Spectrum Emulator
 Comment=Emulator of the 1980s ZX Spectrum home computer and its various clones
