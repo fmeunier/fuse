@@ -110,7 +110,6 @@ typedef enum utils_aux_type {
   UTILS_AUXILIARY_LIB,		/* Something from the lib/ directory */
   UTILS_AUXILIARY_ROM,		/* Something from the roms/ directory */
   UTILS_AUXILIARY_WIDGET,	/* Something from the widget/ directory */
-  UTILS_AUXILIARY_GTK,		/* Something from the gtk/ directory */
 
 } utils_aux_type;
 
@@ -126,6 +125,7 @@ typedef struct path_context {
 int compat_osname( char *buffer, size_t length );
 const char* compat_get_temp_path( void );
 const char* compat_get_config_path( void );
+const char* compat_get_fallback_config_path( void );
 int compat_is_absolute_path( const char *path );
 int compat_get_next_path( path_context *ctx );
 

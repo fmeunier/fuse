@@ -1,3 +1,74 @@
+2026-05-11  Fredrick Meunier  <fredm@spamcop.net>
+
+        * Fuse 1.8.0 released.
+
+        * New features:
+          * Add SDL 2 compatibility (thanks, Gergely Szasz, Vitaly Greck,
+            Marc Serdeliuc, Sergio Baldoví and Alberto Garcia)
+            (Fredrick Meunier)
+
+        * UI improvements:
+          * Make 2x the default display scaler so Fuse is more usable on
+            modern screens (Fredrick Meunier).
+          * GTK UI: Fix loading binary data from deleted files (thanks, Crisis)
+          * Expand queued redraw areas to avoid redraw seams in GTK3 (fixes
+            bug #516) (Fredrick Meunier).
+
+        * Emulation core improvements:
+          * Speed up display dirty-bit scanning with __builtin_ctz (Fredrick
+            Meunier).
+
+        * Debugger improvements:
+          * Remove $-prefixed hex digit syntax from the debugger to prevent
+            clashes with variables (fixes bug #407) (thanks, Gergely Szasz and
+            Sergio Baldoví).
+          * Fix missing bit number in DD/FD CB disassembly (fixes bug #515)
+            (Cesar Hernandez).
+
+        * Deprecated features removed:
+          * Remove GTK2 support from the build and codebase (Derek Fountain).
+
+        * Miscellaneous improvements:
+          * Win32: don't abort startup if networking is blocked; instead,
+            disable Spectranet with a warning (Fredrick Meunier).
+          * Use LIBSPECTRUM_SUPPORTS_WAV to gate WAV support (Fredrick
+            Meunier).
+          * Correct libspectrum DLL version (thanks, Guesser) (Fredrick
+            Meunier).
+          * Suppress or fix various compiler warnings, including common-symbol
+            alignment warnings on macOS (Derek Fountain and Fredrick Meunier).
+          * Fix out-of-tree builds by using full paths in generated #includes
+            (Alberto Garcia).
+          * Add an AppStream metainfo file (Alberto Garcia).
+          * Document the profiler menu options (fixes bug #303) (Fredrick
+            Meunier).
+          * Store the configuration file in the XDG configuration directory,
+            with fallback to ~/.fuserc for reading (patches #443) (Alberto
+            Garcia).
+          * Document new location of the configuration file (Sergio Baldoví).
+          * Rename ui/gtk to ui/gtk3 (Derek Fountain).
+          * Use the macros provided by gtk/glib to disable deprecation
+            warnings (Alberto Garcia).
+          * Add menu_data.ui to the GTK3 GResource file (Alberto Garcia).
+          * Remove UTILS_AUXILIARY_GTK as the GTK build no longer needs
+            external auxiliary files (Alberto Garcia).
+          * Distribute ui/widget/fuse.font in the SDL2 build for Windows
+            (Sergio Baldoví).
+
+        * Testing improvements:
+          * Add unit tests for display rendering and dirty-region handling
+            (Philip Kendall and Fredrick Meunier).
+          * Expand unit test coverage for bitmap operations, mempool_strdup and
+            utils_safe_strdup edge cases (Fredrick Meunier).
+          * Add GitHub Actions libspectrum workflows and Windows release
+            packaging (Fredrick Meunier).
+          * Add ED-prefix disassembler coverage (Fredrick Meunier).
+          * Extend disassembler coverage for FD CB and negative offsets
+            (Fredrick Meunier).
+          * Add BIT/RES/SET disassembler regression tests (Fredrick Meunier).
+
+        * Various other minor bugfixes.
+
 2026-03-21  Philip Kendall  <philip-fuse@shadowmagic.org.uk>
 
         * Fuse 1.7.0 released.

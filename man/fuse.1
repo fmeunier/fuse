@@ -24,7 +24,7 @@
 .\" E-mail: philip-fuse@shadowmagic.org.uk
 .\"
 .\"
-.TH fuse 1 "10th March, 2026" "Version 1.7.0" "Emulators"
+.TH fuse 1 "11th May, 2026" "1.8.0" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -481,7 +481,31 @@ option.
 .B \-\-full\-screen
 .RS
 Specify whether Fuse should run in full screen mode.
-This option is effective only under the SDL UI.
+This option is effective under the SDL and SDL2 UIs.
+.PP
+Under SDL2, Fuse uses desktop fullscreen: the current desktop display mode is
+kept and Fuse scales the emulated display to fit it.
+.RE
+.PP
+.B \-\-sdl\-fullscreen\-mode
+.I mode
+.RS
+Specify the fullscreen display mode to use under the SDL UI. This option has
+no effect under SDL2, which uses desktop fullscreen.
+.I mode
+may be one of the following:
+.RS
+.TP
+.B list
+Print the available fullscreen modes and exit.
+.TP
+.B number
+Select one of the listed fullscreen modes by its number.
+.TP
+.B WxH
+Select a fullscreen mode by width and height, for example
+.BR 1024x768 .
+.RE
 .RE
 .PP
 .B \-g
@@ -1356,11 +1380,12 @@ see there for more details.
 .B \-\-sdl\-fullscreen\-mode
 .I mode
 .RS
-Select a screen resolution for full screen mode. Available values for
+Select a screen resolution for full screen mode under the SDL UI. Available
+values for
 .IR mode " are listed in a table, when Fuse is called with"
 .B \-\-sdl\-fullscreen\-mode
 .IR list " command line option."
-This option is effective only under the SDL UI.
+This option has no effect under SDL2, which uses desktop fullscreen.
 .RE
 .PP
 .B \-\-separation
@@ -2733,6 +2758,11 @@ menu.
 .RS
 If this option is selected, Fuse will emulate a Kempston mouse interface.
 .PP
+With the SDL and SDL2 UIs, middle click (or middle button release) on the
+Spectrum display toggles mouse grab when the Kempston mouse is enabled.
+When grabbed, SDL2 uses relative mouse mode so motion is no longer limited by
+the host pointer reaching the edge of the screen.
+.PP
 If you're using Fuse full-screen, your mouse is automatically used as if
 attached to the Kempston interface. Otherwise, you'll need to click on the
 Spectrum display in order to tell Fuse to grab the pointer (and make it
@@ -3414,15 +3444,15 @@ and
 .I "Options, Save"
 .RS
 This will cause Fuse's current options to be written to
-.I .fuserc
-in your home directory (Unix-like systems), or
-.I fuse.cfg
-in your %USERPROFILE% folder (Windows), from which they will be
+a configuration file in your home directory, from which they will be
 picked up again when Fuse is restarted. The best way to update
 this file is by using this option, but it's a simple XML file if
 .I libxml2
 was available when Fuse was compiled (otherwise, plain text), and
 shouldn't be too hard to edit by hand if you really want to.
+See the
+.B "FILES"
+section for more details about location of this file.
 .RE
 .PP
 .I Pause
@@ -3586,6 +3616,29 @@ section for more information.
 Start the memory browser. It should be fairly obvious what this does;
 perhaps the only thing worth noting is that emulation is paused until
 you close the window.
+.RE
+.PP
+.I "Machine, Profiler"
+.RS
+Start or stop the built-in Z80 execution profiler. When profiling is
+started, Fuse records the cumulative number of t-states spent at each
+program counter address. When profiling is stopped, Fuse prompts for a
+filename and writes the collected data as text, one non-zero address per
+line, in the form
+.RB ` 0x1234,456 '
+where the first value is the address and the second is the cumulative
+t-state count.
+.PP
+This output can be converted with
+.BR profile2map (1)
+from the
+.B fuse-utils
+package into the opcode map-file format used by Gerton Lunter's
+.B Z80
+Spectrum emulator. Such map files can be used by external tools such as
+.B dZ80
+.RI ( "http://inkland.org.uk/dz80/" )
+to help distinguish executed code from unexecuted data.
 .RE
 .PP
 .I "Machine, NMI"
@@ -4773,10 +4826,8 @@ entry box, which are similar in nature (but definitely not identical
 to or as powerful as) to those in
 .IR gdb (1).
 In general, the debugger is case-insensitive, and numbers will be
-interpreted as decimal, unless prefixed by either
+interpreted as decimal, unless prefixed by
 .RI ` 0x '
-or
-.RI ` $ '
 when they will be interpreted as hex. Each command can be abbreviated
 to the portion not in curly braces.
 .PP
@@ -5738,7 +5789,28 @@ error messages.
 .\"------------------------------------------------------------------
 .\"
 .SH FILES
-.I "~/.fuserc"
+.I "$XDG_CONFIG_HOME/fuse-emulator/fuserc"
+.RS
+On Unix systems this is the per-user configuration file of Fuse.
+Writing configuration always goes to the XDG location.
+.RE
+.PP
+.I "~/.config/fuse-emulator/fuserc"
+.RS
+If $XDG_CONFIG_HOME is unset, this is the location of the configuration
+file.
+.RE
+.PP
+.I "$HOME/.fuserc"
+.RS
+If neither of previous files exist, reading falls back to this file
+as it was the default location until Fuse 1.7.0.
+.RE
+.PP
+.I "%USERPROFILE%\\\\fuse.cfg"
+.RS
+On Windows system this is the per-user configuration file of Fuse.
+.RE
 .\"
 .\"------------------------------------------------------------------
 .\"

@@ -40,7 +40,7 @@ foreach( sort keys %pxm ) {
 #print "};\n";
 
 
-my $xstates = join(', ', keys %xstates);
+my $xstates = join(', ', sort keys %xstates);
 my $idx = 1000;
 my $w;
 foreach(sort keys %xoverlay) {
