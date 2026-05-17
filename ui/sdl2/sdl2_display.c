@@ -293,6 +293,11 @@ sdl2display_status_icon( SDL_Surface **icon, int x, int y )
 
   if( !surface ) return;
 
+  if( machine_current->timex ) {
+    x <<= 1;
+    y <<= 1;
+  }
+
   sdl2display_icon_rect( x, y, surface->w, surface->h,
                          sdl2display_current_size,
                          fullscreen_x_off, fullscreen_y_off, &rect );
