@@ -27,6 +27,7 @@ EXTRA_DIST += \
               hacking/implementation_notes.txt \
               hacking/input.txt \
               hacking/peripheral_tests.txt \
+              hacking/releasing.md \
               hacking/sound.txt \
               hacking/spectranet.txt \
               hacking/tc2048_tech_notes.txt \

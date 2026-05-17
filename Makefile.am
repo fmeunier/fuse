@@ -154,7 +154,10 @@ EXTRA_DIST = AUTHORS \
 	     menu_data.pl \
 	     settings.dat \
 	     settings.pl \
-	     settings-header.pl
+	     settings-header.pl \
+	     update-release.py \
+	     .agents/skills/README.md \
+	     .agents/skills/update-changelog/SKILL.md
 
 CLEANFILES = options.h \
 	     settings.c \

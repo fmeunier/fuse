@@ -109,6 +109,8 @@ http://lists.sourceforge.net/lists/listinfo/fuse-emulator-devel
 and the Fuse project page on SourceForge,
 http://sourceforge.net/projects/fuse-emulator/
 
+Maintainer release notes are in `hacking/releasing.md'.
+
 For Spectrum discussions not directly related to Fuse, visit either the
 Usenet newsgroup `comp.sys.sinclair' or the World of Spectrum forums
 <http://www.worldofspectrum.org/forums/>.
