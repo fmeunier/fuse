@@ -94,16 +94,16 @@ jobs:
         run: |
           .github/scripts/in_config.sh "${{ inputs.verify_other }}"
 
-      - name: (7) Make
+      - name: (8) Make
         run: make
 
-      - name: (8) Install
+      - name: (9) Install
         run: sudo make install
 
-      - name: (9) Run unit tests
+      - name: (10) Run unit tests
         if: ${{ inputs.run_check }}
         run: make check
 
-      - name: (10) Finish
+      - name: (11) Finish
         run: |
           echo "🍏 Finishing with status ${{ job.status }}."
