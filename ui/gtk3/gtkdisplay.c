@@ -107,8 +107,9 @@ static int display_updated = 0;
 
 static cairo_surface_t *surface = NULL;
 
-/* The current size of the window (in units of DISPLAY_SCREEN_*) */
-static int gtkdisplay_current_size=1;
+/* The current size of the cairo surface (in units of DISPLAY_SCREEN_*).
+   It may be smaller than the GTK drawing area if the window is maximized. */
+static int gtkdisplay_surface_size=1;
 
 /* Extra height used for menu and status bars */
 static int extra_height = 0;
@@ -224,8 +225,8 @@ uidisplay_init( int width, int height )
 static void
 ensure_appropriate_surface( void )
 {
-  /* Create a bigger surface for the new display size */
-  float scale = (float)gtkdisplay_current_size / image_scale;
+  /* Recreate the cairo surface to match the new size */
+  float scale = (float)gtkdisplay_surface_size / image_scale;
   if( surface ) cairo_surface_destroy( surface );
 
   surface =
@@ -245,10 +246,15 @@ drawing_area_resize( int width, int height, int force_scaler )
   if( size > height / DISPLAY_SCREEN_HEIGHT )
     size = height / DISPLAY_SCREEN_HEIGHT;
 
-  /* If we're the same size as before, no need to do anything else */
-  if( size == gtkdisplay_current_size ) return 0;
+  /* Clamp the size of the cairo surface. Window managers can ignore
+     GDK_HINT_MAX_SIZE when tiling or maximizing the window, which
+     would otherwise limit us to MAX_SCALE. */
+  if( size > MAX_SCALE ) size = MAX_SCALE;
 
-  gtkdisplay_current_size = size;
+  /* If we're the same size as before, no need to do anything else */
+  if( size == gtkdisplay_surface_size ) return 0;
+
+  gtkdisplay_surface_size = size;
 
   register_scalers( force_scaler );
 
@@ -265,7 +271,7 @@ static void
 register_scalers( int force_scaler )
 {
   scaler_type scaler;
-  float drawing_area_scale, scaling_factor;
+  float surface_scale, scaling_factor;
 
   scaler_register_clear();
 
@@ -301,13 +307,13 @@ register_scalers( int force_scaler )
   scaler =
     scaler_is_supported( current_scaler ) ? current_scaler : SCALER_NORMAL;
 
-  drawing_area_scale = (float)gtkdisplay_current_size / image_scale;
+  surface_scale = (float)gtkdisplay_surface_size / image_scale;
   scaling_factor = scaler_get_scaling_factor( current_scaler );
 
-  /* Override scaler if the image doesn't fit well in the drawing area */
-  if( force_scaler && drawing_area_scale != scaling_factor ) {
+  /* Override scaler if it doesn't match the surface scale */
+  if( force_scaler && surface_scale != scaling_factor ) {
 
-    switch( gtkdisplay_current_size ) {
+    switch( gtkdisplay_surface_size ) {
     case 1: scaler = machine_current->timex ? SCALER_HALF : SCALER_NORMAL;
       break;
     case 2: scaler = machine_current->timex ? SCALER_NORMAL : SCALER_DOUBLESIZE;
@@ -339,7 +345,7 @@ uidisplay_frame_end( void )
 void
 uidisplay_area( int x, int y, int w, int h )
 {
-  float scale = (float)gtkdisplay_current_size / image_scale;
+  float scale = (float)gtkdisplay_surface_size / image_scale;
   int scaled_x, scaled_y, i, yy;
   libspectrum_dword *palette;
 
@@ -379,7 +385,8 @@ uidisplay_area( int x, int y, int w, int h )
 
 static void gtkdisplay_area(int x, int y, int width, int height)
 {
-  int max_width, max_height;
+  int max_width, max_height, widget_width, widget_height;
+  int offset_x, offset_y;
 
   display_updated = 1;
 
@@ -395,7 +402,15 @@ static void gtkdisplay_area(int x, int y, int width, int height)
   if( x + width < max_width ) width++;
   if( y + height < max_height ) height++;
 
-  gtk_widget_queue_draw_area( gtkui_drawing_area, x, y, width, height );
+  /* Translate surface coordinates into widget coordinates. The surface is
+     centred when the drawing area is larger than the cairo surface. */
+  widget_width = gtk_widget_get_allocated_width( gtkui_drawing_area );
+  widget_height = gtk_widget_get_allocated_height( gtkui_drawing_area );
+  offset_x = ( widget_width  - max_width  ) / 2;
+  offset_y = ( widget_height - max_height ) / 2;
+
+  gtk_widget_queue_draw_area( gtkui_drawing_area, x + offset_x, y + offset_y,
+                              width, height );
 }
 
 int
@@ -509,11 +524,23 @@ uidisplay_plot16( int x, int y, libspectrum_word data,
 static gboolean
 gtkdisplay_draw( GtkWidget *widget, cairo_t *cr, gpointer user_data )
 {
+  int surface_width, surface_height, widget_width, widget_height;
+  int offset_x, offset_y;
+
   /* Create a new surface for this gfx mode */
   if( !surface ) ensure_appropriate_surface();
 
+  /* Centre the surface in the drawing area. */
+  surface_width = cairo_image_surface_get_width( surface );
+  surface_height = cairo_image_surface_get_height( surface );
+  widget_width = gtk_widget_get_allocated_width( widget );
+  widget_height = gtk_widget_get_allocated_height( widget );
+
+  offset_x = ( widget_width  - surface_width  ) / 2;
+  offset_y = ( widget_height - surface_height ) / 2;
+
   /* Repaint the drawing area */
-  cairo_set_source_surface( cr, surface, 0, 0 );
+  cairo_set_source_surface( cr, surface, offset_x, offset_y );
   cairo_set_operator( cr, CAIRO_OPERATOR_SOURCE );
   cairo_paint( cr );
 
