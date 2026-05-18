@@ -384,7 +384,8 @@ sound_lowlevel_frame( libspectrum_signed_word *data, int len )
       if( verb )
         fprintf( stderr, "ALSA: *buffer underrun*!\n" );
     } else {
-        len -= ret;
+      data += ret * ch;
+      len -= ret;
     }
   }
 }
