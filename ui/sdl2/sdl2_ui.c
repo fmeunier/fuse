@@ -128,7 +128,7 @@ ui_event( void )
       }
       break;
 
-#if defined USE_JOYSTICK && !defined HAVE_JSW_H
+#ifdef USE_JOYSTICK
     case SDL_JOYBUTTONDOWN:
       sdl2joystick_buttonpress( &event.jbutton );
       break;

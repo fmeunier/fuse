@@ -26,11 +26,10 @@
 
 #include "config.h"
 
-#if !defined USE_JOYSTICK || defined HAVE_JSW_H
-/* Fake joystick, or override UI-specific handling */
+#ifndef USE_JOYSTICK
 #include "../uijoystick.c"
 
-#else			/* #if !defined USE_JOYSTICK || defined HAVE_JSW_H */
+#else
 
 #include <SDL.h>
 
@@ -252,4 +251,4 @@ ui_joystick_end( void )
 #endif
 }
 
-#endif			/* #if !defined USE_JOYSTICK || defined HAVE_JSW_H */
+#endif

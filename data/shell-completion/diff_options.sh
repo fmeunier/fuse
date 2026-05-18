@@ -32,7 +32,6 @@ echo ===
 
 grep -o -E '\\\-\\\-[a-Za-z0-9\\\-]+' ../../man/fuse.1 | \
   sed -e 's/\\\-/\-/g' -e 's/\-\-no\-/\-\-/g' | sort | uniq | \
-  grep -v -e "\-\-disable\-ui\-joystick" -e "\-\-foo" -e "\-\-help" \
-          -e "\-\-version" > man.txt
+  grep -v -e "\-\-foo" -e "\-\-help" -e "\-\-version" > man.txt
 
 grep -v -e "\-\-no\-" settings.txt | diff -U 0 man.txt -

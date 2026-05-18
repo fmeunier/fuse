@@ -163,7 +163,7 @@ _fuse()
             return 0
             ;;
         --competition-code|--debugger-command| \
-        --drive-40-max-track|--drive-80-max-track|--joystick-[12]|-j| \
+        --drive-40-max-track|--drive-80-max-track| \
         --joystick-[12]-fire-[1-9]|--joystick-[12]-fire-1[0-5]| \
         --joystick-[12]-output|--joystick-keyboard-down| \
         --joystick-keyboard-fire|--joystick-keyboard-left| \
@@ -198,14 +198,14 @@ _fuse()
             --drive-plusd2-type --embed-snapshot --fastload --fbmode
             --fuller --full-screen --graphicsfile --graphics-filter
             --help --if2cart --interface1 --interface2 --issue2
-            --joystick-1 --joystick-1-fire-1 --joystick-1-fire-2
+            --joystick-1-fire-1 --joystick-1-fire-2
             --joystick-1-fire-3 --joystick-1-fire-4 --joystick-1-fire-5
             --joystick-1-fire-6 --joystick-1-fire-7 --joystick-1-fire-8
             --joystick-1-fire-9 --joystick-1-fire-10
             --joystick-1-fire-11 --joystick-1-fire-12
             --joystick-1-fire-13 --joystick-1-fire-14
             --joystick-1-fire-15 --joystick-1-output
-            --joystick-2 --joystick-2-fire-1 --joystick-2-fire-2
+            --joystick-2-fire-1 --joystick-2-fire-2
             --joystick-2-fire-3 --joystick-2-fire-4 --joystick-2-fire-5
             --joystick-2-fire-6 --joystick-2-fire-7 --joystick-2-fire-8
             --joystick-2-fire-9 --joystick-2-fire-10

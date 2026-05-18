@@ -4,7 +4,7 @@ The Free Unix Spectrum Emulator (Fuse) 1.8.0
 Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat
 unsurprisingly, an emulator of the ZX Spectrum (a popular 1980s home
 computer, especially in the UK) for Unix. However, it has now also
-been ported to Mac OS X, which may or may not count as a Unix variant
+been ported to macOS, which may or may not count as a Unix variant
 depending on your advocacy position and Windows which definitely isn't
 a Unix variant. Fuse also emulates some of the better-known ZX Spectrum
 clones as well.
@@ -69,11 +69,11 @@ If you've used Fuse prior to version 0.5.0, note that the external
 utilities (tzxlist, etc) are now available separately from Fuse
 itself. See http://fuse-emulator.sourceforge.net/ for details.
 
-Mac OS X
+macOS
 
 * Either the native port by Fredrick Meunier, or the original version
-  will compile on OS X 10.3 (Panther) or later.
-* On Mac OS X Lion you will need to use clang as gcc-llvm-4.2.1 fails to
+  will compile on macOS 10.3 (Panther) or later.
+* On macOS Lion you will need to use clang as gcc-llvm-4.2.1 fails to
   correctly compile z80_ops.c.
 
 Windows

@@ -716,62 +716,30 @@ AC_MSG_CHECKING(whether hardware joystick support requested)
   stick=yes)
 AC_MSG_RESULT($stick)
 if test "$stick" = yes; then
-  dnl We prefer to use UI-specific joystick code. (Default.)
-  dnl If there is none, or you override this here, we use libjsw.
   case "$UI" in
     sdl|sdl2|win32)
-      dnl Libraries provide their own joystick code
-      AC_MSG_CHECKING([whether to use $UI's joystick support])
-      AC_ARG_ENABLE(ui-joystick,
-      AS_HELP_STRING([--disable-ui-joystick], [use libjsw joystick code (where supported)]),
-      if test "$enableval" = no; then libjsw=yes; else libjsw=no; fi,
-      libjsw=no)
-      if test "$libjsw" = yes; then
-        AC_MSG_RESULT([no, use libjsw])
-      else
-        AC_MSG_RESULT(yes)
-        AC_DEFINE([USE_JOYSTICK], 1, [Defined if we're using hardware joysticks])
-      fi
+      dnl These UIs provide their own joystick code.
+      AC_DEFINE([USE_JOYSTICK], 1, [Defined if we're using hardware joysticks])
       ;;
     gtk3|xlib)
-      dnl These UIs could use SDL library for handling joysticks
-      AC_MSG_CHECKING([whether to use $UI's joystick support])
-      AC_ARG_ENABLE(ui-joystick,
-      AS_HELP_STRING([--disable-ui-joystick], [use libjsw joystick code (where supported)]),
-      if test "$enableval" = no; then libjsw=yes; else libjsw=no; fi,
-      libjsw=no)
-      if test "$libjsw" = yes; then
-        AC_MSG_RESULT([no, use libjsw])
+      dnl These UIs use SDL library for handling joysticks.
+      if test "$sdl_available" != no; then
+        AC_DEFINE([USE_JOYSTICK], 1, [Defined if we're using hardware joysticks])
+        use_sdl=$sdl_available
       else
-        if test "$sdl_available" != no; then
-          AC_MSG_RESULT(yes)
-          AC_DEFINE([USE_JOYSTICK], 1, [Defined if we're using hardware joysticks])
-          use_sdl=$sdl_available
-        else
-          AC_MSG_WARN([No suitable SDL version found - joystick support disabled])
-          stick=no
-        fi
+        AC_MSG_WARN([No suitable SDL version found - joystick support disabled])
+        stick=no
       fi
       ;;
     wii)
       dnl Wii UI check this elsewhere
       AC_MSG_RESULT(yes)
-      libjsw=no
       ;;
     *)
-      dnl Our only option is libjsw.
-      libjsw=yes
+      dnl No joystick backend available for this UI.
+      stick=no
       ;;
   esac
-  if test "$libjsw" = yes; then
-    dnl Look for libjsw. If missing, use QAOP<space>.
-    AC_CHECK_HEADERS(jsw.h,
-                     LIBS="$LIBS -ljsw";
-		     AC_DEFINE([USE_JOYSTICK], 1,
-		               [Defined if we're using hardware joysticks]),
-                     AC_MSG_WARN(jsw.h not found - joystick support disabled)
-                     stick=no)
-  fi
 fi
 
 dnl See if libxml2 is available (for the config file handling)
@@ -1047,9 +1015,6 @@ if test x"${gpm}" != "x"; then
    echo "libgpm support: ${gpm}"
 fi
 echo "Joystick support: ${stick}"
-if test "${stick}" = "yes"; then
-   echo "Using libjsw for joystick support: ${libjsw}"
-fi
 echo "zlib support: ${zlib}"
 echo "libxml2 support: ${libxml2}"
 echo "libpng support: ${libpng}"

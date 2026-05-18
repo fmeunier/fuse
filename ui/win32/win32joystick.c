@@ -39,11 +39,11 @@
 
 #include "win32joystick.h"
 
-#if !defined USE_JOYSTICK || defined HAVE_JSW_H
+#ifndef USE_JOYSTICK
 
 #include "../uijoystick.c"
 
-#else /* #if !defined USE_JOYSTICK || defined HAVE_JSW_H */
+#else
 
 /* Functions to handle Joystick events */
 #include "ui/ui.h"
@@ -164,7 +164,7 @@ ui_joystick_end( void )
   /* Initialization and unitialization is handled by MS Windows */
 }
 
-#endif /* #if !defined USE_JOYSTICK || defined HAVE_JSW_H */
+#endif
 
 /* Win32 UI functions to handle Joystick options menus */
 struct button_info {
