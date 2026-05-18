@@ -42,7 +42,6 @@ static char *command_buffer = NULL;
 static char *command_ptr;
 
 int yyparse( void );
-int yywrap( void );
 
 /* Evaluate the debugger command given in 'command' */
 void
@@ -64,14 +63,6 @@ debugger_command_evaluate( const char *command )
   mempool_free( debugger_memory_pool );
 
   ui_debugger_update();
-}
-
-/* Utility functions called from the flex scanner */
-
-int
-yywrap( void )
-{
-  return 1;
 }
 
 /* Called to get up to 'max_size' bytes of the command to be parsed */

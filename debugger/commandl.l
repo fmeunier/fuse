@@ -46,7 +46,7 @@
 
 ID	[a-z]([a-z0-9']|\\[ ])*
 
-%option caseless
+%option caseless noyywrap
 
 %s COMMANDSTATE1
 %x COMMANDSTATE2
