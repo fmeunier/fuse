@@ -123,61 +123,6 @@ keysyms_map_t keysyms_map[] = {
 };
 
 static input_key
-sdl2keyboard_physical_map( const SDL_KeyboardEvent *keyevent )
-{
-  switch( keyevent->keysym.scancode ) {
-  case SDL_SCANCODE_A: return INPUT_KEY_a;
-  case SDL_SCANCODE_B: return INPUT_KEY_b;
-  case SDL_SCANCODE_C: return INPUT_KEY_c;
-  case SDL_SCANCODE_D: return INPUT_KEY_d;
-  case SDL_SCANCODE_E: return INPUT_KEY_e;
-  case SDL_SCANCODE_F: return INPUT_KEY_f;
-  case SDL_SCANCODE_G: return INPUT_KEY_g;
-  case SDL_SCANCODE_H: return INPUT_KEY_h;
-  case SDL_SCANCODE_I: return INPUT_KEY_i;
-  case SDL_SCANCODE_J: return INPUT_KEY_j;
-  case SDL_SCANCODE_K: return INPUT_KEY_k;
-  case SDL_SCANCODE_L: return INPUT_KEY_l;
-  case SDL_SCANCODE_M: return INPUT_KEY_m;
-  case SDL_SCANCODE_N: return INPUT_KEY_n;
-  case SDL_SCANCODE_O: return INPUT_KEY_o;
-  case SDL_SCANCODE_P: return INPUT_KEY_p;
-  case SDL_SCANCODE_Q: return INPUT_KEY_q;
-  case SDL_SCANCODE_R: return INPUT_KEY_r;
-  case SDL_SCANCODE_S: return INPUT_KEY_s;
-  case SDL_SCANCODE_T: return INPUT_KEY_t;
-  case SDL_SCANCODE_U: return INPUT_KEY_u;
-  case SDL_SCANCODE_V: return INPUT_KEY_v;
-  case SDL_SCANCODE_W: return INPUT_KEY_w;
-  case SDL_SCANCODE_X: return INPUT_KEY_x;
-  case SDL_SCANCODE_Y: return INPUT_KEY_y;
-  case SDL_SCANCODE_Z: return INPUT_KEY_z;
-  case SDL_SCANCODE_1: return INPUT_KEY_1;
-  case SDL_SCANCODE_2: return INPUT_KEY_2;
-  case SDL_SCANCODE_3: return INPUT_KEY_3;
-  case SDL_SCANCODE_4: return INPUT_KEY_4;
-  case SDL_SCANCODE_5: return INPUT_KEY_5;
-  case SDL_SCANCODE_6: return INPUT_KEY_6;
-  case SDL_SCANCODE_7: return INPUT_KEY_7;
-  case SDL_SCANCODE_8: return INPUT_KEY_8;
-  case SDL_SCANCODE_9: return INPUT_KEY_9;
-  case SDL_SCANCODE_0: return INPUT_KEY_0;
-  case SDL_SCANCODE_MINUS: return INPUT_KEY_minus;
-  case SDL_SCANCODE_EQUALS: return INPUT_KEY_equal;
-  case SDL_SCANCODE_LEFTBRACKET: return INPUT_KEY_bracketleft;
-  case SDL_SCANCODE_RIGHTBRACKET: return INPUT_KEY_bracketright;
-  case SDL_SCANCODE_BACKSLASH: return INPUT_KEY_backslash;
-  case SDL_SCANCODE_SEMICOLON: return INPUT_KEY_semicolon;
-  case SDL_SCANCODE_APOSTROPHE: return INPUT_KEY_apostrophe;
-  case SDL_SCANCODE_GRAVE: return INPUT_KEY_asciitilde;
-  case SDL_SCANCODE_COMMA: return INPUT_KEY_comma;
-  case SDL_SCANCODE_PERIOD: return INPUT_KEY_period;
-  case SDL_SCANCODE_SLASH: return INPUT_KEY_slash;
-  default: return INPUT_KEY_NONE;
-  }
-}
-
-static input_key
 sdl2keyboard_native_map( const SDL_KeyboardEvent *keyevent )
 {
   return keysyms_remap( keyevent->keysym.sym );
@@ -190,8 +135,7 @@ sdl2keyboard_dispatch( input_event_type type, SDL_KeyboardEvent *keyevent )
   input_event_t fuse_event;
 
   native_keysym = sdl2keyboard_native_map( keyevent );
-  spectrum_keysym = sdl2keyboard_physical_map( keyevent );
-  if( spectrum_keysym == INPUT_KEY_NONE ) spectrum_keysym = native_keysym;
+  spectrum_keysym = native_keysym;
 
   if( native_keysym == INPUT_KEY_NONE &&
       spectrum_keysym == INPUT_KEY_NONE ) return;
