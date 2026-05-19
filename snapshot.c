@@ -26,6 +26,7 @@
 #include "libspectrum.h"
 
 #include "fuse.h"
+#include "keyboard.h"
 #include "machine.h"
 #include "memory_pages.h"
 #include "module.h"
@@ -101,6 +102,8 @@ snapshot_copy_from( libspectrum_snap *snap )
   } else {
     machine_reset( 0 );
   }
+
+  keyboard_release_all();
 
   module_snapshot_from( snap );
 

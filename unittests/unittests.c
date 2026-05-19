@@ -30,6 +30,7 @@
 
 #include "debugger/debugger.h"
 #include "fuse.h"
+#include "keyboard.h"
 #include "machine.h"
 #include "mempool.h"
 #include "periph.h"
@@ -51,6 +52,7 @@
 #include "peripherals/ula.h"
 #include "peripherals/usource.h"
 #include "settings.h"
+#include "snapshot.h"
 #include "bitmap.h"
 #include "rectangle.h"
 #include "unittests.h"
@@ -323,6 +325,34 @@ bitmap_ops_test( void )
   bitmap_reset( buf, 0 );
   TEST_ASSERT( bitmap_test( buf, 0 ) == 0 );
   TEST_ASSERT( bitmap_test( buf, 4 ) != 0 );
+
+  return 0;
+}
+
+static int
+snapshot_copy_from_releases_keyboard_test( void )
+{
+  libspectrum_snap *snap;
+  int i;
+
+  snap = libspectrum_snap_alloc();
+  TEST_ASSERT( snap != NULL );
+  TEST_ASSERT( snapshot_copy_to( snap ) == 0 );
+
+  keyboard_press( KEYBOARD_a );
+
+  for( i = 0; i < 8; i++ ) {
+    if( keyboard_return_values[i] != 0xff ) break;
+  }
+  TEST_ASSERT( i != 8 );
+
+  TEST_ASSERT( snapshot_copy_from( snap ) == 0 );
+
+  for( i = 0; i < 8; i++ ) {
+    TEST_ASSERT( keyboard_return_values[i] == 0xff );
+  }
+
+  TEST_ASSERT( libspectrum_snap_free( snap ) == 0 );
 
   return 0;
 }
@@ -1090,6 +1120,7 @@ unittests_run( void )
   r += contention_test();
   r += floating_bus_test();
   r += floating_bus_merge_test();
+  r += snapshot_copy_from_releases_keyboard_test();
   r += utils_safe_strdup_test();
   r += bitmap_ops_test();
   r += mempool_test();
