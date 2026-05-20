@@ -84,6 +84,7 @@ data/net.sourceforge.fuse_emulator.Fuse.desktop: $(srcdir)/data/net.sourceforge.
 	$(AM_V_GEN)$(MKDIR_P) data; \
 	list=`$(SED) -e '/<mime-type/ s/.*<mime-type type="\(.*\)">.*/\1;/' -e t -e d < data/fuse.xml | tr -d '\n'` && \
 	$(SED) -e "s|@MIME_TYPES@|$$list|" \
+	       -e 's|@FUSE_BIN_EXTENSION@|$(EXEEXT)|' \
 	       -e 's|@EXTRA_DESKTOP_CATEGORIES@|$(EXTRA_DESKTOP_CATEGORIES)|' \
 		< $(srcdir)/data/net.sourceforge.fuse_emulator.Fuse.desktop.in > $@
 
