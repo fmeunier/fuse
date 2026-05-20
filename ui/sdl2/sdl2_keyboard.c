@@ -131,18 +131,16 @@ sdl2keyboard_native_map( const SDL_KeyboardEvent *keyevent )
 static void
 sdl2keyboard_dispatch( input_event_type type, SDL_KeyboardEvent *keyevent )
 {
-  input_key native_keysym, spectrum_keysym;
+  input_key keysym;
   input_event_t fuse_event;
 
-  native_keysym = sdl2keyboard_native_map( keyevent );
-  spectrum_keysym = native_keysym;
+  keysym = sdl2keyboard_native_map( keyevent );
 
-  if( native_keysym == INPUT_KEY_NONE &&
-      spectrum_keysym == INPUT_KEY_NONE ) return;
+  if( keysym == INPUT_KEY_NONE ) return;
 
   fuse_event.type = type;
-  fuse_event.types.key.native_key = native_keysym;
-  fuse_event.types.key.spectrum_key = spectrum_keysym;
+  fuse_event.types.key.native_key = keysym;
+  fuse_event.types.key.spectrum_key = keysym;
 
   input_event( &fuse_event );
 }
