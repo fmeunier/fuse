@@ -61,6 +61,9 @@ int tape_modified;
 /* Is the emulated tape deck playing? */
 int tape_playing;
 
+/* Do we have to stop the tape on the next edge? */
+static int tape_stop_pending = 0;
+
 /* Was the tape playing started automatically? */
 static int tape_autoplay;
 
@@ -133,6 +136,7 @@ tape_init( void *context )
      so we can't update the statusbar */
   tape_playing = 0;
   tape_microphone = 0;
+  tape_stop_pending = 0;
 
   next_tape_edge_tstates = 0;
   
@@ -632,6 +636,7 @@ tape_play( int autoplay )
   tape_playing = 1;
   tape_autoplay = autoplay;
   tape_microphone = 0;
+  tape_stop_pending = 0;
 
   event_remove_type( tape_mic_off_event );
 
@@ -696,6 +701,7 @@ tape_stop( void )
   if( tape_playing ) {
 
     tape_playing = 0;
+    tape_stop_pending = 0;
     ui_statusbar_update( UI_STATUSBAR_ITEM_TAPE, UI_STATUSBAR_STATE_INACTIVE );
     loader_tape_stop();
 
@@ -859,6 +865,12 @@ tape_next_edge( libspectrum_dword last_tstates, int from_acceleration )
   libspectrum_dword edge_tstates;
   int flags;
 
+  /* If a stop was deferred, carry it out now */
+  if( tape_stop_pending ) {
+    tape_stop();
+    return;
+  }
+
   /* If the tape's not playing, just return */
   if( ! tape_playing ) return;
 
@@ -887,8 +899,9 @@ tape_next_edge( libspectrum_dword last_tstates, int from_acceleration )
 
   sound_beeper( last_tstates, tape_microphone );
 
-  /* If we've been requested to stop the tape, do so and then
-     return without stacking another edge */
+  /* If we've been requested to stop the tape, do it on the next tape
+     event so that this final edge (e.g. the embedded pause at the end
+     of the tape) is still played */
   if( ( flags & LIBSPECTRUM_TAPE_FLAGS_STOP ) ||
       ( ( flags & LIBSPECTRUM_TAPE_FLAGS_STOP48 ) && 
 	( !( libspectrum_machine_capabilities( machine_current->machine ) &
@@ -898,12 +911,14 @@ tape_next_edge( libspectrum_dword last_tstates, int from_acceleration )
       )
     )
   {
-    tape_stop();
-    return;
+    tape_stop_pending = 1;
   }
 
-  /* If that was the end of a block, update the browser */
-  if( flags & LIBSPECTRUM_TAPE_FLAGS_BLOCK ) {
+  /* If that was the end of a block, update the browser. This is skipped
+     if tape_stop_pending was set above: at the end of the tape both
+     STOP and BLOCK are set. The trap check below could undo the deferred
+     stop and drop the final edge. */
+  if( ( flags & LIBSPECTRUM_TAPE_FLAGS_BLOCK ) && !tape_stop_pending ) {
 
     ui_tape_browser_update( UI_TAPE_BROWSER_SELECT_BLOCK, NULL );
 
