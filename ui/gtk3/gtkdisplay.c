@@ -103,8 +103,6 @@ typedef enum {
   FORMAT_x8b8g8r8     /* GdkRGB */
 } colour_format_t;
 
-static int display_updated = 0;
-
 static cairo_surface_t *surface = NULL;
 
 /* The current size of the cairo surface (in units of DISPLAY_SCREEN_*).
@@ -335,13 +333,6 @@ register_scalers( int force_scaler )
 void
 uidisplay_frame_end( void )
 {
-  if( display_updated ) {
-    gdk_window_process_updates( gtk_widget_get_window( gtkui_drawing_area ),
-                                FALSE );
-    display_updated = 0;
-  }
-
-  return;
 }
 
 void
@@ -389,8 +380,6 @@ static void gtkdisplay_area(int x, int y, int width, int height)
 {
   int max_width, max_height, widget_width, widget_height;
   int offset_x, offset_y;
-
-  display_updated = 1;
 
   if( width <= 0 || height <= 0 ) return;
 
