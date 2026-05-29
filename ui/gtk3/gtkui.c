@@ -152,9 +152,6 @@ ui_init( int *argc, char ***argv )
   GtkAccelGroup *accel_group;
   GtkSettings *settings;
 
-  /* The Wayland output is buggy, see #367 */
-  gdk_set_allowed_backends( "quartz,win32,mir,x11,*" );
-
   gtk_init(argc,argv);
 
   g_resources_register( gtkui_get_resource() );
