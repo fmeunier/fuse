@@ -250,6 +250,7 @@ drawing_area_resize( int width, int height, int force_scaler )
      GDK_HINT_MAX_SIZE when tiling or maximizing the window, which
      would otherwise limit us to MAX_SCALE. */
   if( size > MAX_SCALE ) size = MAX_SCALE;
+  if( size < 1 ) size = 1;
 
   /* If we're the same size as before, no need to do anything else */
   if( size == gtkdisplay_surface_size ) return 0;
@@ -327,7 +328,8 @@ register_scalers( int force_scaler )
     }
   }
 
-  scaler_select_scaler( scaler );
+  /* Activate the scaler without trying to resize the GTK window */
+  scaler_activate_scaler( scaler );
 }
 
 void
@@ -539,9 +541,13 @@ gtkdisplay_draw( GtkWidget *widget, cairo_t *cr, gpointer user_data )
   offset_x = ( widget_width  - surface_width  ) / 2;
   offset_y = ( widget_height - surface_height ) / 2;
 
-  /* Repaint the drawing area */
+  /* Fill the drawing area with black. This clears the margins around
+     the source if the drawing area is larger */
+  cairo_set_source_rgb( cr, 0, 0, 0 );
+  cairo_paint( cr );
+
+  /* Repaint the surface on top */
   cairo_set_source_surface( cr, surface, offset_x, offset_y );
-  cairo_set_operator( cr, CAIRO_OPERATOR_SOURCE );
   cairo_paint( cr );
 
   return FALSE;
