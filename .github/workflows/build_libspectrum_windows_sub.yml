@@ -97,27 +97,27 @@ jobs:
           work-vol: ${{ steps.cygwin-cache-path.outputs.work-vol }}
           platform: x86
           packages: |
-            audiofile \
-            autoconf \
-            automake \
-            bison \
-            flex \
-            gcc-core \
-            gcc-g++ \
-            gettext-devel \
-            libtool \
-            libaudiofile-devel \
-            make \
-            mingw64-i686-audiofile \
-            mingw64-i686-bzip2 \
-            mingw64-i686-gcc-core \
-            mingw64-i686-gcc-g++ \
-            mingw64-i686-libgcrypt \
-            mingw64-i686-libgpg-error \
-            mingw64-i686-libpng \
-            mingw64-i686-win-iconv \
-            mingw64-i686-winpthread \
-            mingw64-i686-zlib \
+            audiofile
+            autoconf
+            automake
+            bison
+            flex
+            gcc-core
+            gcc-g++
+            gettext-devel
+            libtool
+            libaudiofile-devel
+            make
+            mingw64-i686-audiofile
+            mingw64-i686-bzip2
+            mingw64-i686-gcc-core
+            mingw64-i686-gcc-g++
+            mingw64-i686-libgcrypt
+            mingw64-i686-libgpg-error
+            mingw64-i686-libpng
+            mingw64-i686-win-iconv
+            mingw64-i686-winpthreads
+            mingw64-i686-zlib
             pkg-config
 
       - name: (5) Save Cygwin packages
