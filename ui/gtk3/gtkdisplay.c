@@ -192,6 +192,8 @@ uidisplay_init( int width, int height )
                     G_CALLBACK( drawing_area_resize_callback ), NULL );
 
   error = init_colours( colour_format ); if( error ) return error;
+  error = scaler_select_bitformat( BITFORMAT_X8R8G8B8 );
+  if( error ) return error;
 
   black = settings_current.bw_tv ? bw_colours[0] : gtkdisplay_colours[0];
 
@@ -299,9 +301,11 @@ register_scalers( int force_scaler )
     scaler_register( SCALER_SUPER2XSAI );
     scaler_register( SCALER_SUPEREAGLE );
     scaler_register( SCALER_DOTMATRIX );
+    scaler_register( SCALER_NTSC2X );
+    scaler_register( SCALER_NTSC3X );
+    scaler_register( SCALER_NTSC4X );
   }
   scaler_register( SCALER_NORMAL );
-  scaler_register( SCALER_PALTV );
 
   scaler =
     scaler_is_supported( current_scaler ) ? current_scaler : SCALER_NORMAL;
@@ -333,6 +337,9 @@ register_scalers( int force_scaler )
 void
 uidisplay_frame_end( void )
 {
+  if( scaler_flags & SCALER_FLAGS_FULL_REFRESH ) {
+    uidisplay_area( 0, 0, image_width, image_height );
+  }
 }
 
 void

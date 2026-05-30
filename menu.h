@@ -76,6 +76,10 @@ MENU_CALLBACK_WITH_ACTION( menu_options_selectroms_machine_select );
 MENU_CALLBACK_WITH_ACTION( menu_options_selectroms_peripheral_select );
 MENU_CALLBACK( menu_options_filter );
 MENU_DETAIL( menu_filter_detail );
+#ifdef UI_GTK
+MENU_CALLBACK( menu_options_filteroptions );
+#endif
+
 MENU_CALLBACK( menu_options_fullscreen );
 MENU_CALLBACK( menu_options_save );
 

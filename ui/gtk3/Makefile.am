@@ -52,6 +52,7 @@ ui_gtk_files = \
                ui/gtk3/confirm.c \
                ui/gtk3/debugger.c \
                ui/gtk3/fileselector.c \
+               ui/gtk3/filter_options.c \
                ui/gtk3/gtkdisplay.c \
                ui/gtk3/gtkinternals.h \
                ui/gtk3/gtkjoystick.c \

@@ -91,7 +91,7 @@ _fuse()
             COMPREPLY=( $( compgen -W '2x 2xsai 3x 4x advmame2x
                 advmame3x dotmatrix half halfskip hq2x hq3x hq4x normal
                 super2xsai supereagle timex15x timex2x timextv tv2x tv3x tv4x
-                paltv paltv2x paltv3x paltv4x' -- "$cur" ) )
+                paltv2x paltv3x paltv4x' -- "$cur" ) )
             return 0
             ;;
         --graphicsfile)
@@ -162,7 +162,12 @@ _fuse()
             _filedir '@(txt)'
             return 0
             ;;
-        --competition-code|--debugger-command| \
+        --competition-code|--composite-filter-artifacts| \
+        --composite-filter-bleed|--composite-filter-brightness| \
+        --composite-filter-contrast|--composite-filter-fringing| \
+        --composite-filter-gamma|--composite-filter-hue| \
+        --composite-filter-resolution|--composite-filter-saturation| \
+        --composite-filter-sharpness|--debugger-command| \
         --drive-40-max-track|--drive-80-max-track| \
         --joystick-[12]-fire-[1-9]|--joystick-[12]-fire-1[0-5]| \
         --joystick-[12]-output|--joystick-keyboard-down| \
@@ -182,7 +187,13 @@ _fuse()
         COMPREPLY=( $( compgen -W '--accelerate-loader --aspect-hint
             --auto-load --autosave-settings --beta128 --beta128-48boot
             --betadisk --bw-tv --cmos-z80 --competition-code
-            --competition-mode --compress-rzx --confirm-actions --covox
+            --competition-mode --composite-filter-artifacts
+            --composite-filter-bleed --composite-filter-brightness
+            --composite-filter-contrast --composite-filter-fringing
+            --composite-filter-gamma --composite-filter-hue
+            --composite-filter-resolution --composite-filter-saturation
+            --composite-filter-sharpness --compress-rzx
+            --confirm-actions --covox
             --debugger-command --detect-loader --didaktik80
             --didaktik80disk --disciple --discipledisk --disk-ask-merge
             --disk-try-merge --divide --divide-masterfile
@@ -237,7 +248,7 @@ _fuse()
             --no-late-timings --no-loading-sound --no-mdr-random-len
             --no-melodik --no-mouse-swap-buttons --no-movie-stop-after-rzx
             --no-multiface1 --no-multiface128 --no-multiface3
-            --no-multiface1-stealth --no-opus --no-pal-tv2x
+            --no-multiface1-stealth --no-opus
             --no-plus3-detect-speedlock --no-plusd --no-printer
             --no-raw-s-net --no-recreated-spectrum --no-rs232-handshake
             --no-rzx-autosaves --no-simpleide --no-slt --no-sound
@@ -247,7 +258,7 @@ _fuse()
             --no-usource --no-uspeech --no-writable-roms
             --no-zxatasp --no-zxatasp-upload
             --no-zxatasp-write-protect --no-zxcf --no-zxcf-upload --no-zxmmc
-            --no-zxprinter --opus --opusdisk --pal-tv2x --phantom-typist-mode
+            --no-zxprinter --opus --opusdisk --phantom-typist-mode
             --playback --plus3-detect-speedlock --plus3disk --plusd --plusddisk
             --printer --rate --raw-s-net --record --recreated-spectrum
             --rom-128-0 --rom-128-1

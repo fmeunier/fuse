@@ -20,7 +20,8 @@
 ##
 ## E-mail: philip-fuse@shadowmagic.org.uk
 
-fuse_SOURCES += ui/scaler/scaler.c
+fuse_SOURCES += ui/scaler/scaler.c \
+                ui/scaler/snes_ntsc.c
 
 fuse_LDADD += \
               ui/scaler/scalers16.o \
@@ -38,14 +39,19 @@ ui/scaler/scalers32.o: $(srcdir)/ui/scaler/scalers.c
 
 noinst_HEADERS += \
                   ui/scaler/scaler.h \
-                  ui/scaler/scaler_internals.h
+                  ui/scaler/scaler_internals.h \
+                  ui/scaler/snes_ntsc.h \
+                  ui/scaler/snes_ntsc_config.h \
+                  ui/scaler/snes_ntsc_impl.h
 
 EXTRA_DIST += \
               ui/scaler/scalers.c \
               ui/scaler/scaler_hq2x.c \
               ui/scaler/scaler_hq3x.c \
-              ui/scaler/scaler_hq4x.c
+              ui/scaler/scaler_hq4x.c \
+              ui/scaler/snes_ntsc.txt
 
 CLEANFILES += \
               ui/scaler/scalers16.o \
-              ui/scaler/scalers32.o
+              ui/scaler/scalers32.o \
+              ui/scaler/snes_ntsc.o

@@ -215,7 +215,6 @@ register_scalers( void )
     switch( image_scale ) {
     case 1:
       scaler_register( SCALER_NORMAL );
-      scaler_register( SCALER_PALTV );
       if( !scaler_is_supported( current_scaler ) )
 	scaler_select_scaler( SCALER_NORMAL );
       return 0;
@@ -246,7 +245,6 @@ register_scalers( void )
     case 2:
       scaler_register( SCALER_NORMAL );
       scaler_register( SCALER_TIMEXTV );
-      scaler_register( SCALER_PALTV );
       if( !scaler_is_supported( current_scaler ) )
 	scaler_select_scaler( SCALER_NORMAL );
       return 0;

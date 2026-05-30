@@ -51,10 +51,6 @@ ptrdiff_t win32display_pitch = DISPLAY_SCREEN_WIDTH *
 static unsigned char rgb_image[ 4 * 2 * ( DISPLAY_SCREEN_HEIGHT + 4 ) *
                                         ( DISPLAY_SCREEN_WIDTH  + 3 )   ];
 static const int rgb_pitch = ( DISPLAY_SCREEN_WIDTH + 3 ) * 4;
-
-/* The scaled image */
-static unsigned char scaled_image[ MAX_SCALE * DISPLAY_SCREEN_HEIGHT *
-                                   MAX_SCALE * DISPLAY_SCREEN_WIDTH * 2 ];
 static const ptrdiff_t scaled_pitch = MAX_SCALE * DISPLAY_SCREEN_WIDTH * 2;
 
 /* Win32 specific variables */
@@ -129,6 +125,8 @@ win32display_init( void )
   libspectrum_dword black;
 
   error = init_colours(); if( error ) return error;
+  error = scaler_select_bitformat( BITFORMAT_X8R8G8B8 );
+  if( error ) return error;
 
   black = settings_current.bw_tv ? bw_colours[0] : win32display_colours[0];
 
@@ -186,13 +184,13 @@ init_colours( void )
 
 #ifdef WORDS_BIGENDIAN
 
-    win32display_colours[i] =  red << 24 | green << 16 | blue << 8;
-              bw_colours[i] = grey << 24 |  grey << 16 | grey << 8;
+    win32display_colours[i] = blue << 24 | green << 16 | red << 8;
+              bw_colours[i] = grey << 24 | grey << 16 | grey << 8;
 
 #else                           /* #ifdef WORDS_BIGENDIAN */
 
-    win32display_colours[i] =  red | green << 8 | blue << 16;
-              bw_colours[i] = grey |  grey << 8 | grey << 16;
+    win32display_colours[i] = blue | green << 8 | red << 16;
+              bw_colours[i] = grey | grey << 8 | grey << 16;
 
 #endif                          /* #ifdef WORDS_BIGENDIAN */
 
@@ -217,7 +215,6 @@ win32display_drawing_area_resize( int width, int height, int force_scaler )
 
   register_scalers( force_scaler );
 
-  memset( scaled_image, 0, sizeof( scaled_image ) );
   display_refresh_all();
 
   return 0;
@@ -279,9 +276,11 @@ register_scalers( int force_scaler )
     scaler_register( SCALER_SUPER2XSAI );
     scaler_register( SCALER_SUPEREAGLE );
     scaler_register( SCALER_DOTMATRIX );
+    scaler_register( SCALER_NTSC2X );
+    scaler_register( SCALER_NTSC3X );
+    scaler_register( SCALER_NTSC4X );
   }
   scaler_register( SCALER_NORMAL );
-  scaler_register( SCALER_PALTV );
 
   scaler =
     scaler_is_supported( current_scaler ) ? current_scaler : SCALER_NORMAL;
@@ -307,6 +306,10 @@ register_scalers( int force_scaler )
 void
 uidisplay_frame_end( void )
 {
+  if( scaler_flags & SCALER_FLAGS_FULL_REFRESH ) {
+    uidisplay_area( 0, 0, image_width, image_height );
+  }
+
   if( !IsRectEmpty( &invalidated_area ) ) {
 
     InvalidateRect( fuse_hWnd, &invalidated_area, FALSE );
@@ -349,7 +352,8 @@ uidisplay_area( int x, int y, int w, int h )
   /* Create scaled image */
   scaler_proc32( &rgb_image[ ( y + 2 ) * rgb_pitch + 4 * ( x + 1 ) ],
                  rgb_pitch,
-                 &scaled_image[ scaled_y * scaled_pitch + 4 * scaled_x ],
+                 (unsigned char *)win32_pixdata + scaled_y * scaled_pitch +
+                 4 * scaled_x,
                  scaled_pitch, w, h );
 
   w *= scale; h *= scale;
@@ -361,25 +365,11 @@ uidisplay_area( int x, int y, int w, int h )
 void
 win32display_area(int x, int y, int width, int height)
 {
-  int disp_x,disp_y;
   int bottom, right;
-  long ofs;
   RECT r;
-  char *pixdata = win32_pixdata;
 
   bottom = y + height;
   right = x + width;
-
-  for( disp_y = y; disp_y < bottom; disp_y++ ) {
-    for( disp_x = x; disp_x < right; disp_x++ ) {
-      ofs = ( disp_x << 2 ) + ( disp_y * scaled_pitch );
-
-      pixdata[ ofs + 0 ] = scaled_image[ ofs + 2 ]; /* blue */
-      pixdata[ ofs + 1 ] = scaled_image[ ofs + 1 ]; /* green */
-      pixdata[ ofs + 2 ] = scaled_image[ ofs + 0 ]; /* red */
-      pixdata[ ofs + 3 ] = 0; /* unused */
-    }
-  }
 
   /* Mark area for updating */
   SetRect( &r, x, y, right, bottom );

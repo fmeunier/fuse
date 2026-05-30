@@ -89,7 +89,6 @@ init_scalers( void )
   scaler_register( SCALER_ADVMAME2X );
   scaler_register( SCALER_ADVMAME3X );
   scaler_register( SCALER_DOTMATRIX );
-  scaler_register( SCALER_PALTV );
   scaler_register( SCALER_HQ2X );
   if( machine_current->timex ) {
     scaler_register( SCALER_HALF );
@@ -109,6 +108,9 @@ init_scalers( void )
     scaler_register( SCALER_PALTV4X );
     scaler_register( SCALER_HQ3X );
     scaler_register( SCALER_HQ4X );
+    scaler_register( SCALER_NTSC2X );
+    scaler_register( SCALER_NTSC3X );
+    scaler_register( SCALER_NTSC4X );
   }
 
   if( scaler_is_supported( current_scaler ) ) {
@@ -845,7 +847,8 @@ uidisplay_frame_end( void )
 
   if( sdl2_status_updated ) sdl2display_queue_status_rects();
 
-  if( sdl2display_force_full_refresh ) {
+  if( sdl2display_force_full_refresh ||
+      ( scaler_flags & SCALER_FLAGS_FULL_REFRESH ) ) {
     num_rects = 1;
     updated_rects[0].x = 0;
     updated_rects[0].y = 0;

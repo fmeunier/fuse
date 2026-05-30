@@ -26,7 +26,6 @@ fill_test_scales( float *scales )
   scales[ SCALER_HALFSKIP ] = 0.5f;
   scales[ SCALER_NORMAL ] = 1.0f;
   scales[ SCALER_TIMEXTV ] = 1.0f;
-  scales[ SCALER_PALTV ] = 1.0f;
   scales[ SCALER_TIMEX1_5X ] = 1.5f;
   scales[ SCALER_DOUBLESIZE ] = 2.0f;
   scales[ SCALER_2XSAI ] = 2.0f;

@@ -31,6 +31,8 @@
 #ifndef FUSE_SCALER_INTERNALS_H
 #define FUSE_SCALER_INTERNALS_H
 
+#include "scaler.h"
+
 #define DECLARE_SCALER( name ) \
          extern void scaler_##name##_16( const libspectrum_byte *srcPtr, \
 					 libspectrum_dword srcPitch, \
@@ -60,12 +62,17 @@ DECLARE_SCALER(TV3x);
 DECLARE_SCALER(TV4x);
 DECLARE_SCALER(TimexTV);
 DECLARE_SCALER(DotMatrix);
-DECLARE_SCALER(PalTV);
 DECLARE_SCALER(PalTV2x);
 DECLARE_SCALER(PalTV3x);
 DECLARE_SCALER(PalTV4x);
 DECLARE_SCALER(HQ2x);
 DECLARE_SCALER(HQ3x);
 DECLARE_SCALER(HQ4x);
+DECLARE_SCALER(blargg_NTSC_2x);
+DECLARE_SCALER(blargg_NTSC_3x);
+DECLARE_SCALER(blargg_NTSC_4x);
+
+extern int scaler_select_bitformat_16( scaler_bitformat_t bitformat );
+extern int scaler_select_bitformat_32( scaler_bitformat_t bitformat );
 
 #endif				/* #ifndef FUSE_SCALER_INTERNALS_H */

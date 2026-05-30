@@ -46,20 +46,23 @@ typedef enum scaler_type {
   SCALER_DOTMATRIX,
   SCALER_TIMEX1_5X,
   SCALER_TIMEX2X,
-  SCALER_PALTV,
   SCALER_PALTV2X,
   SCALER_PALTV3X,
   SCALER_PALTV4X,
   SCALER_HQ2X,
   SCALER_HQ3X,
   SCALER_HQ4X,
+  SCALER_NTSC2X,
+  SCALER_NTSC3X,
+  SCALER_NTSC4X,
 
   SCALER_NUM		/* End marker; do not remove */
 } scaler_type;
 
 typedef enum scaler_flags_t {
-  SCALER_FLAGS_NONE        = 0,
-  SCALER_FLAGS_EXPAND      = 1 << 0,
+  SCALER_FLAGS_NONE         = 0,
+  SCALER_FLAGS_EXPAND       = 1 << 0,
+  SCALER_FLAGS_FULL_REFRESH = 1 << 1,
 } scaler_flags_t;
 
 typedef void ScalerProc( const libspectrum_byte *srcPtr,
@@ -77,6 +80,13 @@ extern scaler_flags_t scaler_flags;
 extern scaler_expand_fn *scaler_expander;
 extern int scalers_registered;
 
+typedef enum scaler_bitformat_t {
+  BITFORMAT_555 = 555,
+  BITFORMAT_565 = 565,
+  BITFORMAT_X8B8G8R8,
+  BITFORMAT_X8R8G8B8,
+} scaler_bitformat_t;
+
 typedef int (*scaler_available_fn)( scaler_type scaler );
 
 int scaler_select_id( const char *scaler_mode );
@@ -92,6 +102,6 @@ scaler_flags_t scaler_get_flags( scaler_type scaler );
 float scaler_get_scaling_factor( scaler_type scaler );
 scaler_expand_fn* scaler_get_expander( scaler_type scaler );
 
-int scaler_select_bitformat( libspectrum_dword BitFormat );
+int scaler_select_bitformat( scaler_bitformat_t bitformat );
 
 #endif
