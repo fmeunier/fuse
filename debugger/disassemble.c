@@ -963,6 +963,64 @@ libspectrum_byte test69_data[] = { 0xed, 0xab };  /* OUTD */
 libspectrum_byte test70_data[] = { 0xed, 0xb3 };  /* OTIR */
 libspectrum_byte test71_data[] = { 0xed, 0xbb };  /* OTDR */
 
+/* DD prefix: ADD IX,rr completeness */
+libspectrum_byte test93_data[] = { 0xdd, 0x19 };   /* ADD IX,DE */
+libspectrum_byte test94_data[] = { 0xdd, 0x29 };   /* ADD IX,IX */
+libspectrum_byte test95_data[] = { 0xdd, 0x39 };   /* ADD IX,SP */
+
+/* FD prefix: ADD IY,rr completeness */
+libspectrum_byte test96_data[] = { 0xfd, 0x19 };   /* ADD IY,DE */
+libspectrum_byte test97_data[] = { 0xfd, 0x29 };   /* ADD IY,IY */
+libspectrum_byte test98_data[] = { 0xfd, 0x39 };   /* ADD IY,SP */
+
+/* DD/FD prefix: LD IX/IY,nn */
+libspectrum_byte test99_data[]  = { 0xdd, 0x21, 0x34, 0x12 }; /* LD IX,1234 */
+libspectrum_byte test100_data[] = { 0xfd, 0x21, 0x34, 0x12 }; /* LD IY,1234 */
+
+/* DD/FD prefix: INC/DEC IX/IY */
+libspectrum_byte test101_data[] = { 0xdd, 0x23 };  /* INC IX */
+libspectrum_byte test102_data[] = { 0xdd, 0x2b };  /* DEC IX */
+libspectrum_byte test103_data[] = { 0xfd, 0x23 };  /* INC IY */
+libspectrum_byte test104_data[] = { 0xfd, 0x2b };  /* DEC IY */
+
+/* DD/FD prefix: LD (nn),IX/IY and LD IX/IY,(nn) */
+libspectrum_byte test105_data[] = { 0xdd, 0x22, 0x34, 0x12 }; /* LD (1234),IX */
+libspectrum_byte test106_data[] = { 0xdd, 0x2a, 0x34, 0x12 }; /* LD IX,(1234) */
+libspectrum_byte test107_data[] = { 0xfd, 0x22, 0x34, 0x12 }; /* LD (1234),IY */
+libspectrum_byte test108_data[] = { 0xfd, 0x2a, 0x34, 0x12 }; /* LD IY,(1234) */
+
+/* DD/FD prefix: PUSH/POP IX/IY */
+libspectrum_byte test109_data[] = { 0xdd, 0xe5 };  /* PUSH IX */
+libspectrum_byte test110_data[] = { 0xdd, 0xe1 };  /* POP IX */
+libspectrum_byte test111_data[] = { 0xfd, 0xe5 };  /* PUSH IY */
+libspectrum_byte test112_data[] = { 0xfd, 0xe1 };  /* POP IY */
+
+/* DD/FD prefix: JP (IX/IY), EX (SP),IX/IY, LD SP,IX/IY */
+libspectrum_byte test113_data[] = { 0xdd, 0xe9 };  /* JP (IX) */
+libspectrum_byte test114_data[] = { 0xdd, 0xe3 };  /* EX (SP),IX */
+libspectrum_byte test115_data[] = { 0xdd, 0xf9 };  /* LD SP,IX */
+libspectrum_byte test116_data[] = { 0xfd, 0xe9 };  /* JP (IY) */
+libspectrum_byte test117_data[] = { 0xfd, 0xe3 };  /* EX (SP),IY */
+libspectrum_byte test118_data[] = { 0xfd, 0xf9 };  /* LD SP,IY */
+
+/* DD/FD prefix: undocumented IXh, IXl, IYh, IYl registers */
+libspectrum_byte test119_data[] = { 0xdd, 0x7c };  /* LD A,IXh */
+libspectrum_byte test120_data[] = { 0xdd, 0x7d };  /* LD A,IXl */
+libspectrum_byte test121_data[] = { 0xfd, 0x7c };  /* LD A,IYh */
+libspectrum_byte test122_data[] = { 0xfd, 0x7d };  /* LD A,IYl */
+
+/* DD/FD prefix: LD r,(IX/IY+d) */
+libspectrum_byte test123_data[] = { 0xdd, 0x46, 0x05 }; /* LD B,(IX+05) */
+libspectrum_byte test124_data[] = { 0xfd, 0x46, 0x05 }; /* LD B,(IY+05) */
+
+/* DD/FD prefix: LD (IX/IY+d),r */
+libspectrum_byte test125_data[] = { 0xdd, 0x70, 0x05 }; /* LD (IX+05),B */
+libspectrum_byte test126_data[] = { 0xfd, 0x70, 0x05 }; /* LD (IY+05),B */
+
+/* DD/FD prefix: LD (IX/IY+d),n */
+libspectrum_byte test127_data[] = { 0xdd, 0x36, 0x05, 0x07 }; /* LD (IX+05),07 */
+libspectrum_byte test128_data[] = { 0xfd, 0x36, 0x05, 0x07 }; /* LD (IY+05),07 */
+
 static int
 run_test( libspectrum_byte *data, size_t data_length, const char *expected )
 {
@@ -1119,6 +1177,64 @@ debugger_disassemble_unittest( void )
   r += run_test( test69_data, sizeof( test69_data ), "OUTD" );
   r += run_test( test70_data, sizeof( test70_data ), "OTIR" );
   r += run_test( test71_data, sizeof( test71_data ), "OTDR" );
+
+  /* DD prefix: ADD IX,rr completeness */
+  r += run_test( test93_data, sizeof( test93_data ), "ADD IX,DE" );
+  r += run_test( test94_data, sizeof( test94_data ), "ADD IX,IX" );
+  r += run_test( test95_data, sizeof( test95_data ), "ADD IX,SP" );
+
+  /* FD prefix: ADD IY,rr completeness */
+  r += run_test( test96_data, sizeof( test96_data ), "ADD IY,DE" );
+  r += run_test( test97_data, sizeof( test97_data ), "ADD IY,IY" );
+  r += run_test( test98_data, sizeof( test98_data ), "ADD IY,SP" );
+
+  /* DD/FD prefix: LD IX/IY,nn */
+  r += run_test( test99_data,  sizeof( test99_data ),  "LD IX,1234" );
+  r += run_test( test100_data, sizeof( test100_data ), "LD IY,1234" );
+
+  /* DD/FD prefix: INC/DEC IX/IY */
+  r += run_test( test101_data, sizeof( test101_data ), "INC IX" );
+  r += run_test( test102_data, sizeof( test102_data ), "DEC IX" );
+  r += run_test( test103_data, sizeof( test103_data ), "INC IY" );
+  r += run_test( test104_data, sizeof( test104_data ), "DEC IY" );
+
+  /* DD/FD prefix: LD (nn),IX/IY and LD IX/IY,(nn) */
+  r += run_test( test105_data, sizeof( test105_data ), "LD (1234),IX" );
+  r += run_test( test106_data, sizeof( test106_data ), "LD IX,(1234)" );
+  r += run_test( test107_data, sizeof( test107_data ), "LD (1234),IY" );
+  r += run_test( test108_data, sizeof( test108_data ), "LD IY,(1234)" );
+
+  /* DD/FD prefix: PUSH/POP IX/IY */
+  r += run_test( test109_data, sizeof( test109_data ), "PUSH IX" );
+  r += run_test( test110_data, sizeof( test110_data ), "POP IX" );
+  r += run_test( test111_data, sizeof( test111_data ), "PUSH IY" );
+  r += run_test( test112_data, sizeof( test112_data ), "POP IY" );
+
+  /* DD/FD prefix: JP (IX/IY), EX (SP),IX/IY, LD SP,IX/IY */
+  r += run_test( test113_data, sizeof( test113_data ), "JP (IX)" );
+  r += run_test( test114_data, sizeof( test114_data ), "EX (SP),IX" );
+  r += run_test( test115_data, sizeof( test115_data ), "LD SP,IX" );
+  r += run_test( test116_data, sizeof( test116_data ), "JP (IY)" );
+  r += run_test( test117_data, sizeof( test117_data ), "EX (SP),IY" );
+  r += run_test( test118_data, sizeof( test118_data ), "LD SP,IY" );
+
+  /* DD/FD prefix: undocumented IXh, IXl, IYh, IYl registers */
+  r += run_test( test119_data, sizeof( test119_data ), "LD A,IXh" );
+  r += run_test( test120_data, sizeof( test120_data ), "LD A,IXl" );
+  r += run_test( test121_data, sizeof( test121_data ), "LD A,IYh" );
+  r += run_test( test122_data, sizeof( test122_data ), "LD A,IYl" );
+
+  /* DD/FD prefix: LD r,(IX/IY+d) */
+  r += run_test( test123_data, sizeof( test123_data ), "LD B,(IX+05)" );
+  r += run_test( test124_data, sizeof( test124_data ), "LD B,(IY+05)" );
+
+  /* DD/FD prefix: LD (IX/IY+d),r */
+  r += run_test( test125_data, sizeof( test125_data ), "LD (IX+05),B" );
+  r += run_test( test126_data, sizeof( test126_data ), "LD (IY+05),B" );
+
+  /* DD/FD prefix: LD (IX/IY+d),n */
+  r += run_test( test127_data, sizeof( test127_data ), "LD (IX+05),07" );
+  r += run_test( test128_data, sizeof( test128_data ), "LD (IY+05),07" );
 
   return r;
 }
