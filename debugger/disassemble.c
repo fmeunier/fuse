@@ -854,6 +854,19 @@ libspectrum_byte test13_data[] = { 0xfd, 0xdd, 0xfd, 0xdd, 0xfd, 0xdd, 0xfd,
 libspectrum_byte test14_data[] = { 0x7e };
 libspectrum_byte test15_data[] = { 0xdd, 0x7e, 0x55 };
 
+/* CB prefix rotation/shift tests (one per operation, using register B) */
+libspectrum_byte test72_data[] = { 0xcb, 0x00 };  /* RLC B */
+libspectrum_byte test73_data[] = { 0xcb, 0x08 };  /* RRC B */
+libspectrum_byte test74_data[] = { 0xcb, 0x10 };  /* RL B */
+libspectrum_byte test75_data[] = { 0xcb, 0x18 };  /* RR B */
+libspectrum_byte test76_data[] = { 0xcb, 0x20 };  /* SLA B */
+libspectrum_byte test77_data[] = { 0xcb, 0x28 };  /* SRA B */
+libspectrum_byte test78_data[] = { 0xcb, 0x30 };  /* SLL B (undocumented) */
+libspectrum_byte test79_data[] = { 0xcb, 0x38 };  /* SRL B */
+
+/* CB prefix rotation on (HL) — exercises (HL) indirect addressing */
+libspectrum_byte test80_data[] = { 0xcb, 0x06 };  /* RLC (HL) */
+
 /* CB prefix BIT/RES/SET tests */
 libspectrum_byte test16_data[] = { 0xcb, 0x47 };  /* BIT 0,A */
 libspectrum_byte test17_data[] = { 0xcb, 0x87 };  /* RES 0,A */
@@ -894,13 +907,25 @@ libspectrum_byte test37_data[] = { 0xed, 0x70 };  /* IN F,(C) — special case *
 libspectrum_byte test38_data[] = { 0xed, 0x41 };  /* OUT (C),B */
 libspectrum_byte test39_data[] = { 0xed, 0x71 };  /* OUT (C),0 — special case */
 
-/* ED prefix: SBC HL,rr and ADC HL,rr */
+/* ED prefix: SBC HL,rr and ADC HL,rr — all register pairs */
 libspectrum_byte test40_data[] = { 0xed, 0x42 };  /* SBC HL,BC */
 libspectrum_byte test41_data[] = { 0xed, 0x4a };  /* ADC HL,BC */
+libspectrum_byte test81_data[] = { 0xed, 0x52 };  /* SBC HL,DE */
+libspectrum_byte test82_data[] = { 0xed, 0x5a };  /* ADC HL,DE */
+libspectrum_byte test83_data[] = { 0xed, 0x62 };  /* SBC HL,HL */
+libspectrum_byte test84_data[] = { 0xed, 0x6a };  /* ADC HL,HL */
+libspectrum_byte test85_data[] = { 0xed, 0x72 };  /* SBC HL,SP */
+libspectrum_byte test86_data[] = { 0xed, 0x7a };  /* ADC HL,SP */
 
-/* ED prefix: LD (nn),rr and LD rr,(nn) */
+/* ED prefix: LD (nn),rr and LD rr,(nn) — all register pairs */
 libspectrum_byte test42_data[] = { 0xed, 0x43, 0x56, 0x34 };  /* LD (3456),BC */
 libspectrum_byte test43_data[] = { 0xed, 0x4b, 0x56, 0x34 };  /* LD BC,(3456) */
+libspectrum_byte test87_data[] = { 0xed, 0x53, 0x56, 0x34 };  /* LD (3456),DE */
+libspectrum_byte test88_data[] = { 0xed, 0x5b, 0x56, 0x34 };  /* LD DE,(3456) */
+libspectrum_byte test89_data[] = { 0xed, 0x63, 0x56, 0x34 };  /* LD (3456),HL */
+libspectrum_byte test90_data[] = { 0xed, 0x6b, 0x56, 0x34 };  /* LD HL,(3456) */
+libspectrum_byte test91_data[] = { 0xed, 0x73, 0x56, 0x34 };  /* LD (3456),SP */
+libspectrum_byte test92_data[] = { 0xed, 0x7b, 0x56, 0x34 };  /* LD SP,(3456) */
 
 /* ED prefix: NEG, RETN, RETI */
 libspectrum_byte test44_data[] = { 0xed, 0x44 };  /* NEG */
@@ -988,6 +1013,17 @@ debugger_disassemble_unittest( void )
   r += run_test( test14_data, sizeof( test14_data ), "LD A,(HL)" );
   r += run_test( test15_data, sizeof( test15_data ), "LD A,(IX+55)" );
 
+  /* CB prefix rotation/shift (one per operation) */
+  r += run_test( test72_data, sizeof( test72_data ), "RLC B" );
+  r += run_test( test73_data, sizeof( test73_data ), "RRC B" );
+  r += run_test( test74_data, sizeof( test74_data ), "RL B" );
+  r += run_test( test75_data, sizeof( test75_data ), "RR B" );
+  r += run_test( test76_data, sizeof( test76_data ), "SLA B" );
+  r += run_test( test77_data, sizeof( test77_data ), "SRA B" );
+  r += run_test( test78_data, sizeof( test78_data ), "SLL B" );
+  r += run_test( test79_data, sizeof( test79_data ), "SRL B" );
+  r += run_test( test80_data, sizeof( test80_data ), "RLC (HL)" );
+
   /* CB prefix BIT/RES/SET */
   r += run_test( test16_data, sizeof( test16_data ), "BIT 0,A" );
   r += run_test( test17_data, sizeof( test17_data ), "RES 0,A" );
@@ -1028,13 +1064,25 @@ debugger_disassemble_unittest( void )
   r += run_test( test38_data, sizeof( test38_data ), "OUT (C),B" );
   r += run_test( test39_data, sizeof( test39_data ), "OUT (C),0" );
 
-  /* ED prefix: SBC HL,rr and ADC HL,rr */
+  /* ED prefix: SBC HL,rr and ADC HL,rr — all register pairs */
   r += run_test( test40_data, sizeof( test40_data ), "SBC HL,BC" );
   r += run_test( test41_data, sizeof( test41_data ), "ADC HL,BC" );
+  r += run_test( test81_data, sizeof( test81_data ), "SBC HL,DE" );
+  r += run_test( test82_data, sizeof( test82_data ), "ADC HL,DE" );
+  r += run_test( test83_data, sizeof( test83_data ), "SBC HL,HL" );
+  r += run_test( test84_data, sizeof( test84_data ), "ADC HL,HL" );
+  r += run_test( test85_data, sizeof( test85_data ), "SBC HL,SP" );
+  r += run_test( test86_data, sizeof( test86_data ), "ADC HL,SP" );
 
-  /* ED prefix: LD (nn),rr and LD rr,(nn) */
+  /* ED prefix: LD (nn),rr and LD rr,(nn) — all register pairs */
   r += run_test( test42_data, sizeof( test42_data ), "LD (3456),BC" );
   r += run_test( test43_data, sizeof( test43_data ), "LD BC,(3456)" );
+  r += run_test( test87_data, sizeof( test87_data ), "LD (3456),DE" );
+  r += run_test( test88_data, sizeof( test88_data ), "LD DE,(3456)" );
+  r += run_test( test89_data, sizeof( test89_data ), "LD (3456),HL" );
+  r += run_test( test90_data, sizeof( test90_data ), "LD HL,(3456)" );
+  r += run_test( test91_data, sizeof( test91_data ), "LD (3456),SP" );
+  r += run_test( test92_data, sizeof( test92_data ), "LD SP,(3456)" );
 
   /* ED prefix: NEG, RETN, RETI */
   r += run_test( test44_data, sizeof( test44_data ), "NEG" );
