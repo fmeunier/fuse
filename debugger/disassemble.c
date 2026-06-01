@@ -915,12 +915,28 @@ libspectrum_byte test49_data[] = { 0xed, 0x5e };  /* IM 2 */
 /* ED prefix: LD I,A and LD A,I */
 libspectrum_byte test50_data[] = { 0xed, 0x47 };  /* LD I,A */
 libspectrum_byte test51_data[] = { 0xed, 0x57 };  /* LD A,I */
+libspectrum_byte test56_data[] = { 0xed, 0x4f };  /* LD R,A */
+libspectrum_byte test57_data[] = { 0xed, 0x5f };  /* LD A,R */
+libspectrum_byte test58_data[] = { 0xed, 0x67 };  /* RRD */
+libspectrum_byte test59_data[] = { 0xed, 0x6f };  /* RLD */
 
 /* ED prefix: block instructions */
 libspectrum_byte test52_data[] = { 0xed, 0xa0 };  /* LDI */
 libspectrum_byte test53_data[] = { 0xed, 0xb0 };  /* LDIR */
 libspectrum_byte test54_data[] = { 0xed, 0xa8 };  /* LDD */
 libspectrum_byte test55_data[] = { 0xed, 0xb8 };  /* LDDR */
+libspectrum_byte test60_data[] = { 0xed, 0xa1 };  /* CPI */
+libspectrum_byte test61_data[] = { 0xed, 0xa9 };  /* CPD */
+libspectrum_byte test62_data[] = { 0xed, 0xb1 };  /* CPIR */
+libspectrum_byte test63_data[] = { 0xed, 0xb9 };  /* CPDR */
+libspectrum_byte test64_data[] = { 0xed, 0xa2 };  /* INI */
+libspectrum_byte test65_data[] = { 0xed, 0xaa };  /* IND */
+libspectrum_byte test66_data[] = { 0xed, 0xb2 };  /* INIR */
+libspectrum_byte test67_data[] = { 0xed, 0xba };  /* INDR */
+libspectrum_byte test68_data[] = { 0xed, 0xa3 };  /* OUTI */
+libspectrum_byte test69_data[] = { 0xed, 0xab };  /* OUTD */
+libspectrum_byte test70_data[] = { 0xed, 0xb3 };  /* OTIR */
+libspectrum_byte test71_data[] = { 0xed, 0xbb };  /* OTDR */
 
 static int
 run_test( libspectrum_byte *data, size_t data_length, const char *expected )
@@ -1030,15 +1046,31 @@ debugger_disassemble_unittest( void )
   r += run_test( test48_data, sizeof( test48_data ), "IM 1" );
   r += run_test( test49_data, sizeof( test49_data ), "IM 2" );
 
-  /* ED prefix: LD I,A and LD A,I */
+  /* ED prefix: LD I,A, LD R,A, LD A,I, LD A,R, RRD, RLD */
   r += run_test( test50_data, sizeof( test50_data ), "LD I,A" );
   r += run_test( test51_data, sizeof( test51_data ), "LD A,I" );
+  r += run_test( test56_data, sizeof( test56_data ), "LD R,A" );
+  r += run_test( test57_data, sizeof( test57_data ), "LD A,R" );
+  r += run_test( test58_data, sizeof( test58_data ), "RRD" );
+  r += run_test( test59_data, sizeof( test59_data ), "RLD" );
 
   /* ED prefix: block instructions */
   r += run_test( test52_data, sizeof( test52_data ), "LDI" );
   r += run_test( test53_data, sizeof( test53_data ), "LDIR" );
   r += run_test( test54_data, sizeof( test54_data ), "LDD" );
   r += run_test( test55_data, sizeof( test55_data ), "LDDR" );
+  r += run_test( test60_data, sizeof( test60_data ), "CPI" );
+  r += run_test( test61_data, sizeof( test61_data ), "CPD" );
+  r += run_test( test62_data, sizeof( test62_data ), "CPIR" );
+  r += run_test( test63_data, sizeof( test63_data ), "CPDR" );
+  r += run_test( test64_data, sizeof( test64_data ), "INI" );
+  r += run_test( test65_data, sizeof( test65_data ), "IND" );
+  r += run_test( test66_data, sizeof( test66_data ), "INIR" );
+  r += run_test( test67_data, sizeof( test67_data ), "INDR" );
+  r += run_test( test68_data, sizeof( test68_data ), "OUTI" );
+  r += run_test( test69_data, sizeof( test69_data ), "OUTD" );
+  r += run_test( test70_data, sizeof( test70_data ), "OTIR" );
+  r += run_test( test71_data, sizeof( test71_data ), "OTDR" );
 
   return r;
 }
