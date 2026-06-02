@@ -1021,6 +1021,86 @@ libspectrum_byte test126_data[] = { 0xfd, 0x70, 0x05 }; /* LD (IY+05),B */
 libspectrum_byte test127_data[] = { 0xdd, 0x36, 0x05, 0x07 }; /* LD (IX+05),07 */
 libspectrum_byte test128_data[] = { 0xfd, 0x36, 0x05, 0x07 }; /* LD (IY+05),07 */
 
+/* Main (unprefixed) opcodes: 00xxx000 group */
+libspectrum_byte test129_data[] = { 0x08 };  /* EX AF,AF' */
+
+/* 00xxx111 group: rotate/accumulator flags */
+libspectrum_byte test130_data[] = { 0x07 };  /* RLCA */
+libspectrum_byte test131_data[] = { 0x0f };  /* RRCA */
+libspectrum_byte test132_data[] = { 0x17 };  /* RLA */
+libspectrum_byte test133_data[] = { 0x1f };  /* RRA */
+libspectrum_byte test134_data[] = { 0x27 };  /* DAA */
+libspectrum_byte test135_data[] = { 0x2f };  /* CPL */
+libspectrum_byte test136_data[] = { 0x37 };  /* SCF */
+libspectrum_byte test137_data[] = { 0x3f };  /* CCF */
+
+/* 00xxx001: LD rr,nn; 00xxx011/00xxx1011: INC/DEC rr; 00xxx1001: ADD HL,rr */
+libspectrum_byte test138_data[] = { 0x01, 0x34, 0x12 };  /* LD BC,1234 */
+libspectrum_byte test139_data[] = { 0x03 };               /* INC BC */
+libspectrum_byte test140_data[] = { 0x0b };               /* DEC BC */
+libspectrum_byte test141_data[] = { 0x19 };               /* ADD HL,DE */
+
+/* 00xxx100/101/110: INC r, DEC r, LD r,n */
+libspectrum_byte test142_data[] = { 0x04 };        /* INC B */
+libspectrum_byte test143_data[] = { 0x05 };        /* DEC B */
+libspectrum_byte test144_data[] = { 0x06, 0x07 };  /* LD B,07 */
+
+/* 00xxx010: LD (rr),A / LD (nn),HL / LD (nn),A */
+libspectrum_byte test145_data[] = { 0x02 };               /* LD (BC),A */
+libspectrum_byte test146_data[] = { 0x12 };               /* LD (DE),A */
+libspectrum_byte test147_data[] = { 0x22, 0x34, 0x12 };  /* LD (1234),HL */
+libspectrum_byte test148_data[] = { 0x32, 0x34, 0x12 };  /* LD (1234),A */
+
+/* 00xxx110 (0x0a column): LD A,(rr) / LD HL,(nn) / LD A,(nn) */
+libspectrum_byte test149_data[] = { 0x0a };               /* LD A,(BC) */
+libspectrum_byte test150_data[] = { 0x1a };               /* LD A,(DE) */
+libspectrum_byte test151_data[] = { 0x2a, 0x34, 0x12 };  /* LD HL,(1234) */
+libspectrum_byte test152_data[] = { 0x3a, 0x34, 0x12 };  /* LD A,(1234) */
+
+/* 01xxxxxx: LD r,r' and HALT */
+libspectrum_byte test153_data[] = { 0x76 };  /* HALT */
+libspectrum_byte test154_data[] = { 0x41 };  /* LD B,C */
+
+/* 10xxxxxx: arithmetic/logic on registers */
+libspectrum_byte test155_data[] = { 0x80 };  /* ADD A,B */
+libspectrum_byte test156_data[] = { 0x91 };  /* SUB C */
+libspectrum_byte test157_data[] = { 0xa2 };  /* AND D */
+libspectrum_byte test158_data[] = { 0xab };  /* XOR E */
+libspectrum_byte test159_data[] = { 0xb4 };  /* OR H */
+libspectrum_byte test160_data[] = { 0xbd };  /* CP L */
+
+/* 11xxx110: immediate arithmetic/logic */
+libspectrum_byte test161_data[] = { 0xc6, 0x07 };  /* ADD A,07 */
+
+/* 11xxx000: conditional RET; 11xxx001: POP/RET/EXX/JP(HL)/PUSH/CALL */
+libspectrum_byte test162_data[] = { 0xc0 };  /* RET NZ */
+libspectrum_byte test163_data[] = { 0xc1 };  /* POP BC */
+libspectrum_byte test164_data[] = { 0xc9 };  /* RET */
+libspectrum_byte test165_data[] = { 0xd9 };  /* EXX */
+libspectrum_byte test166_data[] = { 0xe9 };  /* JP (HL) */
+libspectrum_byte test167_data[] = { 0xf1 };  /* POP AF */
+libspectrum_byte test168_data[] = { 0xf9 };  /* LD SP,HL */
+
+/* 11xxx010: conditional JP; 11xxx011: JP/CB/OUT/IN/EX/DI/EI */
+libspectrum_byte test169_data[] = { 0xc2, 0x34, 0x12 };  /* JP NZ,1234 */
+libspectrum_byte test170_data[] = { 0xc3, 0x34, 0x12 };  /* JP 1234 */
+libspectrum_byte test171_data[] = { 0xd3, 0x07 };         /* OUT (07),A */
+libspectrum_byte test172_data[] = { 0xdb, 0x07 };         /* IN A,(07) */
+libspectrum_byte test173_data[] = { 0xe3 };               /* EX (SP),HL */
+libspectrum_byte test174_data[] = { 0xeb };               /* EX DE,HL */
+libspectrum_byte test175_data[] = { 0xf3 };               /* DI */
+libspectrum_byte test176_data[] = { 0xfb };               /* EI */
+
+/* 11xxx100: conditional CALL; 11xxx101: PUSH/CALL */
+libspectrum_byte test177_data[] = { 0xc4, 0x34, 0x12 };  /* CALL NZ,1234 */
+libspectrum_byte test178_data[] = { 0xc5 };               /* PUSH BC */
+libspectrum_byte test179_data[] = { 0xcd, 0x34, 0x12 };  /* CALL 1234 */
+libspectrum_byte test180_data[] = { 0xf5 };               /* PUSH AF */
+
+/* 11xxx111: RST */
+libspectrum_byte test181_data[] = { 0xc7 };  /* RST 0 */
+libspectrum_byte test182_data[] = { 0xef };  /* RST 28 */
+
 static int
 run_test( libspectrum_byte *data, size_t data_length, const char *expected )
 {
@@ -1235,6 +1315,90 @@ debugger_disassemble_unittest( void )
   /* DD/FD prefix: LD (IX/IY+d),n */
   r += run_test( test127_data, sizeof( test127_data ), "LD (IX+05),07" );
   r += run_test( test128_data, sizeof( test128_data ), "LD (IY+05),07" );
+
+  /* Main (unprefixed) opcodes */
+
+  /* 00xxx000 group: NOP already covered by test1; EX AF,AF' */
+  r += run_test( test129_data, sizeof( test129_data ), "EX AF,AF'" );
+
+  /* 00xxx111 group: rotate/accumulator flags */
+  r += run_test( test130_data, sizeof( test130_data ), "RLCA" );
+  r += run_test( test131_data, sizeof( test131_data ), "RRCA" );
+  r += run_test( test132_data, sizeof( test132_data ), "RLA" );
+  r += run_test( test133_data, sizeof( test133_data ), "RRA" );
+  r += run_test( test134_data, sizeof( test134_data ), "DAA" );
+  r += run_test( test135_data, sizeof( test135_data ), "CPL" );
+  r += run_test( test136_data, sizeof( test136_data ), "SCF" );
+  r += run_test( test137_data, sizeof( test137_data ), "CCF" );
+
+  /* 00xxx001: LD rr,nn; 00xxx011/00xxx1011: INC/DEC rr; ADD HL,rr */
+  r += run_test( test138_data, sizeof( test138_data ), "LD BC,1234" );
+  r += run_test( test139_data, sizeof( test139_data ), "INC BC" );
+  r += run_test( test140_data, sizeof( test140_data ), "DEC BC" );
+  r += run_test( test141_data, sizeof( test141_data ), "ADD HL,DE" );
+
+  /* 00xxx100/101/110: INC r, DEC r, LD r,n */
+  r += run_test( test142_data, sizeof( test142_data ), "INC B" );
+  r += run_test( test143_data, sizeof( test143_data ), "DEC B" );
+  r += run_test( test144_data, sizeof( test144_data ), "LD B,07" );
+
+  /* 00xxx010: LD (rr),A / LD (nn),HL / LD (nn),A */
+  r += run_test( test145_data, sizeof( test145_data ), "LD (BC),A" );
+  r += run_test( test146_data, sizeof( test146_data ), "LD (DE),A" );
+  r += run_test( test147_data, sizeof( test147_data ), "LD (1234),HL" );
+  r += run_test( test148_data, sizeof( test148_data ), "LD (1234),A" );
+
+  /* 00xxx110 (0x0a column): LD A,(rr) / LD HL,(nn) / LD A,(nn) */
+  r += run_test( test149_data, sizeof( test149_data ), "LD A,(BC)" );
+  r += run_test( test150_data, sizeof( test150_data ), "LD A,(DE)" );
+  r += run_test( test151_data, sizeof( test151_data ), "LD HL,(1234)" );
+  r += run_test( test152_data, sizeof( test152_data ), "LD A,(1234)" );
+
+  /* 01xxxxxx: LD r,r' and HALT */
+  r += run_test( test153_data, sizeof( test153_data ), "HALT" );
+  r += run_test( test154_data, sizeof( test154_data ), "LD B,C" );
+
+  /* 10xxxxxx: arithmetic/logic on registers */
+  r += run_test( test155_data, sizeof( test155_data ), "ADD A,B" );
+  r += run_test( test156_data, sizeof( test156_data ), "SUB C" );
+  r += run_test( test157_data, sizeof( test157_data ), "AND D" );
+  r += run_test( test158_data, sizeof( test158_data ), "XOR E" );
+  r += run_test( test159_data, sizeof( test159_data ), "OR H" );
+  r += run_test( test160_data, sizeof( test160_data ), "CP L" );
+
+  /* 11xxx110: immediate arithmetic */
+  r += run_test( test161_data, sizeof( test161_data ), "ADD A,07" );
+
+  /* 11xxx000: conditional RET */
+  r += run_test( test162_data, sizeof( test162_data ), "RET NZ" );
+
+  /* 11xxx001: POP, RET, EXX, JP(HL), POP AF, LD SP,HL */
+  r += run_test( test163_data, sizeof( test163_data ), "POP BC" );
+  r += run_test( test164_data, sizeof( test164_data ), "RET" );
+  r += run_test( test165_data, sizeof( test165_data ), "EXX" );
+  r += run_test( test166_data, sizeof( test166_data ), "JP (HL)" );
+  r += run_test( test167_data, sizeof( test167_data ), "POP AF" );
+  r += run_test( test168_data, sizeof( test168_data ), "LD SP,HL" );
+
+  /* 11xxx010: conditional JP; 11xxx011: JP/OUT/IN/EX/DI/EI */
+  r += run_test( test169_data, sizeof( test169_data ), "JP NZ,1234" );
+  r += run_test( test170_data, sizeof( test170_data ), "JP 1234" );
+  r += run_test( test171_data, sizeof( test171_data ), "OUT (07),A" );
+  r += run_test( test172_data, sizeof( test172_data ), "IN A,(07)" );
+  r += run_test( test173_data, sizeof( test173_data ), "EX (SP),HL" );
+  r += run_test( test174_data, sizeof( test174_data ), "EX DE,HL" );
+  r += run_test( test175_data, sizeof( test175_data ), "DI" );
+  r += run_test( test176_data, sizeof( test176_data ), "EI" );
+
+  /* 11xxx100: conditional CALL; 11xxx101: PUSH/CALL */
+  r += run_test( test177_data, sizeof( test177_data ), "CALL NZ,1234" );
+  r += run_test( test178_data, sizeof( test178_data ), "PUSH BC" );
+  r += run_test( test179_data, sizeof( test179_data ), "CALL 1234" );
+  r += run_test( test180_data, sizeof( test180_data ), "PUSH AF" );
+
+  /* 11xxx111: RST */
+  r += run_test( test181_data, sizeof( test181_data ), "RST 0" );
+  r += run_test( test182_data, sizeof( test182_data ), "RST 28" );
 
   return r;
 }
