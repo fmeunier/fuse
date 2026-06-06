@@ -76,7 +76,6 @@ fi
 
 dnl Checks for programs.
 AC_PROG_CC
-AM_PROG_CC_C_O
 AC_PATH_PROG(PERL, perl)
 AC_SUBST(PERL)
 AC_PROG_LEX([noyywrap])
