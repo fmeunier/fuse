@@ -1121,6 +1121,16 @@ libspectrum_byte testd5_data[] = { 0xdd, 0xcb, 0xff, 0x46 };  /* BIT 0,(IX-01h) 
 /* testd6: get_byte() via 11xxx110 path -- ADD A,n */
 libspectrum_byte testd6_data[] = { 0xc6, 0x07 };          /* ADD A,07h */
 
+/* ED NOPD boundary tests: opcodes that fall outside the valid ED range
+   (b < 0x40 or b > 0xbb) are decoded as NOPD (2-byte instruction).
+   The 0x80-0x9f sub-range inside the ED handler also decodes as NOPD. */
+libspectrum_byte test183_data[] = { 0xed, 0x00 };  /* NOPD: lower range start */
+libspectrum_byte test184_data[] = { 0xed, 0x3f };  /* NOPD: lower range end */
+libspectrum_byte test185_data[] = { 0xed, 0x80 };  /* NOPD: mid-range 0x80–0x9f start */
+libspectrum_byte test186_data[] = { 0xed, 0x9f };  /* NOPD: mid-range 0x80–0x9f end */
+libspectrum_byte test187_data[] = { 0xed, 0xbc };  /* NOPD: upper range start */
+libspectrum_byte test188_data[] = { 0xed, 0xff };  /* NOPD: upper range end */
+
 static int
 run_test( libspectrum_byte *data, size_t data_length, const char *expected )
 {
@@ -1454,6 +1464,16 @@ debugger_disassemble_decimal_unittest( void )
   r += run_test( testd6_data, sizeof( testd6_data ), "ADD A,7" );
 
   debugger_output_base = saved_base;
+
+  /* ED prefix: NOPD boundary — b < 0x40 (lower range) and b > 0xbb (upper range) */
+  r += run_test( test183_data, sizeof( test183_data ), "NOPD" );
+  r += run_test( test184_data, sizeof( test184_data ), "NOPD" );
+  /* ED prefix: NOPD mid-range 0x80–0x9f */
+  r += run_test( test185_data, sizeof( test185_data ), "NOPD" );
+  r += run_test( test186_data, sizeof( test186_data ), "NOPD" );
+  /* ED prefix: NOPD upper range 0xbc–0xff */
+  r += run_test( test187_data, sizeof( test187_data ), "NOPD" );
+  r += run_test( test188_data, sizeof( test188_data ), "NOPD" );
 
   return r;
 }
