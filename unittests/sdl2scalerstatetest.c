@@ -459,6 +459,169 @@ fullscreen_unknown_display_keeps_current_scaler( void )
   return 0;
 }
 
+static int
+startup_windowed_returns_requested_as_windowed( void )
+{
+  unsigned char supported[ SCALER_NUM ];
+  float scales[ SCALER_NUM ];
+  sdl2_scaler_env env;
+  sdl2_scaler_decision decision;
+
+  fill_test_scales( scales );
+  fill_supported( supported );
+  fill_env( &env, supported, scales, 1920, 1080 );
+
+  decision = sdl2_scaler_state_startup( SCALER_DOUBLESIZE, 0, &env );
+  if( decision.scaler != SCALER_DOUBLESIZE ||
+      decision.next.state != SDL2_SCALER_WINDOWED ||
+      decision.next.restore_scaler != SCALER_NUM ) {
+    fprintf( stderr,
+             "startup windowed: expected keep 2x windowed, no restore\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+leave_fullscreen_from_native_state_keeps_current( void )
+{
+  unsigned char supported[ SCALER_NUM ];
+  float scales[ SCALER_NUM ];
+  sdl2_scaler_env env;
+  sdl2_scaler_state state;
+  sdl2_scaler_decision decision;
+
+  fill_test_scales( scales );
+  fill_supported( supported );
+  fill_env( &env, supported, scales, 1920, 1080 );
+
+  state.state = SDL2_SCALER_FULLSCREEN_NATIVE;
+  state.restore_scaler = SCALER_NUM;
+
+  decision = sdl2_scaler_state_leave_fullscreen( &state, SCALER_DOUBLESIZE,
+                                                 &env );
+  if( decision.scaler != SCALER_DOUBLESIZE ||
+      decision.next.state != SDL2_SCALER_WINDOWED ||
+      decision.next.restore_scaler != SCALER_NUM ) {
+    fprintf( stderr,
+             "leave native: expected keep current and transition to windowed\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+leave_fullscreen_auto_with_no_restore_keeps_current( void )
+{
+  unsigned char supported[ SCALER_NUM ];
+  float scales[ SCALER_NUM ];
+  sdl2_scaler_env env;
+  sdl2_scaler_state state;
+  sdl2_scaler_decision decision;
+
+  fill_test_scales( scales );
+  fill_supported( supported );
+  fill_env( &env, supported, scales, 1920, 1080 );
+
+  state.state = SDL2_SCALER_FULLSCREEN_AUTO;
+  state.restore_scaler = SCALER_NUM;
+
+  decision = sdl2_scaler_state_leave_fullscreen( &state, SCALER_NORMAL, &env );
+  if( decision.scaler != SCALER_NORMAL ||
+      decision.next.state != SDL2_SCALER_WINDOWED ||
+      decision.next.restore_scaler != SCALER_NUM ) {
+    fprintf( stderr,
+             "leave auto no restore: expected keep current and windowed\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+user_select_windowed_returns_requested_as_windowed( void )
+{
+  unsigned char supported[ SCALER_NUM ];
+  float scales[ SCALER_NUM ];
+  sdl2_scaler_env env;
+  sdl2_scaler_decision decision;
+
+  fill_test_scales( scales );
+  fill_supported( supported );
+  fill_env( &env, supported, scales, 1920, 1080 );
+
+  decision = sdl2_scaler_state_user_select( SCALER_TRIPLESIZE, 0, &env );
+  if( decision.scaler != SCALER_TRIPLESIZE ||
+      decision.next.state != SDL2_SCALER_WINDOWED ||
+      decision.next.restore_scaler != SCALER_NUM ) {
+    fprintf( stderr,
+             "user select windowed: expected keep 3x windowed, no restore\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+reevaluate_windowed_keeps_current( void )
+{
+  unsigned char supported[ SCALER_NUM ];
+  float scales[ SCALER_NUM ];
+  sdl2_scaler_env env;
+  sdl2_scaler_state state;
+  sdl2_scaler_decision decision;
+
+  fill_test_scales( scales );
+  fill_supported( supported );
+  fill_env( &env, supported, scales, 1920, 1080 );
+
+  state.state = SDL2_SCALER_WINDOWED;
+  state.restore_scaler = SCALER_NUM;
+
+  decision = sdl2_scaler_state_reevaluate( &state, SCALER_TRIPLESIZE, 0,
+                                           &env );
+  if( decision.scaler != SCALER_TRIPLESIZE ||
+      decision.next.state != SDL2_SCALER_WINDOWED ||
+      decision.next.restore_scaler != SCALER_NUM ) {
+    fprintf( stderr,
+             "reevaluate windowed: expected keep current scaler unchanged\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+reevaluate_native_with_fitting_scaler_keeps_state( void )
+{
+  unsigned char supported[ SCALER_NUM ];
+  float scales[ SCALER_NUM ];
+  sdl2_scaler_env env;
+  sdl2_scaler_state state;
+  sdl2_scaler_decision decision;
+
+  fill_test_scales( scales );
+  fill_supported( supported );
+  fill_env( &env, supported, scales, 1920, 1080 );
+
+  state.state = SDL2_SCALER_FULLSCREEN_NATIVE;
+  state.restore_scaler = SCALER_NUM;
+
+  decision = sdl2_scaler_state_reevaluate( &state, SCALER_DOUBLESIZE, 1,
+                                           &env );
+  if( decision.scaler != SCALER_DOUBLESIZE ||
+      decision.next.state != SDL2_SCALER_FULLSCREEN_NATIVE ||
+      decision.next.restore_scaler != SCALER_NUM ) {
+    fprintf( stderr,
+             "reevaluate native fits: expected keep 2x native unchanged\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
 typedef int (*test_fn_t)( void );
 
 struct test_t {
@@ -471,17 +634,29 @@ static const struct test_t tests[] = {
     startup_fullscreen_auto_restores_on_exit },
   { "startup_fullscreen_keeps_requested_when_it_fits",
     startup_fullscreen_keeps_requested_when_it_fits },
+  { "startup_windowed_returns_requested_as_windowed",
+    startup_windowed_returns_requested_as_windowed },
   { "enter_fullscreen_prefers_same_family",
     enter_fullscreen_prefers_same_family },
   { "tv_family_includes_timextv", tv_family_includes_timextv },
   { "user_select_clears_auto_restore_state",
     user_select_clears_auto_restore_state },
+  { "user_select_windowed_returns_requested_as_windowed",
+    user_select_windowed_returns_requested_as_windowed },
   { "reevaluate_native_becomes_auto_when_current_no_longer_fits",
     reevaluate_native_becomes_auto_when_current_no_longer_fits },
   { "reevaluate_auto_preserves_supported_restore_scaler",
     reevaluate_auto_preserves_supported_restore_scaler },
+  { "reevaluate_native_with_fitting_scaler_keeps_state",
+    reevaluate_native_with_fitting_scaler_keeps_state },
+  { "reevaluate_windowed_keeps_current",
+    reevaluate_windowed_keeps_current },
   { "leave_fullscreen_restores_supported_equivalent_when_original_invalid",
     leave_fullscreen_restores_supported_equivalent_when_original_invalid },
+  { "leave_fullscreen_from_native_state_keeps_current",
+    leave_fullscreen_from_native_state_keeps_current },
+  { "leave_fullscreen_auto_with_no_restore_keeps_current",
+    leave_fullscreen_auto_with_no_restore_keeps_current },
   { "transition_dispatches_startup_branch",
     transition_dispatches_startup_branch },
   { "transition_dispatches_enter_branch",
