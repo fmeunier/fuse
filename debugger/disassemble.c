@@ -1131,6 +1131,55 @@ libspectrum_byte test186_data[] = { 0xed, 0x9f };  /* NOPD: mid-range 0x80–0x9
 libspectrum_byte test187_data[] = { 0xed, 0xbc };  /* NOPD: upper range start */
 libspectrum_byte test188_data[] = { 0xed, 0xff };  /* NOPD: upper range end */
 
+/* 00xxx000: conditional JR — remaining conditions (NZ already covered) */
+libspectrum_byte test189_data[] = { 0x28, 0x04 };  /* JR Z,+4  -> 4006 */
+libspectrum_byte test190_data[] = { 0x30, 0x04 };  /* JR NC,+4 -> 4006 */
+libspectrum_byte test191_data[] = { 0x38, 0x04 };  /* JR C,+4  -> 4006 */
+
+/* 11xxx000: conditional RET — remaining seven conditions */
+libspectrum_byte test192_data[] = { 0xc8 };  /* RET Z */
+libspectrum_byte test193_data[] = { 0xd0 };  /* RET NC */
+libspectrum_byte test194_data[] = { 0xd8 };  /* RET C */
+libspectrum_byte test195_data[] = { 0xe0 };  /* RET PO */
+libspectrum_byte test196_data[] = { 0xe8 };  /* RET PE */
+libspectrum_byte test197_data[] = { 0xf0 };  /* RET P */
+libspectrum_byte test198_data[] = { 0xf8 };  /* RET M */
+
+/* 11xxx010: conditional JP — remaining seven conditions */
+libspectrum_byte test199_data[] = { 0xca, 0x34, 0x12 };  /* JP Z,1234 */
+libspectrum_byte test200_data[] = { 0xd2, 0x34, 0x12 };  /* JP NC,1234 */
+libspectrum_byte test201_data[] = { 0xda, 0x34, 0x12 };  /* JP C,1234 */
+libspectrum_byte test202_data[] = { 0xe2, 0x34, 0x12 };  /* JP PO,1234 */
+libspectrum_byte test203_data[] = { 0xea, 0x34, 0x12 };  /* JP PE,1234 */
+libspectrum_byte test204_data[] = { 0xf2, 0x34, 0x12 };  /* JP P,1234 */
+libspectrum_byte test205_data[] = { 0xfa, 0x34, 0x12 };  /* JP M,1234 */
+
+/* 11xxx100: conditional CALL — remaining seven conditions */
+libspectrum_byte test206_data[] = { 0xcc, 0x34, 0x12 };  /* CALL Z,1234 */
+libspectrum_byte test207_data[] = { 0xd4, 0x34, 0x12 };  /* CALL NC,1234 */
+libspectrum_byte test208_data[] = { 0xdc, 0x34, 0x12 };  /* CALL C,1234 */
+libspectrum_byte test209_data[] = { 0xe4, 0x34, 0x12 };  /* CALL PO,1234 */
+libspectrum_byte test210_data[] = { 0xec, 0x34, 0x12 };  /* CALL PE,1234 */
+libspectrum_byte test211_data[] = { 0xf4, 0x34, 0x12 };  /* CALL P,1234 */
+libspectrum_byte test212_data[] = { 0xfc, 0x34, 0x12 };  /* CALL M,1234 */
+
+/* 11xxx111: RST — remaining six targets */
+libspectrum_byte test213_data[] = { 0xcf };  /* RST 8 */
+libspectrum_byte test214_data[] = { 0xd7 };  /* RST 10 */
+libspectrum_byte test215_data[] = { 0xdf };  /* RST 18 */
+libspectrum_byte test216_data[] = { 0xe7 };  /* RST 20 */
+libspectrum_byte test217_data[] = { 0xf7 };  /* RST 30 */
+libspectrum_byte test218_data[] = { 0xff };  /* RST 38 */
+
+/* 11xxx110: immediate arithmetic/logic — remaining seven operations */
+libspectrum_byte test219_data[] = { 0xce, 0x07 };  /* ADC A,07 */
+libspectrum_byte test220_data[] = { 0xd6, 0x07 };  /* SUB 07 */
+libspectrum_byte test221_data[] = { 0xde, 0x07 };  /* SBC A,07 */
+libspectrum_byte test222_data[] = { 0xe6, 0x07 };  /* AND 07 */
+libspectrum_byte test223_data[] = { 0xee, 0x07 };  /* XOR 07 */
+libspectrum_byte test224_data[] = { 0xf6, 0x07 };  /* OR 07 */
+libspectrum_byte test225_data[] = { 0xfe, 0x07 };  /* CP 07 */
+
 static int
 run_test( libspectrum_byte *data, size_t data_length, const char *expected )
 {
@@ -1431,6 +1480,55 @@ debugger_disassemble_unittest( void )
   r += run_test( test182_data, sizeof( test182_data ), "RST 28" );
 
   r += debugger_disassemble_decimal_unittest();
+
+  /* Conditional JR — remaining conditions */
+  r += run_test( test189_data, sizeof( test189_data ), "JR Z,4006" );
+  r += run_test( test190_data, sizeof( test190_data ), "JR NC,4006" );
+  r += run_test( test191_data, sizeof( test191_data ), "JR C,4006" );
+
+  /* Conditional RET — remaining seven conditions */
+  r += run_test( test192_data, sizeof( test192_data ), "RET Z" );
+  r += run_test( test193_data, sizeof( test193_data ), "RET NC" );
+  r += run_test( test194_data, sizeof( test194_data ), "RET C" );
+  r += run_test( test195_data, sizeof( test195_data ), "RET PO" );
+  r += run_test( test196_data, sizeof( test196_data ), "RET PE" );
+  r += run_test( test197_data, sizeof( test197_data ), "RET P" );
+  r += run_test( test198_data, sizeof( test198_data ), "RET M" );
+
+  /* Conditional JP — remaining seven conditions */
+  r += run_test( test199_data, sizeof( test199_data ), "JP Z,1234" );
+  r += run_test( test200_data, sizeof( test200_data ), "JP NC,1234" );
+  r += run_test( test201_data, sizeof( test201_data ), "JP C,1234" );
+  r += run_test( test202_data, sizeof( test202_data ), "JP PO,1234" );
+  r += run_test( test203_data, sizeof( test203_data ), "JP PE,1234" );
+  r += run_test( test204_data, sizeof( test204_data ), "JP P,1234" );
+  r += run_test( test205_data, sizeof( test205_data ), "JP M,1234" );
+
+  /* Conditional CALL — remaining seven conditions */
+  r += run_test( test206_data, sizeof( test206_data ), "CALL Z,1234" );
+  r += run_test( test207_data, sizeof( test207_data ), "CALL NC,1234" );
+  r += run_test( test208_data, sizeof( test208_data ), "CALL C,1234" );
+  r += run_test( test209_data, sizeof( test209_data ), "CALL PO,1234" );
+  r += run_test( test210_data, sizeof( test210_data ), "CALL PE,1234" );
+  r += run_test( test211_data, sizeof( test211_data ), "CALL P,1234" );
+  r += run_test( test212_data, sizeof( test212_data ), "CALL M,1234" );
+
+  /* RST — remaining six targets */
+  r += run_test( test213_data, sizeof( test213_data ), "RST 8" );
+  r += run_test( test214_data, sizeof( test214_data ), "RST 10" );
+  r += run_test( test215_data, sizeof( test215_data ), "RST 18" );
+  r += run_test( test216_data, sizeof( test216_data ), "RST 20" );
+  r += run_test( test217_data, sizeof( test217_data ), "RST 30" );
+  r += run_test( test218_data, sizeof( test218_data ), "RST 38" );
+
+  /* Immediate arithmetic/logic — remaining seven operations */
+  r += run_test( test219_data, sizeof( test219_data ), "ADC A,07" );
+  r += run_test( test220_data, sizeof( test220_data ), "SUB 07" );
+  r += run_test( test221_data, sizeof( test221_data ), "SBC A,07" );
+  r += run_test( test222_data, sizeof( test222_data ), "AND 07" );
+  r += run_test( test223_data, sizeof( test223_data ), "XOR 07" );
+  r += run_test( test224_data, sizeof( test224_data ), "OR 07" );
+  r += run_test( test225_data, sizeof( test225_data ), "CP 07" );
 
   return r;
 }
