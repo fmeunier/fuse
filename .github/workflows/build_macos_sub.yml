@@ -75,8 +75,6 @@ jobs:
           echo "LDFLAGS=-L$(brew --prefix)/lib -L$(brew --prefix libgcrypt)/lib -L$(brew --prefix libxml2)/lib" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix libgcrypt)/lib/pkgconfig:$(brew --prefix libxml2)/lib/pkgconfig" >> "$GITHUB_ENV"
 
-          autoreconf -i
-
       - name: (4) Download libspectrum artefact
         uses: actions/download-artifact@v8
         with:
@@ -112,7 +110,8 @@ jobs:
           
           .github/scripts/in_config.sh "User interface: ${{ inputs.verify_ui }}"
           .github/scripts/in_config.sh "Selected audio driver: ${{ inputs.verify_audio }}"
-      - if: ${{ inputs.verify_other }}
+      - name: (8b) Verify additional configure output
+        if: ${{ inputs.verify_other }}
         run: |
           .github/scripts/in_config.sh "${{ inputs.verify_other }}"
 

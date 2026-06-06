@@ -90,7 +90,8 @@ jobs:
           
           .github/scripts/in_config.sh "User interface: ${{ inputs.verify_ui }}"
           .github/scripts/in_config.sh "Selected audio driver: ${{ inputs.verify_audio }}"
-      - if: ${{ inputs.verify_other }}
+      - name: (7b) Verify additional configure output
+        if: ${{ inputs.verify_other }}
         run: |
           .github/scripts/in_config.sh "${{ inputs.verify_other }}"
 
