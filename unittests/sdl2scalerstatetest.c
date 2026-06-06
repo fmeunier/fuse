@@ -438,6 +438,67 @@ transition_dispatches_reevaluate_branch( void )
 }
 
 static int
+reevaluate_auto_adjusts_when_current_no_longer_fits( void )
+{
+  unsigned char supported[ SCALER_NUM ];
+  float scales[ SCALER_NUM ];
+  sdl2_scaler_env env;
+  sdl2_scaler_state state;
+  sdl2_scaler_decision decision;
+
+  fill_test_scales( scales );
+  memset( supported, 0, sizeof( supported ) );
+  supported[ SCALER_NORMAL ] = 1;
+  supported[ SCALER_DOUBLESIZE ] = 1;
+  supported[ SCALER_TRIPLESIZE ] = 1;
+  fill_env( &env, supported, scales, 500, 350 );
+
+  state.state = SDL2_SCALER_FULLSCREEN_AUTO;
+  state.restore_scaler = SCALER_TRIPLESIZE;
+
+  /* DOUBLESIZE (2x = 640x480) doesn't fit a 500x350 display; expect fallback
+     to NORMAL (1x = 320x240) while preserving the restore scaler. */
+  decision = sdl2_scaler_state_reevaluate( &state, SCALER_DOUBLESIZE, 1, &env );
+  if( decision.scaler != SCALER_NORMAL ||
+      decision.next.state != SDL2_SCALER_FULLSCREEN_AUTO ||
+      decision.next.restore_scaler != SCALER_TRIPLESIZE ) {
+    fprintf( stderr,
+             "reevaluate auto unfitting: expected normal/auto restore 3x\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+user_select_fullscreen_adjusts_to_fitting_scaler( void )
+{
+  unsigned char supported[ SCALER_NUM ];
+  float scales[ SCALER_NUM ];
+  sdl2_scaler_env env;
+  sdl2_scaler_decision decision;
+
+  fill_test_scales( scales );
+  memset( supported, 0, sizeof( supported ) );
+  supported[ SCALER_NORMAL ] = 1;
+  supported[ SCALER_QUADSIZE ] = 1;
+  fill_env( &env, supported, scales, 400, 300 );
+
+  /* QUADSIZE (4x = 1280x960) doesn't fit a 400x300 display; expect fallback
+     to NORMAL (1x = 320x240) with NATIVE state and no restore scaler. */
+  decision = sdl2_scaler_state_user_select( SCALER_QUADSIZE, 1, &env );
+  if( decision.scaler != SCALER_NORMAL ||
+      decision.next.state != SDL2_SCALER_FULLSCREEN_NATIVE ||
+      decision.next.restore_scaler != SCALER_NUM ) {
+    fprintf( stderr,
+             "user select unfitting: expected normal/native no restore\n" );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
 fullscreen_unknown_display_keeps_current_scaler( void )
 {
   unsigned char supported[ SCALER_NUM ];
@@ -669,6 +730,10 @@ static const struct test_t tests[] = {
     transition_dispatches_reevaluate_branch },
   { "fullscreen_unknown_display_keeps_current_scaler",
     fullscreen_unknown_display_keeps_current_scaler },
+  { "reevaluate_auto_adjusts_when_current_no_longer_fits",
+    reevaluate_auto_adjusts_when_current_no_longer_fits },
+  { "user_select_fullscreen_adjusts_to_fitting_scaler",
+    user_select_fullscreen_adjusts_to_fitting_scaler },
   { NULL, NULL }
 };
 
