@@ -1101,6 +1101,26 @@ libspectrum_byte test180_data[] = { 0xf5 };               /* PUSH AF */
 libspectrum_byte test181_data[] = { 0xc7 };  /* RST 0 */
 libspectrum_byte test182_data[] = { 0xef };  /* RST 28 */
 
+/* Decimal-mode tests: each exercises a distinct numeric-formatting path */
+
+/* testd1: get_byte() in decimal mode -- LD B,n */
+libspectrum_byte testd1_data[] = { 0x06, 0x07 };          /* LD B,07h */
+
+/* testd2: get_word() in decimal mode -- LD rr,nn */
+libspectrum_byte testd2_data[] = { 0x01, 0x34, 0x12 };    /* LD BC,1234h */
+
+/* testd3: get_offset() in decimal mode -- JR e */
+libspectrum_byte testd3_data[] = { 0x18, 0x00 };          /* JR +0 -> 4002h */
+
+/* testd4: ix_iy_offset() positive in decimal mode -- LD A,(IX+d) */
+libspectrum_byte testd4_data[] = { 0xdd, 0x7e, 0x55 };    /* LD A,(IX+55h) */
+
+/* testd5: ix_iy_offset() negative in decimal mode -- BIT b,(IX+d) */
+libspectrum_byte testd5_data[] = { 0xdd, 0xcb, 0xff, 0x46 };  /* BIT 0,(IX-01h) */
+
+/* testd6: get_byte() via 11xxx110 path -- ADD A,n */
+libspectrum_byte testd6_data[] = { 0xc6, 0x07 };          /* ADD A,07h */
+
 static int
 run_test( libspectrum_byte *data, size_t data_length, const char *expected )
 {
@@ -1399,6 +1419,41 @@ debugger_disassemble_unittest( void )
   /* 11xxx111: RST */
   r += run_test( test181_data, sizeof( test181_data ), "RST 0" );
   r += run_test( test182_data, sizeof( test182_data ), "RST 28" );
+
+  r += debugger_disassemble_decimal_unittest();
+
+  return r;
+}
+
+/* Tests for decimal output mode (debugger_output_base == 10).
+   Each test exercises a distinct numeric-formatting code path. */
+int
+debugger_disassemble_decimal_unittest( void )
+{
+  int r = 0;
+  int saved_base = debugger_output_base;
+
+  debugger_output_base = 10;
+
+  /* get_byte() via 00xxx110 path: LD B,07h -> "LD B,7" */
+  r += run_test( testd1_data, sizeof( testd1_data ), "LD B,7" );
+
+  /* get_word() via 00xxx001 path: LD BC,1234h -> "LD BC,4660" */
+  r += run_test( testd2_data, sizeof( testd2_data ), "LD BC,4660" );
+
+  /* get_offset() via JR: offset 0 from 4000h -> 4002h = 16386 decimal */
+  r += run_test( testd3_data, sizeof( testd3_data ), "JR 16386" );
+
+  /* ix_iy_offset() positive: LD A,(IX+55h) -> "LD A,(IX+85)" */
+  r += run_test( testd4_data, sizeof( testd4_data ), "LD A,(IX+85)" );
+
+  /* ix_iy_offset() negative: BIT 0,(IX-01h) -> "BIT 0,(IX-1)" */
+  r += run_test( testd5_data, sizeof( testd5_data ), "BIT 0,(IX-1)" );
+
+  /* get_byte() via 11xxx110 path: ADD A,07h -> "ADD A,7" */
+  r += run_test( testd6_data, sizeof( testd6_data ), "ADD A,7" );
+
+  debugger_output_base = saved_base;
 
   return r;
 }
