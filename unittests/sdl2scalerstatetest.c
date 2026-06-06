@@ -45,6 +45,9 @@ fill_test_scales( float *scales )
   scales[ SCALER_QUADSIZE ] = 4.0f;
   scales[ SCALER_TV4X ] = 4.0f;
   scales[ SCALER_PALTV4X ] = 4.0f;
+  scales[ SCALER_NTSC2X ] = 2.0f;
+  scales[ SCALER_NTSC3X ] = 3.0f;
+  scales[ SCALER_NTSC4X ] = 4.0f;
   scales[ SCALER_HQ4X ] = 4.0f;
 }
 
