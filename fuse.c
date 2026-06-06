@@ -501,7 +501,7 @@ static void fuse_show_copyright(void)
    "'AUTHORS' for more details.\n"
    "\n"
    "For help, please mail <fuse-emulator-devel@lists.sf.net> or use\n"
-   "the forums at <http://sourceforge.net/p/fuse-emulator/discussion/>.\n"
+   "the forums at <https://sourceforge.net/p/fuse-emulator/discussion/>.\n"
    "\n"
    "This program is distributed in the hope that it will be useful,\n"
    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -557,7 +557,7 @@ static void fuse_show_help( void )
    "--version              Print version number and exit.\n"
    "\n"
    "For help, please mail <fuse-emulator-devel@lists.sf.net> or use\n"
-   "the forums at <http://sourceforge.net/p/fuse-emulator/discussion/>.\n"
+   "the forums at <https://sourceforge.net/p/fuse-emulator/discussion/>.\n"
    "For complete documentation, see the manual page of Fuse.\n\n" );
 }
 
