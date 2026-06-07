@@ -521,6 +521,29 @@ mempool_test( void )
   TEST_ASSERT( mempool_malloc( mempool_get_pools(), 23 ) == NULL );
   TEST_ASSERT( mempool_malloc( -2, 23 ) == NULL );
 
+  /* Test MEMPOOL_UNTRACKED: allocations succeed but bypass pool tracking */
+  {
+    void *p = mempool_malloc( MEMPOOL_UNTRACKED, 16 );
+    TEST_ASSERT( p != NULL );
+    TEST_ASSERT( mempool_get_pool_size( pool1 ) == 0 );
+    libspectrum_free( p );
+  }
+
+  {
+    void *p = mempool_malloc_n( MEMPOOL_UNTRACKED, 4, 8 );
+    TEST_ASSERT( p != NULL );
+    TEST_ASSERT( mempool_get_pool_size( pool1 ) == 0 );
+    libspectrum_free( p );
+  }
+
+  {
+    char *s = mempool_strdup( MEMPOOL_UNTRACKED, "untracked" );
+    TEST_ASSERT( s != NULL );
+    TEST_ASSERT( strcmp( s, "untracked" ) == 0 );
+    TEST_ASSERT( mempool_get_pool_size( pool1 ) == 0 );
+    libspectrum_free( s );
+  }
+
   return 0;
 }
 
