@@ -69,6 +69,8 @@
 %token <token>	 COMPARISON	/* < > <= >= */
 %token <token>   EQUALITY	/* == != */
 %token <token>   NEGATE		/* ! ~ */
+%token           LSHIFT		/* << */
+%token           RSHIFT		/* >> */
 
 %token		 BASE
 %token		 BREAK
@@ -131,6 +133,7 @@
 %left '&'
 %left EQUALITY
 %left COMPARISON
+%left LSHIFT RSHIFT
 %left '+' '-'
 %left '*' '/' '%'
 %right NEGATE		/* Unary minus, unary plus, !, ~ */
@@ -276,6 +279,18 @@ expression:   NUMBER { $$ = debugger_expression_new_number( $1, debugger_memory_
 	      }
 	    | expression '%' expression {
 	        $$ = debugger_expression_new_binaryop( '%', $1, $3, debugger_memory_pool );
+		if( !$$ ) YYABORT;
+	      }
+	    | expression LSHIFT expression {
+	        $$ = debugger_expression_new_binaryop(
+		  DEBUGGER_TOKEN_LEFT_SHIFT, $1, $3, debugger_memory_pool
+		);
+		if( !$$ ) YYABORT;
+	      }
+	    | expression RSHIFT expression {
+	        $$ = debugger_expression_new_binaryop(
+		  DEBUGGER_TOKEN_RIGHT_SHIFT, $1, $3, debugger_memory_pool
+		);
 		if( !$$ ) YYABORT;
 	      }
 	    | expression EQUALITY expression {

@@ -53,6 +53,7 @@ enum precedence_t {
   PRECEDENCE_BITWISE_AND,
   PRECEDENCE_EQUALITY,
   PRECEDENCE_COMPARISON,
+  PRECEDENCE_SHIFT,
   PRECEDENCE_ADDITION,
   PRECEDENCE_MULTIPLICATION,
   PRECEDENCE_NEGATE,
@@ -131,6 +132,10 @@ binaryop_precedence( int operation )
   case    '&':		    return PRECEDENCE_BITWISE_AND;
   case    '+': case    '-': return PRECEDENCE_ADDITION;
   case    '*': case    '/': case    '%': return PRECEDENCE_MULTIPLICATION;
+
+  case DEBUGGER_TOKEN_LEFT_SHIFT:
+  case DEBUGGER_TOKEN_RIGHT_SHIFT:
+    return PRECEDENCE_SHIFT;
 
   case DEBUGGER_TOKEN_EQUAL_TO:
   case DEBUGGER_TOKEN_NOT_EQUAL_TO:
@@ -390,6 +395,14 @@ evaluate_binaryop( struct binaryop_type *binary )
       return debugger_expression_evaluate( binary->op1 ) % op2;
     }
 
+  case DEBUGGER_TOKEN_LEFT_SHIFT:
+           return debugger_expression_evaluate( binary->op1 ) <<
+                  debugger_expression_evaluate( binary->op2 );
+
+  case DEBUGGER_TOKEN_RIGHT_SHIFT:
+           return debugger_expression_evaluate( binary->op1 ) >>
+                  debugger_expression_evaluate( binary->op2 );
+
   case DEBUGGER_TOKEN_EQUAL_TO:
             return debugger_expression_evaluate( binary->op1 ) ==
                    debugger_expression_evaluate( binary->op2 );
@@ -540,6 +553,8 @@ deparse_binaryop( char *buffer, size_t length,
   case    '*': operation_string = "*";  break;
   case    '/': operation_string = "/";  break;
   case    '%': operation_string = "%";  break;
+  case DEBUGGER_TOKEN_LEFT_SHIFT: operation_string = "<<"; break;
+  case DEBUGGER_TOKEN_RIGHT_SHIFT: operation_string = ">>"; break;
   case DEBUGGER_TOKEN_EQUAL_TO: operation_string = "=="; break;
   case DEBUGGER_TOKEN_NOT_EQUAL_TO: operation_string = "!="; break;
   case    '<': operation_string = "<";  break;
@@ -630,6 +645,10 @@ is_non_associative( int operation )
   /* Simple cases */
   case '+': case '*': return 0;
   case '-': case '/': return 1;
+
+  /* Shift operators are non-associative */
+  case DEBUGGER_TOKEN_LEFT_SHIFT: return 1;
+  case DEBUGGER_TOKEN_RIGHT_SHIFT: return 1;
 
   /* None of the comparison operators are associative due to them
      returning truth values */

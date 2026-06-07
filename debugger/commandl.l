@@ -95,6 +95,9 @@ w|wr|wri|writ|write { return WRITE; }
 "!="		{ yylval.token = DEBUGGER_TOKEN_NOT_EQUAL_TO;
 		  return EQUALITY; }
 
+"<<"		{ return LSHIFT; }
+">>"		{ return RSHIFT; }
+
 "<"		{ yylval.token = '<'; return COMPARISON; }
 ">"		{ yylval.token = '>'; return COMPARISON; }
 "<="		{ yylval.token = DEBUGGER_TOKEN_LESS_THAN_OR_EQUAL_TO;

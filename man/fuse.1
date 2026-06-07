@@ -5264,11 +5264,12 @@ is used for conditional breakpoints, with `0' being false and any
 other value being true. In numeric expressions, you can use integer
 constants (all calculations are done in integers), system variables,
 debugger variables, parentheses, the standard five numeric operations
-(`+', `\-', `*', `/' and `%'), the (non-)equality operators `==' and `!=',
-the comparison operators `>', `<', `>=' and `<=', bitwise and (`&'), or
-(`|') and exclusive or (`^') and logical and (`&&') and or (`||').
-Square brackets (`[' and `]') can be used to dereference a value; for
-example `[0x4000]' will give the value of the first byte of the screen.
+(`+', `\-', `*', `/' and `%'), the shift operators `<<' and `>>', the
+(non-)equality operators `==' and `!=', the comparison operators `>',
+`<', `>=' and `<=', bitwise and (`&'), or (`|') and exclusive or (`^')
+and logical and (`&&') and or (`||'). Square brackets (`[' and `]') can
+be used to dereference a value; for example `[0x4000]' will give the
+value of the first byte of the screen.
 .PP
 System variables are specified via an
 .RI ` area : detail '

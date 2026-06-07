@@ -67,8 +67,10 @@ typedef enum debugger_token {
   DEBUGGER_TOKEN_LESS_THAN_OR_EQUAL_TO = 0x2264,
   DEBUGGER_TOKEN_GREATER_THAN_OR_EQUAL_TO = 0x2265,
 
-  /* No real significance to this value */
+  /* No real significance to these values */
   DEBUGGER_TOKEN_DEREFERENCE = 0x1000,
+  DEBUGGER_TOKEN_LEFT_SHIFT = 0x1001,
+  DEBUGGER_TOKEN_RIGHT_SHIFT = 0x1002,
 
 } debugger_token;
 
