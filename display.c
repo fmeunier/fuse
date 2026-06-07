@@ -559,6 +559,12 @@ copy_critical_region_line( int y, int x, int end )
 {
   libspectrum_dword bit_mask, dirty;
 
+  /* Nothing to do for an empty range; also guards against undefined
+     behaviour in the shift expressions below when end <= x (which can
+     occur legitimately when the beam is at column 0 at the start of a
+     display line). */
+  if( end <= x ) return;
+
   if( x < DISPLAY_WIDTH_COLS ) {
 
     /* Build a mask for the bits we're interested in */
