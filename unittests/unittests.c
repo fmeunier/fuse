@@ -358,6 +358,56 @@ snapshot_copy_from_releases_keyboard_test( void )
 }
 
 static int
+keyboard_read_test( void )
+{
+  /* No keys pressed: all half-rows are 0xff, keyboard_read returns 0xff
+     regardless of which half-rows are selected. */
+  keyboard_release_all();
+  /* Select all half-rows (porth = 0x00 means every bit is low → select all) */
+  TEST_ASSERT( keyboard_read( 0x00 ) == 0xff );
+  /* Select no half-rows (porth = 0xff means every bit is high → select none) */
+  TEST_ASSERT( keyboard_read( 0xff ) == 0xff );
+
+  /* Press 'a': sits in half-row 1, bit 0x01.
+     keyboard_read shifts porth right once per iteration and checks bit 0 each
+     time, so half-row N is selected when bit N of porth is 0.
+     0xfd = 11111101b has bit 1 low → selects only half-row 1. */
+  keyboard_press( KEYBOARD_a );
+  TEST_ASSERT( keyboard_read( 0xfd ) == 0xfe ); /* bit 0 cleared */
+  /* Selecting a different half-row should not show the pressed key. */
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xff ); /* half-row 0, 'a' not there */
+  /* Selecting all half-rows still shows the pressed key. */
+  TEST_ASSERT( keyboard_read( 0x00 ) == 0xfe );
+  keyboard_release( KEYBOARD_a );
+
+  /* After release the bit is restored. */
+  TEST_ASSERT( keyboard_read( 0xfd ) == 0xff );
+
+  return 0;
+}
+
+static int
+keyboard_simulate_keypress_test( void )
+{
+  /* 'a' is in half-row 1, bit 0x01.  keyboard_simulate_keypress checks
+     whether half-row 1's bit (mask = 1<<1 = 0x02) is low in porth. */
+
+  /* porth = 0xfd (bit 1 low) → half-row 1 selected → bit 0x01 cleared */
+  TEST_ASSERT( keyboard_simulate_keypress( 0xfd, KEYBOARD_a ) == 0xfe );
+
+  /* porth = 0xff (bit 1 high) → half-row 1 not selected → 0xff returned */
+  TEST_ASSERT( keyboard_simulate_keypress( 0xff, KEYBOARD_a ) == 0xff );
+
+  /* porth = 0x00 (all bits low) → all half-rows selected → bit cleared */
+  TEST_ASSERT( keyboard_simulate_keypress( 0x00, KEYBOARD_a ) == 0xfe );
+
+  /* An unknown/unmapped key should return 0xff unchanged. */
+  TEST_ASSERT( keyboard_simulate_keypress( 0x00, KEYBOARD_NONE ) == 0xff );
+
+  return 0;
+}
+
+static int
 utils_safe_strdup_test( void )
 {
   char *result;
@@ -1121,6 +1171,8 @@ unittests_run( void )
   r += floating_bus_test();
   r += floating_bus_merge_test();
   r += snapshot_copy_from_releases_keyboard_test();
+  r += keyboard_read_test();
+  r += keyboard_simulate_keypress_test();
   r += utils_safe_strdup_test();
   r += bitmap_ops_test();
   r += mempool_test();
