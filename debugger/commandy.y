@@ -132,7 +132,7 @@
 %left EQUALITY
 %left COMPARISON
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
 %right NEGATE		/* Unary minus, unary plus, !, ~ */
 
 /* High precedence */
@@ -272,6 +272,10 @@ expression:   NUMBER { $$ = debugger_expression_new_number( $1, debugger_memory_
 	      }
 	    | expression '/' expression {
 	        $$ = debugger_expression_new_binaryop( '/', $1, $3, debugger_memory_pool );
+		if( !$$ ) YYABORT;
+	      }
+	    | expression '%' expression {
+	        $$ = debugger_expression_new_binaryop( '%', $1, $3, debugger_memory_pool );
 		if( !$$ ) YYABORT;
 	      }
 	    | expression EQUALITY expression {

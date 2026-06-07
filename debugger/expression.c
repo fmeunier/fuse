@@ -130,7 +130,7 @@ binaryop_precedence( int operation )
   case    '^':		    return PRECEDENCE_BITWISE_XOR;
   case    '&':		    return PRECEDENCE_BITWISE_AND;
   case    '+': case    '-': return PRECEDENCE_ADDITION;
-  case    '*': case    '/': return PRECEDENCE_MULTIPLICATION;
+  case    '*': case    '/': case    '%': return PRECEDENCE_MULTIPLICATION;
 
   case DEBUGGER_TOKEN_EQUAL_TO:
   case DEBUGGER_TOKEN_NOT_EQUAL_TO:
@@ -381,6 +381,15 @@ evaluate_binaryop( struct binaryop_type *binary )
       return debugger_expression_evaluate( binary->op1 ) / op2;
     }
 
+  case '%': {
+      libspectrum_dword op2 = debugger_expression_evaluate( binary->op2 );
+      if( op2 == 0 ) {
+        ui_error( UI_ERROR_ERROR, "modulo by 0" );
+        return 0;
+      }
+      return debugger_expression_evaluate( binary->op1 ) % op2;
+    }
+
   case DEBUGGER_TOKEN_EQUAL_TO:
             return debugger_expression_evaluate( binary->op1 ) ==
                    debugger_expression_evaluate( binary->op2 );
@@ -530,6 +539,7 @@ deparse_binaryop( char *buffer, size_t length,
   case    '-': operation_string = "-";  break;
   case    '*': operation_string = "*";  break;
   case    '/': operation_string = "/";  break;
+  case    '%': operation_string = "%";  break;
   case DEBUGGER_TOKEN_EQUAL_TO: operation_string = "=="; break;
   case DEBUGGER_TOKEN_NOT_EQUAL_TO: operation_string = "!="; break;
   case    '<': operation_string = "<";  break;
