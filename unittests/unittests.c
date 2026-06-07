@@ -1185,6 +1185,41 @@ rectangle_test( void )
   return 0;
 }
 
+static int
+rectangle_realloc_test( void )
+{
+  int i;
+  int saved_frame_rate = settings_current.frame_rate;
+
+  /* --- Test 1: force active-list reallocation by adding > 8 distinct rects --- */
+  /* Initial active allocation is 8; the 9th unique (x,w) pair triggers doubling. */
+  rectangle_reset();
+  settings_current.frame_rate = 1;
+  for( i = 0; i < 9; i++ )
+    rectangle_add( 0, i * 10, 5 );
+  TEST_ASSERT( rectangle_get_active_count() == 9 );
+
+  /* --- Test 2: continue past 16 to trigger a second doubling (8->16->32) --- */
+  for( i = 9; i < 17; i++ )
+    rectangle_add( 0, i * 10, 5 );
+  TEST_ASSERT( rectangle_get_active_count() == 17 );
+
+  /* --- Test 3: flushing > 8 rects forces inactive-list reallocation --- */
+  /* All 17 active rects are stale (line 300 > line 0); they move to inactive. */
+  rectangle_end_line( 300 );
+  TEST_ASSERT( rectangle_get_active_count() == 0 );
+  TEST_ASSERT( rectangle_inactive_count == 17 );
+
+  /* --- Test 4: a second flush of > 8 non-overlapping rects grows inactive further --- */
+  for( i = 0; i < 9; i++ )
+    rectangle_add( 1, i * 10 + 5, 3 );
+  rectangle_end_line( 300 );
+  TEST_ASSERT( rectangle_inactive_count == 26 );
+
+  settings_current.frame_rate = saved_frame_rate;
+  return 0;
+}
+
 int
 unittests_run( void )
 {
@@ -1202,6 +1237,7 @@ unittests_run( void )
   r += paging_test();
   r += debugger_disassemble_unittest();
   r += rectangle_test();
+  r += rectangle_realloc_test();
 
   printf("Final return value: %d (should be 0)\n", r);
 
