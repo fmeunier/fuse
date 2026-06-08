@@ -456,6 +456,11 @@ tape_load_trap( void )
      next thing to occur is the pause at the end of the current block */
   libspectrum_tape_set_state( tape, LIBSPECTRUM_TAPE_STATE_PAUSE );
 
+  /* Standard ROM blocks start with a low pulse level and have an odd
+   * number of pulses (due to the pilot tone), so at the end the level
+   * is always high. */
+  tape_microphone = 1;
+
   return 0;
 }
 
