@@ -644,7 +644,7 @@ is_non_associative( int operation )
 
   /* Simple cases */
   case '+': case '*': return 0;
-  case '-': case '/': return 1;
+  case '-': case '/': case '%': return 1;
 
   /* Shift operators are non-associative */
   case DEBUGGER_TOKEN_LEFT_SHIFT: return 1;
