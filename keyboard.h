@@ -28,8 +28,11 @@
 
 #include "input.h"
 
+/* Number of keyboard half-rows on the ZX Spectrum */
+#define KEYBOARD_HALFROWS 8
+
 extern libspectrum_byte keyboard_default_value;
-extern libspectrum_byte keyboard_return_values[8];
+extern libspectrum_byte keyboard_return_values[KEYBOARD_HALFROWS];
 
 /* A numeric identifier for each Spectrum key. Chosen to map to ASCII in
    most cases */
