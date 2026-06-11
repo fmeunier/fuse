@@ -39,8 +39,12 @@ static void timer_frame_callback_sound( libspectrum_dword last_tstates );
  * Routines for estimating emulation speed
  */
 
-/* The actual time at the end of each of the last 10 emulated seconds */
-static double stored_times[10];
+/* Number of one-second speed samples kept for the rolling speed estimate */
+#define TIMER_SPEED_HISTORY_SAMPLES 10
+
+/* The actual time at the end of each of the last TIMER_SPEED_HISTORY_SAMPLES
+   emulated seconds */
+static double stored_times[TIMER_SPEED_HISTORY_SAMPLES];
 
 /* Which is the next entry in 'stored_times' that we will update */
 static size_t next_stored_time;
@@ -72,14 +76,14 @@ timer_estimate_speed( void )
   current_time = timer_get_time();
   if( current_time < 0 ) return 1;
 
-  if( samples < 10 ) {
+  if( samples < TIMER_SPEED_HISTORY_SAMPLES ) {
 
     /* If we don't have enough data, assume we're running at the desired
        speed :-) */
     current_speed = settings_current.emulation_speed;
 
   } else {
-    current_speed = 10 * 100 /
+    current_speed = TIMER_SPEED_HISTORY_SAMPLES * 100 /
                       ( current_time - stored_times[ next_stored_time ] );
   }
 
@@ -87,7 +91,7 @@ timer_estimate_speed( void )
 
   stored_times[ next_stored_time ] = current_time;
 
-  next_stored_time = ( next_stored_time + 1 ) % 10;
+  next_stored_time = ( next_stored_time + 1 ) % TIMER_SPEED_HISTORY_SAMPLES;
   frames_until_update = 
     ( machine_current->timings.processor_speed /
     machine_current->timings.tstates_per_frame ) - 1;
