@@ -63,6 +63,7 @@ int sound_stereo_ay = SOUND_STEREO_AY_NONE; /* local copy of settings_current.st
  * 50th I think this should be plenty.
  */
 #define AY_CHANGE_MAX		8000
+#define AY_CHANNELS		3
 
 int sound_framesiz;
 
@@ -70,13 +71,13 @@ static int sound_channels;
 
 static unsigned int ay_tone_levels[16];
 
-static unsigned int ay_tone_tick[3], ay_tone_high[3], ay_noise_tick;
+static unsigned int ay_tone_tick[AY_CHANNELS], ay_tone_high[AY_CHANNELS], ay_noise_tick;
 static unsigned int ay_tone_cycles, ay_env_cycles;
 static unsigned int ay_env_internal_tick, ay_env_tick;
-static unsigned int ay_tone_period[3], ay_noise_period, ay_env_period;
+static unsigned int ay_tone_period[AY_CHANNELS], ay_noise_period, ay_env_period;
 
 /* Local copy of the AY registers */
-static libspectrum_byte sound_ay_registers[16];
+static libspectrum_byte sound_ay_registers[AY_REGISTERS];
 
 struct ay_change_tag
 {
@@ -176,7 +177,7 @@ sound_ay_init( void )
   ay_noise_tick = ay_noise_period = 0;
   ay_env_internal_tick = ay_env_tick = ay_env_period = 0;
   ay_tone_cycles = ay_env_cycles = 0;
-  for( f = 0; f < 3; f++ )
+  for( f = 0; f < AY_CHANNELS; f++ )
     ay_tone_tick[f] = ay_tone_high[f] = 0, ay_tone_period[f] = 1;
 
   ay_change_count = 0;
@@ -444,7 +445,7 @@ sound_ay_overlay( void )
   static int rng = 1;
   static int noise_toggle = 0;
   static int env_first = 1, env_rev = 0, env_counter = 15;
-  int tone_level[3];
+  int tone_level[AY_CHANNELS];
   int mixer, envshape;
   int g, level;
   libspectrum_dword f;
@@ -503,14 +504,14 @@ sound_ay_overlay( void )
     }
 
     /* the tone level if no enveloping is being used */
-    for( g = 0; g < 3; g++ )
+    for( g = 0; g < AY_CHANNELS; g++ )
       tone_level[g] = ay_tone_levels[ sound_ay_registers[ 8 + g ] & 15 ];
 
     /* envelope */
     envshape = sound_ay_registers[13];
     level = ay_tone_levels[ env_counter ];
 
-    for( g = 0; g < 3; g++ )
+    for( g = 0; g < AY_CHANNELS; g++ )
       if( sound_ay_registers[ 8 + g ] & 16 )
         tone_level[g] = level;
 
@@ -666,9 +667,9 @@ sound_ay_reset( void )
   sound_ay_init();
 
   ay_change_count = 0;
-  for( f = 0; f < 16; f++ )
+  for( f = 0; f < AY_REGISTERS; f++ )
     sound_ay_write( f, 0, 0 );
-  for( f = 0; f < 3; f++ )
+  for( f = 0; f < AY_CHANNELS; f++ )
     ay_tone_high[f] = 0;
   ay_tone_cycles = ay_env_cycles = 0;
 }
