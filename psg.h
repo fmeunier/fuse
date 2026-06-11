@@ -26,6 +26,10 @@
 
 #include "libspectrum.h"
 
+/* Number of AY registers stored in a .psg file (registers 0-13; registers
+   14 and 15 are I/O ports and are not part of the PSG file format) */
+#define PSG_REGISTERS 14
+
 /* Are we currently recording a .psg file? */
 extern int psg_recording;
 

@@ -130,13 +130,13 @@ psg_frame( void )
 
   /* check if any AY sound events have happened this frame */
   ay_updated = 0;
-  for( i = 0; i < 14 && !ay_updated; i++ )
+  for( i = 0; i < PSG_REGISTERS && !ay_updated; i++ )
     ay_updated = psg_registers_written[i];
 
   if( ay_updated ) {
 
     write_frame_separator();
-    for( i = 0; i < 14; i++ ) {
+    for( i = 0; i < PSG_REGISTERS; i++ ) {
       if( psg_registers_written[i] ) {
 	putc( i, psg_file );
 	putc( psg_register_values[i], psg_file );
