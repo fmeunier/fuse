@@ -454,7 +454,7 @@ sound_ay_overlay( void )
   libspectrum_dword f;
   struct ay_change_tag *change_ptr = ay_change;
   int changes_left = ay_change_count;
-  int reg, r;
+  int reg, r, ch_vol;
   int chan1, chan2, chan3;
   int last_chan1 = 0, last_chan2 = 0, last_chan3 = 0;
   unsigned int tone_count, noise_count;
@@ -506,17 +506,15 @@ sound_ay_overlay( void )
       }
     }
 
-    /* the tone level if no enveloping is being used */
-    for( g = 0; g < AY_CHANNELS; g++ )
-      tone_level[g] = ay_tone_levels[ sound_ay_registers[ 8 + g ] & 15 ];
-
-    /* envelope */
+    /* Per-channel tone level: use the envelope output if bit 4 of the
+       channel's volume register is set, otherwise use the volume table. */
     envshape = sound_ay_registers[13];
     level = ay_tone_levels[ env_counter ];
 
-    for( g = 0; g < AY_CHANNELS; g++ )
-      if( sound_ay_registers[ 8 + g ] & 16 )
-        tone_level[g] = level;
+    for( g = 0; g < AY_CHANNELS; g++ ) {
+      ch_vol = sound_ay_registers[ 8 + g ];
+      tone_level[g] = ( ch_vol & 16 ) ? level : ay_tone_levels[ ch_vol & 15 ];
+    }
 
     /* envelope output counter gets incr'd every 16 AY cycles. */
     ay_env_cycles += AY_CLOCK_DIVISOR;
