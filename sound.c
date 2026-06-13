@@ -64,12 +64,15 @@ int sound_stereo_ay = SOUND_STEREO_AY_NONE; /* local copy of settings_current.st
  */
 #define AY_CHANGE_MAX		8000
 #define AY_CHANNELS		3
+/* the AY envelope generator cycles through 16 amplitude steps per
+   envelope period; the chip also has 16 distinct output volume levels */
+#define AY_ENV_STEPS		16
 
 int sound_framesiz;
 
 static int sound_channels;
 
-static unsigned int ay_tone_levels[16];
+static unsigned int ay_tone_levels[AY_ENV_STEPS];
 
 static unsigned int ay_tone_tick[AY_CHANNELS], ay_tone_high[AY_CHANNELS], ay_noise_tick;
 static unsigned int ay_tone_cycles, ay_env_cycles;
@@ -162,7 +165,7 @@ sound_ay_init( void )
    * Matthew Westcott, adjusted as I described in a followup to his post,
    * then scaled to 0..0xffff.
    */
-  static const int levels[16] = {
+  static const int levels[AY_ENV_STEPS] = {
     0x0000, 0x0385, 0x053D, 0x0770,
     0x0AD7, 0x0FD5, 0x15B0, 0x230C,
     0x2B4C, 0x43C1, 0x5A4B, 0x732F,
@@ -171,7 +174,7 @@ sound_ay_init( void )
   int f;
 
   /* scale the values down to fit */
-  for( f = 0; f < 16; f++ )
+  for( f = 0; f < AY_ENV_STEPS; f++ )
     ay_tone_levels[f] = ( levels[f] * AMPL_AY_TONE + 0x8000 ) / 0xffff;
 
   ay_noise_tick = ay_noise_period = 0;
@@ -444,7 +447,7 @@ sound_ay_overlay( void )
 {
   static int rng = 1;
   static int noise_toggle = 0;
-  static int env_first = 1, env_rev = 0, env_counter = 15;
+  static int env_first = 1, env_rev = 0, env_counter = AY_ENV_STEPS - 1;
   int tone_level[AY_CHANNELS];
   int mixer, envshape;
   int g, level;
@@ -498,7 +501,7 @@ sound_ay_overlay( void )
         ay_env_internal_tick = ay_env_tick = ay_env_cycles = 0;
         env_first = 1;
         env_rev = 0;
-        env_counter = ( sound_ay_registers[13] & AY_ENV_ATTACK ) ? 0 : 15;
+        env_counter = ( sound_ay_registers[13] & AY_ENV_ATTACK ) ? 0 : AY_ENV_STEPS - 1;
         break;
       }
     }
@@ -518,8 +521,8 @@ sound_ay_overlay( void )
     /* envelope output counter gets incr'd every 16 AY cycles. */
     ay_env_cycles += AY_CLOCK_DIVISOR;
     noise_count = 0;
-    while( ay_env_cycles >= 16 ) {
-      ay_env_cycles -= 16;
+    while( ay_env_cycles >= AY_CLOCK_DIVISOR ) {
+      ay_env_cycles -= AY_CLOCK_DIVISOR;
       noise_count++;
       ay_env_tick++;
       while( ay_env_tick >= ay_env_period ) {
@@ -534,13 +537,13 @@ sound_ay_overlay( void )
             env_counter += ( envshape & AY_ENV_ATTACK ) ? 1 : -1;
           if( env_counter < 0 )
             env_counter = 0;
-          if( env_counter > 15 )
-            env_counter = 15;
+          if( env_counter > AY_ENV_STEPS - 1 )
+            env_counter = AY_ENV_STEPS - 1;
         }
 
         ay_env_internal_tick++;
-        while( ay_env_internal_tick >= 16 ) {
-          ay_env_internal_tick -= 16;
+        while( ay_env_internal_tick >= AY_ENV_STEPS ) {
+          ay_env_internal_tick -= AY_ENV_STEPS;
 
           /* end of cycle */
           if( !( envshape & AY_ENV_CONT ) )
@@ -548,13 +551,13 @@ sound_ay_overlay( void )
           else {
             if( envshape & AY_ENV_HOLD ) {
               if( env_first && ( envshape & AY_ENV_ALT ) )
-                env_counter = ( env_counter ? 0 : 15 );
+                env_counter = ( env_counter ? 0 : AY_ENV_STEPS - 1 );
             } else {
               /* non-hold */
               if( envshape & AY_ENV_ALT )
                 env_rev = !env_rev;
               else
-                env_counter = ( envshape & AY_ENV_ATTACK ) ? 0 : 15;
+                env_counter = ( envshape & AY_ENV_ATTACK ) ? 0 : AY_ENV_STEPS - 1;
             }
           }
 
