@@ -70,7 +70,7 @@ psg_start_recording( const char *filename )
     ui_error( UI_ERROR_ERROR, "unable to write PSG file header" );
     return 1;
   }
-  for( i = 0; i < 12; i++ ) putc( 0, psg_file );
+  for( i = 0; i < PSG_HEADER_PADDING; i++ ) putc( 0, psg_file );
 
   /* begin with no registers written */
   for( i = 0; i < AY_REGISTERS; i++ ) psg_registers_written[i] = 0;
@@ -101,21 +101,21 @@ psg_stop_recording( void )
 static int
 write_frame_separator( void )
 {
-  while( psg_empty_frame_count >= 4 ) {
+  while( psg_empty_frame_count >= PSG_FRAMES_PER_BLOCK ) {
 
     int count;
 
-    count = psg_empty_frame_count / 4;
+    count = psg_empty_frame_count / PSG_FRAMES_PER_BLOCK;
     if( count > 0xff ) count = 0xff;
 
-    putc( 0xfe, psg_file );
+    putc( PSG_MULTI_FRAME_MARKER, psg_file );
     putc( count, psg_file );
 
-    psg_empty_frame_count -= 4 * count;
+    psg_empty_frame_count -= PSG_FRAMES_PER_BLOCK * count;
   }
 
   for( ; psg_empty_frame_count; psg_empty_frame_count-- )
-    putc( 0xff, psg_file );
+    putc( PSG_SINGLE_FRAME_MARKER, psg_file );
 
   return 0;
 }
