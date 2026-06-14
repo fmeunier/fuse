@@ -97,5 +97,6 @@ void debugger_system_variable_register(
 /* Unit tests */
 int debugger_disassemble_unittest( void );
 int debugger_disassemble_decimal_unittest( void );
+int debugger_expression_unittest( void );
 
 #endif				/* #ifndef FUSE_DEBUGGER_H */

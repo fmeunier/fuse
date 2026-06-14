@@ -1236,6 +1236,7 @@ unittests_run( void )
   r += mempool_test();
   r += paging_test();
   r += debugger_disassemble_unittest();
+  r += debugger_expression_unittest();
   r += rectangle_test();
   r += rectangle_realloc_test();
 
