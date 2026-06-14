@@ -1180,6 +1180,30 @@ libspectrum_byte test223_data[] = { 0xee, 0x07 };  /* XOR 07 */
 libspectrum_byte test224_data[] = { 0xf6, 0x07 };  /* OR 07 */
 libspectrum_byte test225_data[] = { 0xfe, 0x07 };  /* CP 07 */
 
+/* DD CB prefix: remaining documented rotate/shift ops on (IX+d) */
+libspectrum_byte test226_data[] = { 0xdd, 0xcb, 0x55, 0x0e };  /* RRC (IX+55) */
+libspectrum_byte test227_data[] = { 0xdd, 0xcb, 0x55, 0x16 };  /* RL (IX+55) */
+libspectrum_byte test228_data[] = { 0xdd, 0xcb, 0x55, 0x1e };  /* RR (IX+55) */
+libspectrum_byte test229_data[] = { 0xdd, 0xcb, 0x55, 0x26 };  /* SLA (IX+55) */
+libspectrum_byte test230_data[] = { 0xdd, 0xcb, 0x55, 0x2e };  /* SRA (IX+55) */
+libspectrum_byte test231_data[] = { 0xdd, 0xcb, 0x55, 0x36 };  /* SLL (IX+55) */
+libspectrum_byte test232_data[] = { 0xdd, 0xcb, 0x55, 0x3e };  /* SRL (IX+55) */
+
+/* FD CB prefix: remaining documented rotate/shift ops on (IY+d) */
+libspectrum_byte test233_data[] = { 0xfd, 0xcb, 0x55, 0x0e };  /* RRC (IY+55) */
+libspectrum_byte test234_data[] = { 0xfd, 0xcb, 0x55, 0x16 };  /* RL (IY+55) */
+libspectrum_byte test235_data[] = { 0xfd, 0xcb, 0x55, 0x1e };  /* RR (IY+55) */
+libspectrum_byte test236_data[] = { 0xfd, 0xcb, 0x55, 0x26 };  /* SLA (IY+55) */
+libspectrum_byte test237_data[] = { 0xfd, 0xcb, 0x55, 0x2e };  /* SRA (IY+55) */
+libspectrum_byte test238_data[] = { 0xfd, 0xcb, 0x55, 0x36 };  /* SLL (IY+55) */
+libspectrum_byte test239_data[] = { 0xfd, 0xcb, 0x55, 0x3e };  /* SRL (IY+55) */
+
+/* DD CB undocumented: LD reg,rotate (IX+d) — exercises the b<0x40, b&7!=6 branch */
+libspectrum_byte test240_data[] = { 0xdd, 0xcb, 0x55, 0x00 };  /* LD B,RLC (IX+55) */
+
+/* FD CB undocumented: LD reg,rotate (IY+d) */
+libspectrum_byte test241_data[] = { 0xfd, 0xcb, 0x55, 0x00 };  /* LD B,RLC (IY+55) */
+
 static int
 run_test( libspectrum_byte *data, size_t data_length, const char *expected )
 {
@@ -1529,6 +1553,28 @@ debugger_disassemble_unittest( void )
   r += run_test( test223_data, sizeof( test223_data ), "XOR 07" );
   r += run_test( test224_data, sizeof( test224_data ), "OR 07" );
   r += run_test( test225_data, sizeof( test225_data ), "CP 07" );
+
+  /* DD CB prefix: remaining documented rotate/shift ops on (IX+d) */
+  r += run_test( test226_data, sizeof( test226_data ), "RRC (IX+55)" );
+  r += run_test( test227_data, sizeof( test227_data ), "RL (IX+55)" );
+  r += run_test( test228_data, sizeof( test228_data ), "RR (IX+55)" );
+  r += run_test( test229_data, sizeof( test229_data ), "SLA (IX+55)" );
+  r += run_test( test230_data, sizeof( test230_data ), "SRA (IX+55)" );
+  r += run_test( test231_data, sizeof( test231_data ), "SLL (IX+55)" );
+  r += run_test( test232_data, sizeof( test232_data ), "SRL (IX+55)" );
+
+  /* FD CB prefix: remaining documented rotate/shift ops on (IY+d) */
+  r += run_test( test233_data, sizeof( test233_data ), "RRC (IY+55)" );
+  r += run_test( test234_data, sizeof( test234_data ), "RL (IY+55)" );
+  r += run_test( test235_data, sizeof( test235_data ), "RR (IY+55)" );
+  r += run_test( test236_data, sizeof( test236_data ), "SLA (IY+55)" );
+  r += run_test( test237_data, sizeof( test237_data ), "SRA (IY+55)" );
+  r += run_test( test238_data, sizeof( test238_data ), "SLL (IY+55)" );
+  r += run_test( test239_data, sizeof( test239_data ), "SRL (IY+55)" );
+
+  /* DD CB / FD CB undocumented: LD reg,rotate (IX/IY+d) */
+  r += run_test( test240_data, sizeof( test240_data ), "LD B,RLC (IX+55)" );
+  r += run_test( test241_data, sizeof( test241_data ), "LD B,RLC (IY+55)" );
 
   return r;
 }
