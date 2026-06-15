@@ -17,6 +17,17 @@
     <category>Emulator</category>
   </categories>
   <releases>
+    <release date="2026-06-15" version="1.9.0">
+      <description>
+        <ul>
+          <li>Added NTSC TV output and replaced the PAL TV filters</li>
+          <li>GTK3 improved Wayland support</li>
+          <li>SDL2 switched to layout-aware keyboard mapping</li>
+          <li>Debugger: added modulo (%) and bit-shift (&lt;&lt;, &gt;&gt;) operators to the expression evaluator</li>
+          <li>Removed support for libjsw</li>
+        </ul>
+      </description>
+    </release>
     <release date="2026-05-11" version="1.8.0">
       <description>
         <ul>
