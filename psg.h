@@ -1,5 +1,6 @@
 /* psg.h: recording AY chip output to .psg files
    Copyright (c) 2003-2016 Matthew Westcott, Philip Kendall
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

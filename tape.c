@@ -2,6 +2,7 @@
    Copyright (c) 1999-2017 Philip Kendall, Darren Salt, Witold Filipczyk
    Copyright (c) 2015-2018 UB880D
    Copyright (c) 2016-2021 Fredrick Meunier
+   Copyright (c) 2026 Alberto Garcia
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

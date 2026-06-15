@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2018 The Fuse development team -->
+<!-- Copyright 2018-2026 The Fuse development team -->
 <component type="desktop">
   <id>net.sourceforge.fuse_emulator.Fuse</id>
   <provides>

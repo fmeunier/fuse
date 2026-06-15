@@ -2,6 +2,7 @@
    Copyright (c) 2000-2021 Philip Kendall, Darren Salt, Gergely Sz�sz
    Copyright (c) 2015 Stuart Brady
    Copyright (c) 2015-2024 Sergio Baldov�
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

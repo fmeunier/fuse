@@ -1,5 +1,5 @@
 /* scaler_internals.h: functions internal to the scaler code
-   Copyright (c) 2003 Fredrick Meunier, Philip Kendall
+   Copyright (c) 2003,2026 Fredrick Meunier, Philip Kendall
 
    Originally taken from ScummVM - Scumm Interpreter
    Copyright (C) 2001  Ludvig Strigeus

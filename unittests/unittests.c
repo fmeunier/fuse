@@ -1,6 +1,7 @@
 /* unittests.c: unit testing framework for Fuse
    Copyright (c) 2008-2018 Philip Kendall
    Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

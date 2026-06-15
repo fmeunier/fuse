@@ -1,5 +1,6 @@
 /* expression.c: A numeric expression
    Copyright (c) 2003-2017 Philip Kendall
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

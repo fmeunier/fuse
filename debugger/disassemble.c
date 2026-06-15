@@ -1,6 +1,7 @@
 /* disassemble.c: Fuse's disassembler
    Copyright (c) 2002-2018 Darren Salt, Philip Kendall
    Copyright (c) 2016 BogDan Vatra
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

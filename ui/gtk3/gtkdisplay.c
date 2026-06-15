@@ -1,5 +1,7 @@
 /* gtkdisplay.c: GTK routines for dealing with the Speccy screen
    Copyright (c) 2000-2018 Philip Kendall
+   Copyright (c) 2026 Alberto Garcia
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

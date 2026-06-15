@@ -1,5 +1,6 @@
 /* commandl.l: Debugger command lexical scanner
    Copyright (c) 2002-2017 Philip Kendall, Sergio Baldoví
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

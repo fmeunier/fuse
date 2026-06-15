@@ -1,5 +1,6 @@
 /* xjoystick.c: Joystick emulation
    Copyright (c) 2003 Darren Salt
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

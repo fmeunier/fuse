@@ -1,6 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 2001 Philip Kendall
 ## Copyright (c) 2015 Sergio Baldoví
+## Copyright (c) 2026 Fredrick Meunier
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
