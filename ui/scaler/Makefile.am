@@ -49,8 +49,7 @@ EXTRA_DIST += \
               ui/scaler/scalers.c \
               ui/scaler/scaler_hq2x.c \
               ui/scaler/scaler_hq3x.c \
-              ui/scaler/scaler_hq4x.c \
-              ui/scaler/snes_ntsc.txt
+              ui/scaler/scaler_hq4x.c
 
 CLEANFILES += \
               ui/scaler/scalers16.o \
