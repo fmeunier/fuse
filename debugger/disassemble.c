@@ -1204,6 +1204,25 @@ libspectrum_byte test240_data[] = { 0xdd, 0xcb, 0x55, 0x00 };  /* LD B,RLC (IX+5
 /* FD CB undocumented: LD reg,rotate (IY+d) */
 libspectrum_byte test241_data[] = { 0xfd, 0xcb, 0x55, 0x00 };  /* LD B,RLC (IY+55) */
 
+/* DD CB undocumented: remaining destination registers with RLC (IX+d) */
+libspectrum_byte test242_data[] = { 0xdd, 0xcb, 0x55, 0x01 };  /* LD C,RLC (IX+55) */
+libspectrum_byte test243_data[] = { 0xdd, 0xcb, 0x55, 0x02 };  /* LD D,RLC (IX+55) */
+libspectrum_byte test244_data[] = { 0xdd, 0xcb, 0x55, 0x03 };  /* LD E,RLC (IX+55) */
+libspectrum_byte test245_data[] = { 0xdd, 0xcb, 0x55, 0x04 };  /* LD H,RLC (IX+55) */
+libspectrum_byte test246_data[] = { 0xdd, 0xcb, 0x55, 0x05 };  /* LD L,RLC (IX+55) */
+libspectrum_byte test247_data[] = { 0xdd, 0xcb, 0x55, 0x07 };  /* LD A,RLC (IX+55) */
+
+/* FD CB undocumented: remaining destination registers with RLC (IY+d) */
+libspectrum_byte test248_data[] = { 0xfd, 0xcb, 0x55, 0x01 };  /* LD C,RLC (IY+55) */
+libspectrum_byte test249_data[] = { 0xfd, 0xcb, 0x55, 0x02 };  /* LD D,RLC (IY+55) */
+libspectrum_byte test250_data[] = { 0xfd, 0xcb, 0x55, 0x03 };  /* LD E,RLC (IY+55) */
+libspectrum_byte test251_data[] = { 0xfd, 0xcb, 0x55, 0x04 };  /* LD H,RLC (IY+55) */
+libspectrum_byte test252_data[] = { 0xfd, 0xcb, 0x55, 0x05 };  /* LD L,RLC (IY+55) */
+libspectrum_byte test253_data[] = { 0xfd, 0xcb, 0x55, 0x07 };  /* LD A,RLC (IY+55) */
+
+/* DD CB undocumented: non-RLC rotation op to verify rotate_op() selection */
+libspectrum_byte test254_data[] = { 0xdd, 0xcb, 0x55, 0x38 };  /* LD B,SRL (IX+55) */
+
 static int
 run_test( libspectrum_byte *data, size_t data_length, const char *expected )
 {
@@ -1575,6 +1594,25 @@ debugger_disassemble_unittest( void )
   /* DD CB / FD CB undocumented: LD reg,rotate (IX/IY+d) */
   r += run_test( test240_data, sizeof( test240_data ), "LD B,RLC (IX+55)" );
   r += run_test( test241_data, sizeof( test241_data ), "LD B,RLC (IY+55)" );
+
+  /* DD CB: remaining destination registers — C, D, E, H, L, A */
+  r += run_test( test242_data, sizeof( test242_data ), "LD C,RLC (IX+55)" );
+  r += run_test( test243_data, sizeof( test243_data ), "LD D,RLC (IX+55)" );
+  r += run_test( test244_data, sizeof( test244_data ), "LD E,RLC (IX+55)" );
+  r += run_test( test245_data, sizeof( test245_data ), "LD H,RLC (IX+55)" );
+  r += run_test( test246_data, sizeof( test246_data ), "LD L,RLC (IX+55)" );
+  r += run_test( test247_data, sizeof( test247_data ), "LD A,RLC (IX+55)" );
+
+  /* FD CB: remaining destination registers — C, D, E, H, L, A */
+  r += run_test( test248_data, sizeof( test248_data ), "LD C,RLC (IY+55)" );
+  r += run_test( test249_data, sizeof( test249_data ), "LD D,RLC (IY+55)" );
+  r += run_test( test250_data, sizeof( test250_data ), "LD E,RLC (IY+55)" );
+  r += run_test( test251_data, sizeof( test251_data ), "LD H,RLC (IY+55)" );
+  r += run_test( test252_data, sizeof( test252_data ), "LD L,RLC (IY+55)" );
+  r += run_test( test253_data, sizeof( test253_data ), "LD A,RLC (IY+55)" );
+
+  /* DD CB: verify rotation-op selection (SRL) independent of destination */
+  r += run_test( test254_data, sizeof( test254_data ), "LD B,SRL (IX+55)" );
 
   return r;
 }
