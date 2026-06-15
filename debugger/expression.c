@@ -395,13 +395,17 @@ evaluate_binaryop( struct binaryop_type *binary )
       return debugger_expression_evaluate( binary->op1 ) % op2;
     }
 
-  case DEBUGGER_TOKEN_LEFT_SHIFT:
-           return debugger_expression_evaluate( binary->op1 ) <<
-                  debugger_expression_evaluate( binary->op2 );
+  case DEBUGGER_TOKEN_LEFT_SHIFT: {
+      libspectrum_dword count = debugger_expression_evaluate( binary->op2 );
+      if( count >= 32 ) return 0;
+      return debugger_expression_evaluate( binary->op1 ) << count;
+    }
 
-  case DEBUGGER_TOKEN_RIGHT_SHIFT:
-           return debugger_expression_evaluate( binary->op1 ) >>
-                  debugger_expression_evaluate( binary->op2 );
+  case DEBUGGER_TOKEN_RIGHT_SHIFT: {
+      libspectrum_dword count = debugger_expression_evaluate( binary->op2 );
+      if( count >= 32 ) return 0;
+      return debugger_expression_evaluate( binary->op1 ) >> count;
+    }
 
   case DEBUGGER_TOKEN_EQUAL_TO:
             return debugger_expression_evaluate( binary->op1 ) ==
@@ -794,8 +798,10 @@ debugger_expression_unittest( void )
   /* Bit-shift operators */
   r += eval_binary_test( DEBUGGER_TOKEN_LEFT_SHIFT,   1, 3,   8, "lshift" );
   r += eval_binary_test( DEBUGGER_TOKEN_LEFT_SHIFT,   1, 7, 128, "lshift-7" );
+  r += eval_binary_test( DEBUGGER_TOKEN_LEFT_SHIFT,   1, 32,  0, "lshift-large" );
   r += eval_binary_test( DEBUGGER_TOKEN_RIGHT_SHIFT, 16, 2,   4, "rshift" );
   r += eval_binary_test( DEBUGGER_TOKEN_RIGHT_SHIFT,  8, 3,   1, "rshift-3" );
+  r += eval_binary_test( DEBUGGER_TOKEN_RIGHT_SHIFT,  1, 32,  0, "rshift-large" );
 
   /* Bitwise operators */
   r += eval_binary_test( '&', 0xF0, 0xFF, 0xF0, "bitwise-and" );
