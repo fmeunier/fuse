@@ -1,5 +1,6 @@
 /* snapshot.c: snapshot handling routines
    Copyright (c) 1999-2012 Philip Kendall
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@
 #include "libspectrum.h"
 
 #include "fuse.h"
+#include "keyboard.h"
 #include "machine.h"
 #include "memory_pages.h"
 #include "module.h"
@@ -101,6 +103,8 @@ snapshot_copy_from( libspectrum_snap *snap )
   } else {
     machine_reset( 0 );
   }
+
+  keyboard_release_all();
 
   module_snapshot_from( snap );
 

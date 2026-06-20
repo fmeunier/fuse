@@ -1,5 +1,5 @@
 /* sdljoystick.c: routines for dealing with the SDL joystick
-   Copyright (c) 2003-2021 Darren Salt, Fredrick Meunier, Philip Kendall
+   Copyright (c) 2003-2026 Darren Salt, Fredrick Meunier, Philip Kendall
    Copyright (c) 2015 UB880D
 
    This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,11 @@
 */
 
 #include "config.h"
+
+#ifndef USE_JOYSTICK
+#include "../uijoystick.c"
+
+#else
 
 #include <SDL.h>
 #include <libspectrum.h>
@@ -156,12 +161,12 @@ sdljoystick_buttonrelease( SDL_JoyButtonEvent *buttonevent )
 void
 sdljoystick_axismove( SDL_JoyAxisEvent *axisevent )
 {
-  int which, xaxis, yaxis;
+  int which, xaxis = 0, yaxis = 0;
 
   if( ( settings_current.joy1_number - 1 ) == axisevent->which ) {
     which = 0;
     if( axisevent->axis == settings_current.joy1_xaxis ) {
-      xaxis = 0;
+      xaxis = 1;
     } else if( axisevent->axis == settings_current.joy1_yaxis ) {
       yaxis = 1;
     } else {
@@ -170,7 +175,7 @@ sdljoystick_axismove( SDL_JoyAxisEvent *axisevent )
   } else if( ( settings_current.joy2_number - 1 ) == axisevent->which ) {
     which = 1;
     if( axisevent->axis == settings_current.joy2_xaxis ) {
-      xaxis = 0;
+      xaxis = 1;
     } else if( axisevent->axis == settings_current.joy2_yaxis ) {
       yaxis = 1;
     } else {
@@ -180,12 +185,12 @@ sdljoystick_axismove( SDL_JoyAxisEvent *axisevent )
     return;
   }
 
-  if( axisevent->axis == 0 ) {
+  if( xaxis ) {
     do_axis( which, axisevent->value,
-	     INPUT_JOYSTICK_LEFT, INPUT_JOYSTICK_RIGHT );
-  } else if( axisevent->axis == 1 ) {
+             INPUT_JOYSTICK_LEFT, INPUT_JOYSTICK_RIGHT );
+  } else if( yaxis ) {
     do_axis( which, axisevent->value,
-	     INPUT_JOYSTICK_UP,   INPUT_JOYSTICK_DOWN  );
+             INPUT_JOYSTICK_UP,   INPUT_JOYSTICK_DOWN );
   }
 }
 
@@ -266,3 +271,5 @@ ui_joystick_end( void )
   SDL_Quit();
 #endif
 }
+
+#endif

@@ -1,5 +1,5 @@
 /* sdldisplay.c: Routines for dealing with the SDL display
-   Copyright (c) 2000-2021 Philip Kendall, Matan Ziv-Av, Fredrick Meunier
+   Copyright (c) 2000-2026 Philip Kendall, Matan Ziv-Av, Fredrick Meunier
    Copyright (c) 2015 Adrien Destugues
 
    This program is free software; you can redistribute it and/or modify
@@ -118,7 +118,6 @@ init_scalers( void )
   scaler_register( SCALER_ADVMAME2X );
   scaler_register( SCALER_ADVMAME3X );
   scaler_register( SCALER_DOTMATRIX );
-  scaler_register( SCALER_PALTV );
   scaler_register( SCALER_HQ2X );
   if( machine_current->timex ) {
     scaler_register( SCALER_HALF ); 
@@ -138,6 +137,9 @@ init_scalers( void )
     scaler_register( SCALER_PALTV4X );
     scaler_register( SCALER_HQ3X );
     scaler_register( SCALER_HQ4X );
+    scaler_register( SCALER_NTSC2X );
+    scaler_register( SCALER_NTSC3X );
+    scaler_register( SCALER_NTSC4X );
   }
   
   if( scaler_is_supported( current_scaler ) ) {
@@ -771,7 +773,8 @@ uidisplay_frame_end( void )
   }
 
   /* Force a full redraw if requested */
-  if ( sdldisplay_force_full_refresh ) {
+  if( sdldisplay_force_full_refresh ||
+      ( scaler_flags & SCALER_FLAGS_FULL_REFRESH ) ) {
     num_rects = 1;
 
     updated_rects[0].x = 0;

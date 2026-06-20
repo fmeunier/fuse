@@ -1,5 +1,5 @@
 /* display.c: Routines for printing the Spectrum screen
-   Copyright (c) 1999-2016 Philip Kendall, Thomas Harte, Witold Filipczyk
+   Copyright (c) 1999-2026 Philip Kendall, Thomas Harte, Witold Filipczyk
                            and Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
@@ -559,6 +559,12 @@ copy_critical_region_line( int y, int x, int end )
 {
   libspectrum_dword bit_mask, dirty;
 
+  /* Nothing to do for an empty range; also guards against undefined
+     behaviour in the shift expressions below when end <= x (which can
+     occur legitimately when the beam is at column 0 at the start of a
+     display line). */
+  if( end <= x ) return;
+
   if( x < DISPLAY_WIDTH_COLS ) {
 
     /* Build a mask for the bits we're interested in */
@@ -966,10 +972,10 @@ display_frame( void )
   update_ui_screen();
 
   display_frame_count++;
-  if(display_frame_count==16) {
+  if(display_frame_count==DISPLAY_FLASH_HALF_PERIOD) {
     display_flash_reversed=1;
     display_dirty_flashing();
-  } else if(display_frame_count==32) {
+  } else if(display_frame_count==DISPLAY_FLASH_PERIOD) {
     display_flash_reversed=0;
     display_dirty_flashing();
     display_frame_count=0;
@@ -1108,9 +1114,10 @@ display_getpixel( int x, int y )
 void
 display_reset_frame_count( void )
 {
-  /* We set the frame count to 31 so the next call to display_frame()
-     pushes us back to zero and resets display_flash_reversed */
-  display_frame_count = 31;
+  /* We set the frame count to DISPLAY_FLASH_PERIOD - 1 so the next call
+     to display_frame() pushes us back to zero and resets
+     display_flash_reversed */
+  display_frame_count = DISPLAY_FLASH_PERIOD - 1;
 }
 
 void

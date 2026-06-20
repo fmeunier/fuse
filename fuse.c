@@ -1,5 +1,5 @@
 /* fuse.c: The Free Unix Spectrum Emulator
-   Copyright (c) 1999-2018 Philip Kendall and others
+   Copyright (c) 1999-2026 Philip Kendall and others
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -41,9 +41,9 @@
    bootstrapping by redefining main. As we now allow SDL joystick code to be
    used in the GTK and Xlib UIs we need to also do the magic when that code is
    in use, feel free to look away for the next line */
-#if defined UI_SDL || defined UI_SDL2 || (defined USE_JOYSTICK && !defined HAVE_JSW_H && (defined UI_X || defined UI_GTK) )
+#if defined UI_SDL || defined UI_SDL2 || (defined USE_JOYSTICK && (defined UI_X || defined UI_GTK) )
 #include <SDL.h>		/* Needed on MacOS X and Windows */
-#endif /* #if defined UI_SDL || defined UI_SDL2 || (defined USE_JOYSTICK && !defined HAVE_JSW_H && (defined UI_X || defined UI_GTK) ) */
+#endif /* #if defined UI_SDL || defined UI_SDL2 || (defined USE_JOYSTICK && (defined UI_X || defined UI_GTK) ) */
 
 #ifdef GEKKO
 /* #include <fat.h>
@@ -496,7 +496,7 @@ static void fuse_show_copyright(void)
    "'AUTHORS' for more details.\n"
    "\n"
    "For help, please mail <fuse-emulator-devel@lists.sf.net> or use\n"
-   "the forums at <http://sourceforge.net/p/fuse-emulator/discussion/>.\n"
+   "the forums at <https://sourceforge.net/p/fuse-emulator/discussion/>.\n"
    "\n"
    "This program is distributed in the hope that it will be useful,\n"
    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -552,7 +552,7 @@ static void fuse_show_help( void )
    "--version              Print version number and exit.\n"
    "\n"
    "For help, please mail <fuse-emulator-devel@lists.sf.net> or use\n"
-   "the forums at <http://sourceforge.net/p/fuse-emulator/discussion/>.\n"
+   "the forums at <https://sourceforge.net/p/fuse-emulator/discussion/>.\n"
    "For complete documentation, see the manual page of Fuse.\n\n" );
 }
 

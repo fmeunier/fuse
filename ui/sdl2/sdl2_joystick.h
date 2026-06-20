@@ -14,7 +14,7 @@
 
 #include <SDL.h>
 
-#if defined USE_JOYSTICK && !defined HAVE_JSW_H
+#ifdef USE_JOYSTICK
 void sdl2joystick_buttonpress( SDL_JoyButtonEvent *buttonevent );
 void sdl2joystick_buttonrelease( SDL_JoyButtonEvent *buttonevent );
 void sdl2joystick_axismove( SDL_JoyAxisEvent *axisevent );

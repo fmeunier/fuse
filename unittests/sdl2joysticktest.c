@@ -141,6 +141,51 @@ axis_just_above_threshold_presses_positive( void )
 }
 
 static int
+button_event_maps_first_fire_button( void )
+{
+  input_event_t event;
+
+  if( !sdl2joystick_button_event( 0, 0, INPUT_EVENT_JOYSTICK_PRESS, &event ) )
+    return 1;
+
+  if( event.type != INPUT_EVENT_JOYSTICK_PRESS ) return 1;
+  if( event.types.joystick.which != 0 ) return 1;
+  if( event.types.joystick.button != INPUT_JOYSTICK_FIRE_1 ) return 1;
+
+  return 0;
+}
+
+static int
+button_event_maps_last_fire_button( void )
+{
+  input_event_t event;
+
+  if( !sdl2joystick_button_event( 0, NUM_JOY_BUTTONS - 1,
+                                  INPUT_EVENT_JOYSTICK_PRESS, &event ) )
+    return 1;
+
+  if( event.type != INPUT_EVENT_JOYSTICK_PRESS ) return 1;
+  if( event.types.joystick.button != INPUT_JOYSTICK_FIRE_15 ) return 1;
+
+  return 0;
+}
+
+static int
+axis_just_below_negative_threshold_presses_negative( void )
+{
+  input_event_t event1, event2;
+
+  /* value == -16385: just below threshold, should press negative direction */
+  sdl2joystick_axis_events( 0, -16385, INPUT_JOYSTICK_UP,
+                            INPUT_JOYSTICK_DOWN, &event1, &event2 );
+
+  if( event1.type != INPUT_EVENT_JOYSTICK_PRESS ) return 1;
+  if( event2.type != INPUT_EVENT_JOYSTICK_RELEASE ) return 1;
+
+  return 0;
+}
+
+static int
 hat_event_sets_press_and_release( void )
 {
   input_event_t event;
@@ -166,6 +211,10 @@ struct test_t {
 static const struct test_t tests[] = {
   { "lookup_maps_instance_ids", lookup_maps_instance_ids },
   { "button_event_maps_fire_button", button_event_maps_fire_button },
+  { "button_event_maps_first_fire_button",
+    button_event_maps_first_fire_button },
+  { "button_event_maps_last_fire_button",
+    button_event_maps_last_fire_button },
   { "button_event_rejects_out_of_range_button",
     button_event_rejects_out_of_range_button },
   { "axis_positive_presses_positive_direction",
@@ -180,6 +229,8 @@ static const struct test_t tests[] = {
     axis_at_negative_threshold_is_neutral },
   { "axis_just_above_threshold_presses_positive",
     axis_just_above_threshold_presses_positive },
+  { "axis_just_below_negative_threshold_presses_negative",
+    axis_just_below_negative_threshold_presses_negative },
   { "hat_event_sets_press_and_release", hat_event_sets_press_and_release },
   { NULL, NULL }
 };

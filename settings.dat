@@ -1,6 +1,6 @@
 # settings.dat: configuration options for Fuse
 # Copyright (c) 2002-2018 Philip Kendall, Alistair Cree
-# Copyright (c) 2003-2005 Fredrick Meunier
+# Copyright (c) 2003-2026 Fredrick Meunier
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ multiface3, boolean, 0
 multiface1_stealth, boolean, 0
 snapsasz80, null, 0
 opus, boolean, 0
-pal_tv2x, boolean, 0
+pal_tv2x, null, 0
 movie_compr, string, NULL
 movie_start, string, NULL
 movie_stop_after_rzx, boolean, 1
@@ -216,6 +216,17 @@ sdl_fullscreen_mode, string, NULL
 doublescan_mode, numeric, 1,, 'D', doublescan-mode
 
 start_scaler_mode, string, "normal",, 'g', graphics-filter
+
+composite_filter_hue, numeric, 0
+composite_filter_saturation, numeric, -27
+composite_filter_contrast, numeric, 21
+composite_filter_brightness, numeric, 10
+composite_filter_sharpness, numeric, -10
+composite_filter_gamma, numeric, 0
+composite_filter_resolution, numeric, -16
+composite_filter_artifacts, numeric, -59
+composite_filter_fringing, numeric, 14
+composite_filter_bleed, numeric, -71
 
 speccyboot_tap, string, "tap0",
 

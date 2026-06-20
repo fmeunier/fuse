@@ -1,3 +1,62 @@
+2026-06-15  Fredrick Meunier  <fredm@spamcop.net>
+
+        * Fuse 1.9.0 released.
+
+        * New features:
+          * Add NTSC TV and replace the PAL TV filters (derived from
+            snes_ntsc by Shay Green) (patch #374) (matja and Fredrick
+            Meunier).
+
+        * Emulation core improvements:
+          * Tape traps: set the pulse level correctly after loading a ROM
+            block (fixes bugs #398, #401, #402 and #411) (Alberto Garcia).
+          * TZX handling: don't ignore the embedded pause at the end of a
+            block (fixes bugs #377 and #480) (Alberto Garcia).
+          * Release pressed keys after snapshot restore (fixes bug #77)
+            (thanks, jdaw1) (Fredrick Meunier).
+
+        * UI improvements:
+          * GTK3: stop forcing X11 over Wayland (Alberto Garcia).
+          * SDL2: use layout-aware key mapping in keyboard handling
+            (Fredrick Meunier).
+          * SDL2: correct the Options-level fullscreen toggle (thanks,
+            Blerkotron) (Fredrick Meunier).
+          * SDL2: fix tape icon placement on Timex machines (Fredrick
+            Meunier).
+          * Win32: improve graphics update performance by writing directly
+            into window DIB (Fredrick Meunier).
+
+        * Debugger improvements:
+          * Add modulo (%) and bit-shift (<<, >>) operators to the expression
+            evaluator (Fredrick Meunier).
+
+        * Deprecated features removed:
+          * Remove support for libjsw (fixes bug #21) (thanks, Sergio
+            Baldoví) (Fredrick Meunier).
+
+        * Miscellaneous improvements:
+          * Rework SDL detection in configure.ac (Alberto Garcia).
+          * Update SourceForge HTTP URLs to HTTPS (Fredrick Meunier).
+          * desktop file: include EXEEXT in the Exec field (Alberto Garcia).
+          * desktop file: set the GTK category only in GTK builds (Alberto
+            Garcia).
+          * Fix an error in the manpage (Alberto Garcia).
+          * Advance the ALSA buffer pointer after partial writes to improve
+            sound output handling (Fredrick Meunier).
+
+        * Testing improvements:
+          * Add unit tests for the expression evaluator (Fredrick Meunier).
+          * Expand disassembler test coverage for unprefixed, CB, ED, DD/FD
+            and undocumented DDCB/FDCB opcodes (Fredrick Meunier).
+          * Add unit tests for keyboard_read and
+            keyboard_simulate_keypress (Fredrick Meunier).
+          * Add unit test coverage for SDL2 scaler selection and joystick
+            boundary cases (Fredrick Meunier).
+          * Add unit test coverage for rectangle reallocation and
+            MEMPOOL_UNTRACKED handling (Fredrick Meunier).
+
+        * Various other minor bugfixes.
+
 2026-05-11  Fredrick Meunier  <fredm@spamcop.net>
 
         * Fuse 1.8.0 released.

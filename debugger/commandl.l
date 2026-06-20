@@ -1,5 +1,6 @@
 /* commandl.l: Debugger command lexical scanner
    Copyright (c) 2002-2017 Philip Kendall, Sergio Baldoví
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -46,7 +47,7 @@
 
 ID	[a-z]([a-z0-9']|\\[ ])*
 
-%option caseless
+%option caseless noyywrap
 
 %s COMMANDSTATE1
 %x COMMANDSTATE2
@@ -94,6 +95,9 @@ w|wr|wri|writ|write { return WRITE; }
 "=="		{ yylval.token = DEBUGGER_TOKEN_EQUAL_TO; return EQUALITY; }
 "!="		{ yylval.token = DEBUGGER_TOKEN_NOT_EQUAL_TO;
 		  return EQUALITY; }
+
+"<<"		{ return LSHIFT; }
+">>"		{ return RSHIFT; }
 
 "<"		{ yylval.token = '<'; return COMPARISON; }
 ">"		{ yylval.token = '>'; return COMPARISON; }

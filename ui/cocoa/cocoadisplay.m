@@ -102,7 +102,6 @@ init_scalers( void )
   scaler_register_clear();
 
   scaler_register( SCALER_NORMAL );
-  scaler_register( SCALER_PALTV );
   if( machine_current->timex ) {
     scaler_register( SCALER_TIMEXTV );
   } else {
@@ -118,6 +117,8 @@ init_scalers( void )
     scaler_register( SCALER_DOTMATRIX );
     scaler_register( SCALER_HQ2X );
     scaler_register( SCALER_HQ3X );
+    scaler_register( SCALER_NTSCTV2X );
+    scaler_register( SCALER_NTSCTV3X );
   }
   
   if( scaler_is_supported( current_scaler ) ) {
@@ -431,6 +432,10 @@ void
 uidisplay_frame_end( void )
 {
   int i;
+
+  if( scaler_flags & SCALER_FLAGS_FULL_REFRESH ) {
+    uidisplay_area( 0, 0, image_width, image_height );
+  }
 
   if( display_updated ) {
     /* obtain lock for buffered screen */
