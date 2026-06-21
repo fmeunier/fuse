@@ -1,5 +1,5 @@
 /* sdlui.c: Routines for dealing with the SDL user interface
-   Copyright (c) 2000-2021 Philip Kendall, Matan Ziv-Av, Fredrick Meunier
+   Copyright (c) 2000-2026 Philip Kendall, Matan Ziv-Av, Fredrick Meunier
    Copyright (c) 2015 Stuart Brady
 
    This program is free software; you can redistribute it and/or modify
@@ -106,7 +106,7 @@ ui_event( void )
       }	
       break;
 
-#if defined USE_JOYSTICK && !defined HAVE_JSW_H
+#ifdef USE_JOYSTICK
 
     case SDL_JOYBUTTONDOWN:
       sdljoystick_buttonpress( &(event.jbutton) );
@@ -121,7 +121,7 @@ ui_event( void )
       sdljoystick_hatmove( &(event.jhat) );
       break;
 
-#endif			/* if defined USE_JOYSTICK && !defined HAVE_JSW_H */
+#endif			/* #ifdef USE_JOYSTICK */
 
     case SDL_QUIT:
       fuse_emulation_pause();

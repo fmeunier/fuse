@@ -1,9 +1,11 @@
+'\" t
 .\" -*- nroff -*-
 .\"
 .\" fuse.1: Fuse man page
-.\" Copyright (c) 2001-2018 Russell Marks, Philip Kendall, Darren Salt,
+.\" Copyright (c) 2001-2026 Russell Marks, Philip Kendall, Darren Salt,
 .\"                         Fredrick Meunier, Stuart Brady
 .\" Copyright (c) 2021-2026 Sergio Baldoví
+.\" Copyright (c) 2026 Alberto Garcia
 .\"
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -24,7 +26,7 @@
 .\" E-mail: philip-fuse@shadowmagic.org.uk
 .\"
 .\"
-.TH fuse 1 "11th May, 2026" "1.8.0" "Emulators"
+.TH fuse 1 "15th June, 2026" "1.9.0" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -187,6 +189,53 @@ Specify whether input recordings should be made in `competition mode'.
 The same as the RZX Options dialog's
 .I "Competition mode"
 option.
+.RE
+.PP
+.B \-\-composite\-filter\-artifacts
+.I value
+.br
+.B \-\-composite\-filter\-bleed
+.I value
+.br
+.B \-\-composite\-filter\-brightness
+.I value
+.br
+.B \-\-composite\-filter\-contrast
+.I value
+.br
+.B \-\-composite\-filter\-fringing
+.I value
+.br
+.B \-\-composite\-filter\-gamma
+.I value
+.br
+.B \-\-composite\-filter\-hue
+.I value
+.br
+.B \-\-composite\-filter\-resolution
+.I value
+.br
+.B \-\-composite\-filter\-saturation
+.I value
+.br
+.B \-\-composite\-filter\-sharpness
+.I value
+.RS
+Set the tuning parameters used by the PAL TV and NTSC TV composite
+filters. Each value is an integer in the range \-100 to 100. These
+options correspond to the Filter Options dialog's
+.IR Artifacts ,
+.IR Bleed ,
+.IR Brightness ,
+.IR Contrast ,
+.IR Fringing ,
+.IR Gamma ,
+.IR Hue ,
+.IR Resolution ,
+.IR Saturation
+and
+.I Sharpness
+controls respectively.
 .RE
 .PP
 .B \-\-compress\-rzx
@@ -538,11 +587,13 @@ which uses no filtering. The available options are
 .IR tv2x ,
 .IR tv3x ,
 .IR tv4x ,
-.IR paltv ,
 .IR paltv2x ,
 .IR paltv3x ,
+.IR paltv4x ,
+.IR ntsctv2x ,
+.IR ntsctv3x ,
 and
-.IR paltv4x .
+.IR ntsctv4x .
 See the
 .B "GRAPHICS FILTERS"
 section for more details.
@@ -591,32 +642,6 @@ option.
 Emulate an issue\ 2 keyboard. Same as the General Options dialog's
 .I "Issue\ 2 keyboard"
 option.
-.RE
-.PP
-.B \-j
-.I device
-.br
-.B \-\-joystick\-1
-.I device
-.RS
-Read from
-.I device
-to emulate the first joystick. Fuse will use either
-.RI ` /dev/input/js0 '
-or
-.RI ` /dev/js0 '
-by default.
-.RE
-.PP
-.B \-\-joystick\-2
-.I device
-.RS
-As for
-.B \-\-joystick\-1
-but for the second joystick; the default here is either
-.RI ` /dev/input/js1 '
-or
-.RI ` /dev/js1 "'."
 .RE
 .PP
 .B \-\-joystick\-1\-output
@@ -1004,15 +1029,6 @@ option.
 .I file
 .RS
 Insert the specified file into the emulated Opus Discovery's drive\ 1.
-.RE
-.PP
-.B \-\-pal\-tv2x
-.RS
-Specify whether the PAL\ TV\ 2x, PAL\ TV\ 3x and PAL\ TV\ 4x scalers should
-also produce scanlines along the lines of the TV\ 2x and Timex\ TV scalers.
-The same as the General Options dialog's
-.I "PAL-TV use TV2x effect"
-option.
 .RE
 .PP
 .B \-\-phantom\-typist\-mode
@@ -2480,13 +2496,6 @@ options.
 This option allows you to choose whether to simulate a colour or black
 and white television. This is effective only under the GTK, Win32, Xlib and
 SDL user interfaces: the others will always simulate a colour TV.
-.RE
-.PP
-.I "PAL-TV use TV2x effect"
-.RS
-This option allows you to choose whether the PAL\ TV\ 2x and higher scalers
-also reproduce scanlines in the same way as the TV\ 2x, TV\ 3x and Timex\ TV
-scalers.
 .RE
 .PP
 .I "Show statusbar"
@@ -4342,18 +4351,42 @@ is a single-sizing filter for Timex machines (note that this means TV\ 2X
 and Timex\ TV produce the same size output).
 .RE
 .PP
-.IR "PAL\ TV " ( paltv )
-.br
 .IR "PAL\ TV\ 2x " ( paltv2x )
 .br
 .IR "PAL\ TV\ 3x " ( paltv3x )
 .br
 .IR "PAL\ TV\ 4x " ( paltv4x )
 .RS
-Four filters which attempt to emulate the effect of the PAL TV system
-which layers a lower-resolution colour image over the top of a
-higher-resolution black-and-white image. The filters can also optionally
-add scanlines like the other TV series scalers.
+Three filters which emulate a PAL television picture rather than a
+simple RGB-style pixel enlargement. They model composite-video style
+behaviour such as colour blending, reduced chroma resolution and
+softening between neighbouring pixels, while scaling the screen by
+2\(mu, 3\(mu and 4\(mu respectively.
+.PP
+These filters use Fuse's composite filter controls, allowing the image
+to be tuned with settings such as hue, saturation, contrast,
+brightness, sharpness, gamma, resolution, artifacts, fringing and
+bleed.
+.RE
+.PP
+.IR "NTSC\ TV\ 2x " ( ntsctv2x )
+.br
+.IR "NTSC\ TV\ 3x " ( ntsctv3x )
+.br
+.IR "NTSC\ TV\ 4x " ( ntsctv4x )
+.RS
+Three filters which emulate an NTSC television picture rather than a
+simple RGB-style pixel enlargement. They model composite-video effects
+such as colour bleeding, fringing, artifacting and softening between
+neighbouring pixels, while scaling the screen by 2\(mu, 3\(mu and 4\(mu
+respectively.
+.PP
+These filters use the bundled
+.I snes_ntsc
+composite-video library by Shay Green ("blargg"). As with the PAL TV
+filters, the image can be tuned with the composite filter controls for
+hue, saturation, contrast, brightness, sharpness, gamma, resolution,
+artifacts, fringing and bleed.
 .RE
 .PP
 .IR "Dot matrix " ( dotmatrix )
@@ -5231,12 +5264,13 @@ which uses a restricted version of C's syntax; exactly the same syntax
 is used for conditional breakpoints, with `0' being false and any
 other value being true. In numeric expressions, you can use integer
 constants (all calculations are done in integers), system variables,
-debugger variables, parentheses, the standard four numeric operations
-(`+', `\-', `*' and `/'), the (non-)equality operators `==' and `!=',
-the comparison operators `>', `<', `>=' and `<=', bitwise and (`&'), or
-(`|') and exclusive or (`^') and logical and (`&&') and or (`||').
-Square brackets (`[' and `]') can be used to dereference a value; for
-example `[0x4000]' will give the value of the first byte of the screen.
+debugger variables, parentheses, the standard five numeric operations
+(`+', `\-', `*', `/' and `%'), the shift operators `<<' and `>>', the
+(non-)equality operators `==' and `!=', the comparison operators `>',
+`<', `>=' and `<=', bitwise and (`&'), or (`|') and exclusive or (`^')
+and logical and (`&&') and or (`||'). Square brackets (`[' and `]') can
+be used to dereference a value; for example `[0x4000]' will give the
+value of the first byte of the screen.
 .PP
 System variables are specified via an
 .RI ` area : detail '

@@ -1,10 +1,10 @@
-The Free Unix Spectrum Emulator (Fuse) 1.8.0
+The Free Unix Spectrum Emulator (Fuse) 1.9.0
 ============================================
 
 Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat
 unsurprisingly, an emulator of the ZX Spectrum (a popular 1980s home
 computer, especially in the UK) for Unix. However, it has now also
-been ported to Mac OS X, which may or may not count as a Unix variant
+been ported to macOS, which may or may not count as a Unix variant
 depending on your advocacy position and Windows which definitely isn't
 a Unix variant. Fuse also emulates some of the better-known ZX Spectrum
 clones as well.
@@ -42,7 +42,7 @@ Help! <xyz> doesn't work
 If you're having a problem using/running/building Fuse, the two places
 you're most likely to get help are the development mailing list
 <fuse-emulator-devel@lists.sf.net> or the official forums at
-<http://sourceforge.net/p/fuse-emulator/discussion/>.
+<https://sourceforge.net/p/fuse-emulator/discussion/>.
 
 What you'll need to run Fuse
 ----------------------------
@@ -54,7 +54,7 @@ Required:
 * X, SDL or framebuffer support. If you have GTK, you'll get
   a (much) nicer user interface under X.
 * libspectrum: this is available from
-  http://fuse-emulator.sourceforge.net/libspectrum.php
+  https://fuse-emulator.sourceforge.net/libspectrum.php
 
 Optional:
 
@@ -67,13 +67,13 @@ Optional:
 
 If you've used Fuse prior to version 0.5.0, note that the external
 utilities (tzxlist, etc) are now available separately from Fuse
-itself. See http://fuse-emulator.sourceforge.net/ for details.
+itself. See https://fuse-emulator.sourceforge.net/ for details.
 
-Mac OS X
+macOS
 
 * Either the native port by Fredrick Meunier, or the original version
-  will compile on OS X 10.3 (Panther) or later.
-* On Mac OS X Lion you will need to use clang as gcc-llvm-4.2.1 fails to
+  will compile on macOS 10.3 (Panther) or later.
+* On macOS Lion you will need to use clang as gcc-llvm-4.2.1 fails to
   correctly compile z80_ops.c.
 
 Windows
@@ -92,26 +92,28 @@ Closing comments
 
 Fuse has its own home page, which you can find at:
 
-http://fuse-emulator.sourceforge.net/
+https://fuse-emulator.sourceforge.net/
 
 and contains much of the information listed here. 
 
 News of new versions of Fuse (and other important Fuse-related
 announcements) are distributed via the fuse-emulator-announce mailing
 list on SourceForge; see
-http://lists.sourceforge.net/lists/listinfo/fuse-emulator-announce
+https://lists.sourceforge.net/lists/listinfo/fuse-emulator-announce
 for details on how to subscribe and the like.
 
 If you've got any bug reports, suggestions or the like for Fuse, or
 just want to get involved in the development, this is coordinated via
 the fuse-emulator-devel mailing list,
-http://lists.sourceforge.net/lists/listinfo/fuse-emulator-devel
+https://lists.sourceforge.net/lists/listinfo/fuse-emulator-devel
 and the Fuse project page on SourceForge,
-http://sourceforge.net/projects/fuse-emulator/
+https://sourceforge.net/projects/fuse-emulator/
+
+Maintainer release notes are in `hacking/releasing.md'.
 
 For Spectrum discussions not directly related to Fuse, visit either the
 Usenet newsgroup `comp.sys.sinclair' or the World of Spectrum forums
 <http://www.worldofspectrum.org/forums/>.
 
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
-11th May, 2026
+15th June, 2026

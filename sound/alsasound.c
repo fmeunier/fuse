@@ -1,5 +1,6 @@
 /* alsasound.c: ALSA (Linux) sound I/O
    Copyright (c) 2006-2008 Gergely Szasz
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -384,7 +385,8 @@ sound_lowlevel_frame( libspectrum_signed_word *data, int len )
       if( verb )
         fprintf( stderr, "ALSA: *buffer underrun*!\n" );
     } else {
-        len -= ret;
+      data += ret * ch;
+      len -= ret;
     }
   }
 }

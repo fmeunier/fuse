@@ -89,7 +89,6 @@ init_scalers( void )
   scaler_register( SCALER_ADVMAME2X );
   scaler_register( SCALER_ADVMAME3X );
   scaler_register( SCALER_DOTMATRIX );
-  scaler_register( SCALER_PALTV );
   scaler_register( SCALER_HQ2X );
   if( machine_current->timex ) {
     scaler_register( SCALER_HALF );
@@ -109,6 +108,9 @@ init_scalers( void )
     scaler_register( SCALER_PALTV4X );
     scaler_register( SCALER_HQ3X );
     scaler_register( SCALER_HQ4X );
+    scaler_register( SCALER_NTSC2X );
+    scaler_register( SCALER_NTSC3X );
+    scaler_register( SCALER_NTSC4X );
   }
 
   if( scaler_is_supported( current_scaler ) ) {
@@ -249,8 +251,7 @@ sdl2display_add_scaled_rect( int x, int y, int w, int h )
 {
   if( sdl2display_force_full_refresh ) return;
 
-  if( num_rects ==
-      (int)( sizeof( updated_rects ) / sizeof( updated_rects[0] ) ) ){
+  if( num_rects == (int)ARRAY_SIZE( updated_rects ) ){
     sdl2display_force_full_refresh = 1;
     return;
   }
@@ -292,6 +293,11 @@ sdl2display_status_icon( SDL_Surface **icon, int x, int y )
   SDL_Surface *surface = icon[ machine_current->timex ];
 
   if( !surface ) return;
+
+  if( machine_current->timex ) {
+    x <<= 1;
+    y <<= 1;
+  }
 
   sdl2display_icon_rect( x, y, surface->w, surface->h,
                          sdl2display_current_size,
@@ -807,8 +813,7 @@ uidisplay_area( int x, int y, int width, int height )
 {
   if( sdl2display_force_full_refresh ) return;
 
-  if( num_rects ==
-      (int)( sizeof( updated_rects ) / sizeof( updated_rects[0] ) ) ){
+  if( num_rects == (int)ARRAY_SIZE( updated_rects ) ){
     sdl2display_force_full_refresh = 1;
     return;
   }
@@ -842,7 +847,8 @@ uidisplay_frame_end( void )
 
   if( sdl2_status_updated ) sdl2display_queue_status_rects();
 
-  if( sdl2display_force_full_refresh ) {
+  if( sdl2display_force_full_refresh ||
+      ( scaler_flags & SCALER_FLAGS_FULL_REFRESH ) ) {
     num_rects = 1;
     updated_rects[0].x = 0;
     updated_rects[0].y = 0;

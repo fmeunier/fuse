@@ -46,7 +46,9 @@ Fuse has been brought to you by:
 
 * Bjoern Giesler: the original Wii port.
 
-* Shay Green: the Blip_Buffer band pass filter for beeper and AY output.
+* Shay Green: the Blip_Buffer band pass filter for beeper and AY output,
+  and the snes_ntsc composite-video filter library used by the NTSC TV
+  and PAL TV scalers.
 
 * Michael D Wynne: the Opus Discovery emulation (for EightyOne).
 

@@ -1,5 +1,6 @@
 # menu_data.dat: Menu structure for Fuse
 # Copyright (c) 2004-2018 Philip Kendall, Alistair Cree
+# Copyright (c) 2026 Fredrick Meunier
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -131,7 +132,13 @@ Options/Select ROMs/Peripheral ROMs/uS_peech..., Item,, menu_options_selectroms_
 
 Options/_Filter..., Item,,, menu_filter_detail
 
-#if defined UI_SDL || defined UI_SDL2
+#ifdef UI_GTK
+Options/_Filter options..., Item
+#endif
+
+#ifdef UI_SDL
+Options/F_ull screen, Item, F11
+#elif defined UI_SDL2
 Options/F_ull screen, Item, F11
 #endif
 

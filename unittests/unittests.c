@@ -1,6 +1,7 @@
 /* unittests.c: unit testing framework for Fuse
    Copyright (c) 2008-2018 Philip Kendall
    Copyright (c) 2015 Stuart Brady
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,6 +31,7 @@
 
 #include "debugger/debugger.h"
 #include "fuse.h"
+#include "keyboard.h"
 #include "machine.h"
 #include "mempool.h"
 #include "periph.h"
@@ -51,6 +53,7 @@
 #include "peripherals/ula.h"
 #include "peripherals/usource.h"
 #include "settings.h"
+#include "snapshot.h"
 #include "bitmap.h"
 #include "rectangle.h"
 #include "unittests.h"
@@ -328,6 +331,84 @@ bitmap_ops_test( void )
 }
 
 static int
+snapshot_copy_from_releases_keyboard_test( void )
+{
+  libspectrum_snap *snap;
+  int i;
+
+  snap = libspectrum_snap_alloc();
+  TEST_ASSERT( snap != NULL );
+  TEST_ASSERT( snapshot_copy_to( snap ) == 0 );
+
+  keyboard_press( KEYBOARD_a );
+
+  for( i = 0; i < 8; i++ ) {
+    if( keyboard_return_values[i] != 0xff ) break;
+  }
+  TEST_ASSERT( i != 8 );
+
+  TEST_ASSERT( snapshot_copy_from( snap ) == 0 );
+
+  for( i = 0; i < 8; i++ ) {
+    TEST_ASSERT( keyboard_return_values[i] == 0xff );
+  }
+
+  TEST_ASSERT( libspectrum_snap_free( snap ) == 0 );
+
+  return 0;
+}
+
+static int
+keyboard_read_test( void )
+{
+  /* No keys pressed: all half-rows are 0xff, keyboard_read returns 0xff
+     regardless of which half-rows are selected. */
+  keyboard_release_all();
+  /* Select all half-rows (porth = 0x00 means every bit is low → select all) */
+  TEST_ASSERT( keyboard_read( 0x00 ) == 0xff );
+  /* Select no half-rows (porth = 0xff means every bit is high → select none) */
+  TEST_ASSERT( keyboard_read( 0xff ) == 0xff );
+
+  /* Press 'a': sits in half-row 1, bit 0x01.
+     keyboard_read shifts porth right once per iteration and checks bit 0 each
+     time, so half-row N is selected when bit N of porth is 0.
+     0xfd = 11111101b has bit 1 low → selects only half-row 1. */
+  keyboard_press( KEYBOARD_a );
+  TEST_ASSERT( keyboard_read( 0xfd ) == 0xfe ); /* bit 0 cleared */
+  /* Selecting a different half-row should not show the pressed key. */
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xff ); /* half-row 0, 'a' not there */
+  /* Selecting all half-rows still shows the pressed key. */
+  TEST_ASSERT( keyboard_read( 0x00 ) == 0xfe );
+  keyboard_release( KEYBOARD_a );
+
+  /* After release the bit is restored. */
+  TEST_ASSERT( keyboard_read( 0xfd ) == 0xff );
+
+  return 0;
+}
+
+static int
+keyboard_simulate_keypress_test( void )
+{
+  /* 'a' is in half-row 1, bit 0x01.  keyboard_simulate_keypress checks
+     whether half-row 1's bit (mask = 1<<1 = 0x02) is low in porth. */
+
+  /* porth = 0xfd (bit 1 low) → half-row 1 selected → bit 0x01 cleared */
+  TEST_ASSERT( keyboard_simulate_keypress( 0xfd, KEYBOARD_a ) == 0xfe );
+
+  /* porth = 0xff (bit 1 high) → half-row 1 not selected → 0xff returned */
+  TEST_ASSERT( keyboard_simulate_keypress( 0xff, KEYBOARD_a ) == 0xff );
+
+  /* porth = 0x00 (all bits low) → all half-rows selected → bit cleared */
+  TEST_ASSERT( keyboard_simulate_keypress( 0x00, KEYBOARD_a ) == 0xfe );
+
+  /* An unknown/unmapped key should return 0xff unchanged. */
+  TEST_ASSERT( keyboard_simulate_keypress( 0x00, KEYBOARD_NONE ) == 0xff );
+
+  return 0;
+}
+
+static int
 utils_safe_strdup_test( void )
 {
   char *result;
@@ -440,6 +521,29 @@ mempool_test( void )
   /* Test that out-of-range pool IDs return NULL */
   TEST_ASSERT( mempool_malloc( mempool_get_pools(), 23 ) == NULL );
   TEST_ASSERT( mempool_malloc( -2, 23 ) == NULL );
+
+  /* Test MEMPOOL_UNTRACKED: allocations succeed but bypass pool tracking */
+  {
+    void *p = mempool_malloc( MEMPOOL_UNTRACKED, 16 );
+    TEST_ASSERT( p != NULL );
+    TEST_ASSERT( mempool_get_pool_size( pool1 ) == 0 );
+    libspectrum_free( p );
+  }
+
+  {
+    void *p = mempool_malloc_n( MEMPOOL_UNTRACKED, 4, 8 );
+    TEST_ASSERT( p != NULL );
+    TEST_ASSERT( mempool_get_pool_size( pool1 ) == 0 );
+    libspectrum_free( p );
+  }
+
+  {
+    char *s = mempool_strdup( MEMPOOL_UNTRACKED, "untracked" );
+    TEST_ASSERT( s != NULL );
+    TEST_ASSERT( strcmp( s, "untracked" ) == 0 );
+    TEST_ASSERT( mempool_get_pool_size( pool1 ) == 0 );
+    libspectrum_free( s );
+  }
 
   return 0;
 }
@@ -1082,6 +1186,41 @@ rectangle_test( void )
   return 0;
 }
 
+static int
+rectangle_realloc_test( void )
+{
+  int i;
+  int saved_frame_rate = settings_current.frame_rate;
+
+  /* --- Test 1: force active-list reallocation by adding > 8 distinct rects --- */
+  /* Initial active allocation is 8; the 9th unique (x,w) pair triggers doubling. */
+  rectangle_reset();
+  settings_current.frame_rate = 1;
+  for( i = 0; i < 9; i++ )
+    rectangle_add( 0, i * 10, 5 );
+  TEST_ASSERT( rectangle_get_active_count() == 9 );
+
+  /* --- Test 2: continue past 16 to trigger a second doubling (8->16->32) --- */
+  for( i = 9; i < 17; i++ )
+    rectangle_add( 0, i * 10, 5 );
+  TEST_ASSERT( rectangle_get_active_count() == 17 );
+
+  /* --- Test 3: flushing > 8 rects forces inactive-list reallocation --- */
+  /* All 17 active rects are stale (line 300 > line 0); they move to inactive. */
+  rectangle_end_line( 300 );
+  TEST_ASSERT( rectangle_get_active_count() == 0 );
+  TEST_ASSERT( rectangle_inactive_count == 17 );
+
+  /* --- Test 4: a second flush of > 8 non-overlapping rects grows inactive further --- */
+  for( i = 0; i < 9; i++ )
+    rectangle_add( 1, i * 10 + 5, 3 );
+  rectangle_end_line( 300 );
+  TEST_ASSERT( rectangle_inactive_count == 26 );
+
+  settings_current.frame_rate = saved_frame_rate;
+  return 0;
+}
+
 int
 unittests_run( void )
 {
@@ -1090,12 +1229,17 @@ unittests_run( void )
   r += contention_test();
   r += floating_bus_test();
   r += floating_bus_merge_test();
+  r += snapshot_copy_from_releases_keyboard_test();
+  r += keyboard_read_test();
+  r += keyboard_simulate_keypress_test();
   r += utils_safe_strdup_test();
   r += bitmap_ops_test();
   r += mempool_test();
   r += paging_test();
   r += debugger_disassemble_unittest();
+  r += debugger_expression_unittest();
   r += rectangle_test();
+  r += rectangle_realloc_test();
 
   printf("Final return value: %d (should be 0)\n", r);
 

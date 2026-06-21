@@ -1,5 +1,6 @@
 /* expression.c: A numeric expression
    Copyright (c) 2003-2017 Philip Kendall
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -53,6 +54,7 @@ enum precedence_t {
   PRECEDENCE_BITWISE_AND,
   PRECEDENCE_EQUALITY,
   PRECEDENCE_COMPARISON,
+  PRECEDENCE_SHIFT,
   PRECEDENCE_ADDITION,
   PRECEDENCE_MULTIPLICATION,
   PRECEDENCE_NEGATE,
@@ -130,7 +132,11 @@ binaryop_precedence( int operation )
   case    '^':		    return PRECEDENCE_BITWISE_XOR;
   case    '&':		    return PRECEDENCE_BITWISE_AND;
   case    '+': case    '-': return PRECEDENCE_ADDITION;
-  case    '*': case    '/': return PRECEDENCE_MULTIPLICATION;
+  case    '*': case    '/': case    '%': return PRECEDENCE_MULTIPLICATION;
+
+  case DEBUGGER_TOKEN_LEFT_SHIFT:
+  case DEBUGGER_TOKEN_RIGHT_SHIFT:
+    return PRECEDENCE_SHIFT;
 
   case DEBUGGER_TOKEN_EQUAL_TO:
   case DEBUGGER_TOKEN_NOT_EQUAL_TO:
@@ -381,6 +387,27 @@ evaluate_binaryop( struct binaryop_type *binary )
       return debugger_expression_evaluate( binary->op1 ) / op2;
     }
 
+  case '%': {
+      libspectrum_dword op2 = debugger_expression_evaluate( binary->op2 );
+      if( op2 == 0 ) {
+        ui_error( UI_ERROR_ERROR, "modulo by 0" );
+        return 0;
+      }
+      return debugger_expression_evaluate( binary->op1 ) % op2;
+    }
+
+  case DEBUGGER_TOKEN_LEFT_SHIFT: {
+      libspectrum_dword count = debugger_expression_evaluate( binary->op2 );
+      if( count >= 32 ) return 0;
+      return debugger_expression_evaluate( binary->op1 ) << count;
+    }
+
+  case DEBUGGER_TOKEN_RIGHT_SHIFT: {
+      libspectrum_dword count = debugger_expression_evaluate( binary->op2 );
+      if( count >= 32 ) return 0;
+      return debugger_expression_evaluate( binary->op1 ) >> count;
+    }
+
   case DEBUGGER_TOKEN_EQUAL_TO:
             return debugger_expression_evaluate( binary->op1 ) ==
                    debugger_expression_evaluate( binary->op2 );
@@ -530,6 +557,9 @@ deparse_binaryop( char *buffer, size_t length,
   case    '-': operation_string = "-";  break;
   case    '*': operation_string = "*";  break;
   case    '/': operation_string = "/";  break;
+  case    '%': operation_string = "%";  break;
+  case DEBUGGER_TOKEN_LEFT_SHIFT: operation_string = "<<"; break;
+  case DEBUGGER_TOKEN_RIGHT_SHIFT: operation_string = ">>"; break;
   case DEBUGGER_TOKEN_EQUAL_TO: operation_string = "=="; break;
   case DEBUGGER_TOKEN_NOT_EQUAL_TO: operation_string = "!="; break;
   case    '<': operation_string = "<";  break;
@@ -619,7 +649,11 @@ is_non_associative( int operation )
 
   /* Simple cases */
   case '+': case '*': return 0;
-  case '-': case '/': return 1;
+  case '-': case '/': case '%': return 1;
+
+  /* Shift operators are non-associative */
+  case DEBUGGER_TOKEN_LEFT_SHIFT: return 1;
+  case DEBUGGER_TOKEN_RIGHT_SHIFT: return 1;
 
   /* None of the comparison operators are associative due to them
      returning truth values */
@@ -645,5 +679,211 @@ is_non_associative( int operation )
   /* Should never get here */
   ui_error( UI_ERROR_ERROR, "unknown binary operation %d", operation );
   fuse_abort();
+}
+
+/* Unit tests for the debugger expression evaluator */
+
+static int
+eval_integer_test( libspectrum_dword value, libspectrum_dword expected )
+{
+  debugger_expression *expr;
+  libspectrum_dword result;
+
+  expr = debugger_expression_new_number( value, MEMPOOL_UNTRACKED );
+  result = debugger_expression_evaluate( expr );
+  debugger_expression_delete( expr );
+
+  if( result != expected ) {
+    printf( "expression eval 'integer': expected %u, got %u\n",
+            (unsigned)expected, (unsigned)result );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+eval_binary_test( int op, libspectrum_dword v1, libspectrum_dword v2,
+                  libspectrum_dword expected, const char *label )
+{
+  debugger_expression *left, *right, *expr;
+  libspectrum_dword result;
+
+  left  = debugger_expression_new_number( v1, MEMPOOL_UNTRACKED );
+  right = debugger_expression_new_number( v2, MEMPOOL_UNTRACKED );
+  expr  = debugger_expression_new_binaryop( op, left, right, MEMPOOL_UNTRACKED );
+  result = debugger_expression_evaluate( expr );
+  debugger_expression_delete( expr );
+
+  if( result != expected ) {
+    printf( "expression eval '%s': expected %u, got %u\n",
+            label, (unsigned)expected, (unsigned)result );
+    return 1;
+  }
+
+  return 0;
+}
+
+static int
+eval_unary_test( int op, libspectrum_dword v, libspectrum_dword expected,
+                 const char *label )
+{
+  debugger_expression *operand, *expr;
+  libspectrum_dword result;
+
+  operand = debugger_expression_new_number( v, MEMPOOL_UNTRACKED );
+  expr    = debugger_expression_new_unaryop( op, operand, MEMPOOL_UNTRACKED );
+  result  = debugger_expression_evaluate( expr );
+  debugger_expression_delete( expr );
+
+  if( result != expected ) {
+    printf( "expression eval '%s': expected %u, got %u\n",
+            label, (unsigned)expected, (unsigned)result );
+    return 1;
+  }
+
+  return 0;
+}
+
+/* Deparse helper: takes ownership of expr and frees it after the check */
+static int
+deparse_test( debugger_expression *expr, const char *expected,
+              const char *label )
+{
+  char buf[64];
+
+  debugger_expression_deparse( buf, sizeof( buf ), expr );
+  debugger_expression_delete( expr );
+
+  if( strcmp( buf, expected ) ) {
+    printf( "expression deparse '%s': expected '%s', got '%s'\n",
+            label, expected, buf );
+    return 1;
+  }
+
+  return 0;
+}
+
+int
+debugger_expression_unittest( void )
+{
+  int r = 0;
+  int saved_base;
+
+  /* Integer literals */
+  r += eval_integer_test( 0,  0 );
+  r += eval_integer_test( 42, 42 );
+
+  /* Arithmetic */
+  r += eval_binary_test( '+',  3, 4,  7, "add" );
+  r += eval_binary_test( '-', 10, 3,  7, "sub" );
+  r += eval_binary_test( '*',  3, 4, 12, "mul" );
+  r += eval_binary_test( '/', 12, 4,  3, "div" );
+
+/* Only run on null UI as it creates a popup */
+#ifdef UI_NULL
+  /* Division by zero returns 0 without crashing */
+  r += eval_binary_test( '/',  5, 0,  0, "div-by-zero" );
+#endif
+
+  /* Modulo operator */
+  r += eval_binary_test( '%', 10, 3,  1, "mod" );
+  r += eval_binary_test( '%',  9, 3,  0, "mod-exact" );
+
+/* Only run on null UI as it creates a popup */
+#ifdef UI_NULL
+  /* Modulo by zero returns 0 without crashing */
+  r += eval_binary_test( '%', 10, 0,  0, "mod-by-zero" );
+#endif
+
+  /* Bit-shift operators */
+  r += eval_binary_test( DEBUGGER_TOKEN_LEFT_SHIFT,   1, 3,   8, "lshift" );
+  r += eval_binary_test( DEBUGGER_TOKEN_LEFT_SHIFT,   1, 7, 128, "lshift-7" );
+  r += eval_binary_test( DEBUGGER_TOKEN_LEFT_SHIFT,   1, 32,  0, "lshift-large" );
+  r += eval_binary_test( DEBUGGER_TOKEN_RIGHT_SHIFT, 16, 2,   4, "rshift" );
+  r += eval_binary_test( DEBUGGER_TOKEN_RIGHT_SHIFT,  8, 3,   1, "rshift-3" );
+  r += eval_binary_test( DEBUGGER_TOKEN_RIGHT_SHIFT,  1, 32,  0, "rshift-large" );
+
+  /* Bitwise operators */
+  r += eval_binary_test( '&', 0xF0, 0xFF, 0xF0, "bitwise-and" );
+  r += eval_binary_test( '|', 0x0F, 0xF0, 0xFF, "bitwise-or" );
+  r += eval_binary_test( '^', 0xFF, 0x0F, 0xF0, "bitwise-xor" );
+
+  /* Comparison operators */
+  r += eval_binary_test( DEBUGGER_TOKEN_EQUAL_TO,               5, 5, 1, "eq-true" );
+  r += eval_binary_test( DEBUGGER_TOKEN_EQUAL_TO,               5, 6, 0, "eq-false" );
+  r += eval_binary_test( DEBUGGER_TOKEN_NOT_EQUAL_TO,           5, 6, 1, "ne-true" );
+  r += eval_binary_test( DEBUGGER_TOKEN_NOT_EQUAL_TO,           5, 5, 0, "ne-false" );
+  r += eval_binary_test( '<', 3, 5, 1, "lt-true" );
+  r += eval_binary_test( '<', 5, 3, 0, "lt-false" );
+  r += eval_binary_test( '>', 5, 3, 1, "gt-true" );
+  r += eval_binary_test( '>', 3, 5, 0, "gt-false" );
+  r += eval_binary_test( DEBUGGER_TOKEN_LESS_THAN_OR_EQUAL_TO,    5, 5, 1, "lte-eq" );
+  r += eval_binary_test( DEBUGGER_TOKEN_LESS_THAN_OR_EQUAL_TO,    4, 5, 1, "lte-lt" );
+  r += eval_binary_test( DEBUGGER_TOKEN_LESS_THAN_OR_EQUAL_TO,    6, 5, 0, "lte-false" );
+  r += eval_binary_test( DEBUGGER_TOKEN_GREATER_THAN_OR_EQUAL_TO, 5, 5, 1, "gte-eq" );
+  r += eval_binary_test( DEBUGGER_TOKEN_GREATER_THAN_OR_EQUAL_TO, 6, 5, 1, "gte-gt" );
+  r += eval_binary_test( DEBUGGER_TOKEN_GREATER_THAN_OR_EQUAL_TO, 4, 5, 0, "gte-false" );
+
+  /* Logical operators */
+  r += eval_binary_test( DEBUGGER_TOKEN_LOGICAL_AND, 1, 1, 1, "logical-and-true" );
+  r += eval_binary_test( DEBUGGER_TOKEN_LOGICAL_AND, 1, 0, 0, "logical-and-false" );
+  r += eval_binary_test( DEBUGGER_TOKEN_LOGICAL_OR,  1, 0, 1, "logical-or-true" );
+  r += eval_binary_test( DEBUGGER_TOKEN_LOGICAL_OR,  0, 0, 0, "logical-or-false" );
+
+  /* Unary operators */
+  r += eval_unary_test( '!', 0,          1, "logical-not-zero" );
+  r += eval_unary_test( '!', 1,          0, "logical-not-one" );
+  r += eval_unary_test( '~', 0, 0xFFFFFFFF, "bitwise-not-zero" );
+  r += eval_unary_test( '~', 0xFFFFFFFF,  0, "bitwise-not-ones" );
+
+  /* Deparse tests: save and restore output base */
+  saved_base = debugger_output_base;
+  debugger_output_base = 16;
+
+  r += deparse_test(
+    debugger_expression_new_binaryop( '+',
+      debugger_expression_new_number( 3, MEMPOOL_UNTRACKED ),
+      debugger_expression_new_number( 4, MEMPOOL_UNTRACKED ),
+      MEMPOOL_UNTRACKED ),
+    "0x3 + 0x4", "deparse-add" );
+
+  r += deparse_test(
+    debugger_expression_new_binaryop( '%',
+      debugger_expression_new_number( 10, MEMPOOL_UNTRACKED ),
+      debugger_expression_new_number(  3, MEMPOOL_UNTRACKED ),
+      MEMPOOL_UNTRACKED ),
+    "0xa % 0x3", "deparse-mod" );
+
+  r += deparse_test(
+    debugger_expression_new_binaryop( DEBUGGER_TOKEN_LEFT_SHIFT,
+      debugger_expression_new_number( 1, MEMPOOL_UNTRACKED ),
+      debugger_expression_new_number( 3, MEMPOOL_UNTRACKED ),
+      MEMPOOL_UNTRACKED ),
+    "0x1 << 0x3", "deparse-lshift" );
+
+  r += deparse_test(
+    debugger_expression_new_binaryop( DEBUGGER_TOKEN_RIGHT_SHIFT,
+      debugger_expression_new_number( 16, MEMPOOL_UNTRACKED ),
+      debugger_expression_new_number(  2, MEMPOOL_UNTRACKED ),
+      MEMPOOL_UNTRACKED ),
+    "0x10 >> 0x2", "deparse-rshift" );
+
+  /* is_non_associative('%') fix: deparsing (3 * 4) % 5 must bracket the
+     left operand since % is non-associative and equal-precedence to *.
+     Before the fix the missing '%' case in is_non_associative() would abort. */
+  r += deparse_test(
+    debugger_expression_new_binaryop( '%',
+      debugger_expression_new_binaryop( '*',
+        debugger_expression_new_number( 3, MEMPOOL_UNTRACKED ),
+        debugger_expression_new_number( 4, MEMPOOL_UNTRACKED ),
+        MEMPOOL_UNTRACKED ),
+      debugger_expression_new_number( 5, MEMPOOL_UNTRACKED ),
+      MEMPOOL_UNTRACKED ),
+    "( 0x3 * 0x4 ) % 0x5", "deparse-mod-non-assoc" );
+
+  debugger_output_base = saved_base;
+
+  return r;
 }
 

@@ -1,5 +1,6 @@
 /* keyboard.c: Routines for dealing with the Spectrum's keyboard
    Copyright (c) 1999-2017 Philip Kendall
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -36,7 +37,7 @@
 /* Bit masks for each of the eight keyboard half-rows; `AND' the selected
    ones of these to get the value to return
 */
-libspectrum_byte keyboard_return_values[8];
+libspectrum_byte keyboard_return_values[KEYBOARD_HALFROWS];
 
 /* The hash used for storing the UI -> Fuse input layer key mappings */
 static GHashTable *keysyms_hash;
@@ -336,7 +337,7 @@ keyboard_read( libspectrum_byte porth )
 {
   libspectrum_byte data = 0xff; int i;
 
-  for( i=0; i<8; i++,porth>>=1 ) {
+  for( i=0; i<KEYBOARD_HALFROWS; i++,porth>>=1 ) {
     if(! (porth&0x01) ) data &= keyboard_return_values[i];
   }
 
@@ -380,7 +381,7 @@ int keyboard_release_all( void )
 {
   int i;
 
-  for( i=0; i<8; i++ ) keyboard_return_values[i] = 0xff;
+  for( i=0; i<KEYBOARD_HALFROWS; i++ ) keyboard_return_values[i] = 0xff;
 
   return 0;
 }

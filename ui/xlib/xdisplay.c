@@ -1,7 +1,8 @@
 /* xdisplay.c: Routines for dealing with drawing the Speccy's screen via Xlib
-   Copyright (c) 2000-2021 Philip Kendall, Darren Salt, Gergely Szász
+   Copyright (c) 2000-2021 Philip Kendall, Darren Salt, Gergely Szï¿½sz
    Copyright (c) 2015 Stuart Brady
-   Copyright (c) 2015-2024 Sergio Baldoví
+   Copyright (c) 2015-2024 Sergio Baldovï¿½
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -613,7 +614,6 @@ register_scalers( void )
       }
     } else {
       scaler_register( SCALER_NORMAL );
-      scaler_register( SCALER_PALTV );
       if( machine_current->timex ) {
         scaler_register( SCALER_HALF ); 
         scaler_register( SCALER_HALFSKIP );
@@ -649,6 +649,10 @@ register_scalers( void )
         scaler_register( SCALER_TV4X );
         scaler_register( SCALER_PALTV4X );
         scaler_register( SCALER_HQ4X );
+
+        scaler_register( SCALER_NTSC2X );
+        scaler_register( SCALER_NTSC3X );
+        scaler_register( SCALER_NTSC4X );
       }
     }
   if( current_scaler != SCALER_NUM )
@@ -666,17 +670,16 @@ register_scalers( void )
           new_timex_scaler = SCALER_HALFSKIP;
       } else {
         switch( current_scaler ) {
-        case SCALER_PALTV:
         case SCALER_PALTV2X:
         case SCALER_PALTV3X:
         case SCALER_PALTV4X:
-          new_scaler = SCALER_PALTV;
+          new_scaler = SCALER_NORMAL;
           new_timex_scaler = SCALER_HALF;
           break;
         case SCALER_TV2X:
         case SCALER_TV3X:
         case SCALER_TV4X:
-          new_scaler = SCALER_PALTV;
+          new_scaler = SCALER_NORMAL;
           new_timex_scaler = SCALER_HALF;
           break;
         default:
@@ -692,18 +695,17 @@ register_scalers( void )
           new_timex_scaler = SCALER_NORMAL;
       } else {
         switch( current_scaler ) {
-        case SCALER_PALTV:
         case SCALER_PALTV2X:
         case SCALER_PALTV3X:
         case SCALER_PALTV4X:
           new_scaler = SCALER_PALTV2X;
-          new_timex_scaler = SCALER_PALTV;
+          new_timex_scaler = SCALER_NORMAL;
           break;
         case SCALER_TV2X:
         case SCALER_TV3X:
         case SCALER_TV4X:
           new_scaler = SCALER_TV2X;
-          new_timex_scaler = SCALER_PALTV;
+          new_timex_scaler = SCALER_NORMAL;
           break;
         case SCALER_2XSAI:
         case SCALER_SUPER2XSAI:
@@ -732,7 +734,6 @@ register_scalers( void )
           new_timex_scaler = SCALER_TIMEX1_5X;
       } else {
         switch( current_scaler ) {
-        case SCALER_PALTV:
         case SCALER_PALTV2X:
         case SCALER_PALTV3X:
         case SCALER_PALTV4X:
@@ -772,7 +773,6 @@ register_scalers( void )
           new_timex_scaler = SCALER_TIMEX2X;
       } else {
         switch( current_scaler ) {
-        case SCALER_PALTV:
         case SCALER_PALTV2X:
         case SCALER_PALTV3X:
         case SCALER_PALTV4X:
@@ -885,7 +885,8 @@ uidisplay_frame_end( void )
   X_Rect *r, *last_rect;
 
   /* Force a full redraw if requested */
-  if ( xdisplay_force_full_refresh ) {
+  if( xdisplay_force_full_refresh ||
+      ( scaler_flags & SCALER_FLAGS_FULL_REFRESH ) ) {
     num_rects = 1;
 
     updated_rects[0].x = 0;

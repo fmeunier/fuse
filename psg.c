@@ -1,5 +1,6 @@
 /* psg.c: recording AY chip output to .psg files
    Copyright (c) 2003-2016 Matthew Westcott, Philip Kendall
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -70,7 +71,7 @@ psg_start_recording( const char *filename )
     ui_error( UI_ERROR_ERROR, "unable to write PSG file header" );
     return 1;
   }
-  for( i = 0; i < 12; i++ ) putc( 0, psg_file );
+  for( i = 0; i < PSG_HEADER_PADDING; i++ ) putc( 0, psg_file );
 
   /* begin with no registers written */
   for( i = 0; i < AY_REGISTERS; i++ ) psg_registers_written[i] = 0;
@@ -101,21 +102,21 @@ psg_stop_recording( void )
 static int
 write_frame_separator( void )
 {
-  while( psg_empty_frame_count >= 4 ) {
+  while( psg_empty_frame_count >= PSG_FRAMES_PER_BLOCK ) {
 
     int count;
 
-    count = psg_empty_frame_count / 4;
+    count = psg_empty_frame_count / PSG_FRAMES_PER_BLOCK;
     if( count > 0xff ) count = 0xff;
 
-    putc( 0xfe, psg_file );
+    putc( PSG_MULTI_FRAME_MARKER, psg_file );
     putc( count, psg_file );
 
-    psg_empty_frame_count -= 4 * count;
+    psg_empty_frame_count -= PSG_FRAMES_PER_BLOCK * count;
   }
 
   for( ; psg_empty_frame_count; psg_empty_frame_count-- )
-    putc( 0xff, psg_file );
+    putc( PSG_SINGLE_FRAME_MARKER, psg_file );
 
   return 0;
 }
@@ -130,13 +131,13 @@ psg_frame( void )
 
   /* check if any AY sound events have happened this frame */
   ay_updated = 0;
-  for( i = 0; i < 14 && !ay_updated; i++ )
+  for( i = 0; i < PSG_REGISTERS && !ay_updated; i++ )
     ay_updated = psg_registers_written[i];
 
   if( ay_updated ) {
 
     write_frame_separator();
-    for( i = 0; i < 14; i++ ) {
+    for( i = 0; i < PSG_REGISTERS; i++ ) {
       if( psg_registers_written[i] ) {
 	putc( i, psg_file );
 	putc( psg_register_values[i], psg_file );

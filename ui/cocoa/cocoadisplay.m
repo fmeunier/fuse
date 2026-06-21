@@ -68,27 +68,33 @@ Cocoa_Texture buffered_screen;
 /* and a lock to protect it from concurrent access */
 NSLock *buffered_screen_lock = nil;
 
-/* Colours are in 1A 5R 5G 5B format */
-static uint16_t colour_values[] = {
-  0x0000,
-  0x0017,
-  0x5c00,
-  0x5c17,
-  0x02e0,
-  0x02f7,
-  0x5ee0,
-  0x5ef7,
-  0x0000,
-  0x001f,
-  0x7c00,
-  0x7c1f,
-  0x03e0,
-  0x03ff,
-  0x7fe0,
-  0x7fff
+#define COLOUR_COUNT 16
+
+static const struct {
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+} colour_palette[ COLOUR_COUNT ] = {
+  {   0,   0,   0 },
+  {   0,   0, 192 },
+  { 192,   0,   0 },
+  { 192,   0, 192 },
+  {   0, 192,   0 },
+  {   0, 192, 192 },
+  { 192, 192,   0 },
+  { 192, 192, 192 },
+  {   0,   0,   0 },
+  {   0,   0, 255 },
+  { 255,   0,   0 },
+  { 255,   0, 255 },
+  {   0, 255,   0 },
+  {   0, 255, 255 },
+  { 255, 255,   0 },
+  { 255, 255, 255 }
 };
 
-static uint16_t bw_values[16];
+static uint16_t colour_values[ COLOUR_COUNT ];
+static uint16_t bw_values[ COLOUR_COUNT ];
 
 static int display_updated = 0;
 
@@ -102,7 +108,6 @@ init_scalers( void )
   scaler_register_clear();
 
   scaler_register( SCALER_NORMAL );
-  scaler_register( SCALER_PALTV );
   if( machine_current->timex ) {
     scaler_register( SCALER_TIMEXTV );
   } else {
@@ -118,6 +123,8 @@ init_scalers( void )
     scaler_register( SCALER_DOTMATRIX );
     scaler_register( SCALER_HQ2X );
     scaler_register( SCALER_HQ3X );
+    scaler_register( SCALER_NTSC2X );
+    scaler_register( SCALER_NTSC3X );
   }
   
   if( scaler_is_supported( current_scaler ) ) {
@@ -126,7 +133,7 @@ init_scalers( void )
     scaler_select_scaler( SCALER_NORMAL );
   }
 
-  scaler_select_bitformat( 555 );
+  scaler_select_bitformat( 565 );
 }
 
 static int
@@ -215,30 +222,31 @@ cocoadisplay_load_gfx_mode( void )
   return 0;
 }
 
+#define RGB_TO_PIXEL_565( red, green, blue ) \
+  ( ( ( (uint16_t)( red ) & 0xf8 ) << 8 ) | \
+    ( ( (uint16_t)( green ) & 0xfc ) << 3 ) | \
+    ( ( (uint16_t)( blue ) & 0xf8 ) >> 3 ) )
+
 static void
-cocoadisplay_allocate_colours( int numColours, uint16_t *colour_values,
-                               uint16_t *bw_values )
+cocoadisplay_allocate_colours( void )
 {
   int i;
-  uint8_t red, green, blue, grey;
 
-  for( i = 0; i < numColours; i++ ) {
-    red = (colour_values[i] >> 10) & 0x1f;
-    green = (colour_values[i] >> 5) & 0x1f;
-    blue = colour_values[i] & 0x1f;
+  for( i = 0; i < COLOUR_COUNT; i++ ) {
+    uint8_t red = colour_palette[i].red;
+    uint8_t green = colour_palette[i].green;
+    uint8_t blue = colour_palette[i].blue;
+    uint8_t grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
 
-    /* Addition of 0.5 is to avoid rounding errors */
-    grey = ( 0.299 * red + 0.587 * green + 0.114 * blue ) + 0.5;
-
-    bw_values[i] = (grey << 10) | (grey << 5) | grey;
+    colour_values[i] = RGB_TO_PIXEL_565( red, green, blue );
+    bw_values[i] = RGB_TO_PIXEL_565( grey, grey, grey );
   }
 }
 
 int
 uidisplay_init( int width, int height )
 {
-  cocoadisplay_allocate_colours( sizeof(colour_values) / sizeof(uint16_t),
-                                 colour_values, bw_values );
+  cocoadisplay_allocate_colours();
 
   image_width = width;
   image_height = height;
@@ -431,6 +439,10 @@ void
 uidisplay_frame_end( void )
 {
   int i;
+
+  if( scaler_flags & SCALER_FLAGS_FULL_REFRESH ) {
+    uidisplay_area( 0, 0, image_width, image_height );
+  }
 
   if( display_updated ) {
     /* obtain lock for buffered screen */

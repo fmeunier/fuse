@@ -1,5 +1,5 @@
 /* scaler.c: code for selecting (etc) scalers
- * Copyright (C) 2003-2021 Fredrick Meunier, Philip Kendall
+ * Copyright (C) 2003-2026 Fredrick Meunier, Philip Kendall
  * Copyright (c) 2015-2019 Sergio Baldoví
  * 
  * Originally taken from ScummVM - Scumm Interpreter
@@ -64,10 +64,8 @@ static void expand_1( int *x, int *y, int *w, int *h,
 		      int image_width, int image_height );
 static void expand_sai( int *x, int *y, int *w, int *h,
 			int image_width, int image_height );
-static void expand_pal1( int *x, int *y, int *w, int *h,
-			int image_width, int image_height );
-static void expand_pal( int *x, int *y, int *w, int *h,
-			int image_width, int image_height );
+static void expand_full_width( int *x, int *y, int *w, int *h,
+			      int image_width, int image_height );
 static void expand_dotmatrix( int *x, int *y, int *w, int *h,
 			      int image_width, int image_height );
 
@@ -111,20 +109,24 @@ static struct scaler_info available_scalers[] = {
     scaler_Timex1_5x_16,  NULL,  NULL                },
   { "Timex 2x",        "timex2x",    SCALER_FLAGS_NONE,        SCALE_FACTOR_TWO,
     scaler_Normal2x_16,  NULL,    NULL                },
-  { "PAL TV",	       "paltv",     SCALER_FLAGS_EXPAND,       SCALE_FACTOR_ONE,
-    scaler_PalTV_16,  	  NULL,      expand_pal1         },
   { "PAL TV 2x",       "paltv2x",   SCALER_FLAGS_EXPAND,       SCALE_FACTOR_TWO,
-    scaler_PalTV2x_16,    NULL,    expand_pal          },
+    scaler_PalTV2x_16,    NULL,    expand_full_width   },
   { "PAL TV 3x",       "paltv3x",   SCALER_FLAGS_EXPAND,       SCALE_FACTOR_THREE,
-    scaler_PalTV3x_16,    NULL,    expand_pal          },
+    scaler_PalTV3x_16,    NULL,    expand_full_width   },
   { "PAL TV 4x",       "paltv4x",   SCALER_FLAGS_EXPAND,       SCALE_FACTOR_FOUR,
-    scaler_PalTV4x_16,    NULL,    expand_pal          },
+    scaler_PalTV4x_16,    NULL,    expand_full_width   },
   { "HQ 2x",           "hq2x",      SCALER_FLAGS_EXPAND,       SCALE_FACTOR_TWO,
     scaler_HQ2x_16,       NULL,       expand_1            },
   { "HQ 3x",           "hq3x",      SCALER_FLAGS_EXPAND,       SCALE_FACTOR_THREE,
     scaler_HQ3x_16,       NULL,       expand_1            },
   { "HQ 4x",           "hq4x",      SCALER_FLAGS_EXPAND,       SCALE_FACTOR_FOUR,
     scaler_HQ4x_16,       NULL,       expand_1            },
+  { "NTSC TV 2x",      "ntsctv2x",  SCALER_FLAGS_FULL_REFRESH, SCALE_FACTOR_TWO,
+    scaler_blargg_NTSC_2x_16, NULL, NULL        },
+  { "NTSC TV 3x",      "ntsctv3x",  SCALER_FLAGS_FULL_REFRESH, SCALE_FACTOR_THREE,
+    scaler_blargg_NTSC_3x_16, NULL, NULL        },
+  { "NTSC TV 4x",      "ntsctv4x",  SCALER_FLAGS_FULL_REFRESH, SCALE_FACTOR_FOUR,
+    scaler_blargg_NTSC_4x_16, NULL, NULL        },
 };
 
 scaler_type current_scaler = SCALER_NUM;
@@ -162,9 +164,35 @@ scaler_select_scaler( scaler_type scaler )
 }
 
 int
+scaler_select_bitformat( scaler_bitformat_t bitformat )
+{
+  switch( bitformat ) {
+  case BITFORMAT_555:
+  case BITFORMAT_565:
+    return scaler_select_bitformat_16( bitformat );
+
+  case BITFORMAT_X8B8G8R8:
+  case BITFORMAT_X8R8G8B8:
+    return scaler_select_bitformat_32( bitformat );
+
+  default:
+    ui_error( UI_ERROR_ERROR, "unknown bitformat %d", bitformat );
+    return 1;
+  }
+}
+
+int
 scaler_select_id( const char *id )
 {
-  int i = scaler_get_type( id );
+  int i;
+
+  if( !strcmp( id, "paltv" ) ) {
+    ui_error( UI_ERROR_WARNING,
+              "Scaler id '%s' has been removed; using 'normal'", id );
+    return scaler_select_scaler( SCALER_NORMAL );
+  }
+
+  i = scaler_get_type( id );
 
   if( i >= 0 ) {
     scaler_select_scaler( i );
@@ -304,21 +332,13 @@ expand_sai( int *x, int *y, int *w, int *h, int image_width, int image_height )
   clip( x, y, w, h, image_width, image_height );
 }
 
-/* Expand two pixels left and right */
+/* Expand to the full source-line width */
 static void
-expand_pal1( int *x, int *y, int *w, int *h, int image_width, int image_height )
+expand_full_width( int *x, int *y, int *w, int *h,
+                   int image_width, int image_height )
 {
-  int w_mod = (*w) % 2;
-  (*x)-=2; (*w)+=4;
-  (*w)+=w_mod;		/* expand to even*/
-  clip( x, y, w, h, image_width, image_height );
-}
-
-/* Expand one pixels left and right */
-static void
-expand_pal( int *x, int *y, int *w, int *h, int image_width, int image_height )
-{
-  (*x)-=1; (*w)+=2;
+  *x = 0;
+  *w = image_width;
   clip( x, y, w, h, image_width, image_height );
 }
 

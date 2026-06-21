@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 1999-2017 Philip Kendall
+## Copyright (c) 2026 Fredrick Meunier
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -154,7 +155,10 @@ EXTRA_DIST = AUTHORS \
 	     menu_data.pl \
 	     settings.dat \
 	     settings.pl \
-	     settings-header.pl
+	     settings-header.pl \
+	     update-release.py \
+	     .agents/skills/README.md \
+	     .agents/skills/update-changelog/SKILL.md
 
 CLEANFILES = options.h \
 	     settings.c \

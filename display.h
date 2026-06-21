@@ -1,5 +1,6 @@
 /* display.h: Routines for printing the Spectrum's screen
    Copyright (c) 1999-2016 Philip Kendall
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -59,6 +60,11 @@
 
 /* The aspect ratio corrected display width */
 #define DISPLAY_ASPECT_WIDTH  ( DISPLAY_SCREEN_WIDTH / 2 )
+
+/* The Spectrum's FLASH attribute toggles every 16 frames.  One complete
+   flash cycle (normal → reversed → normal) spans 32 frames. */
+#define DISPLAY_FLASH_HALF_PERIOD 16
+#define DISPLAY_FLASH_PERIOD      32
 
 extern int display_ui_initialised;
 

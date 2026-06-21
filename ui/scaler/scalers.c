@@ -1,5 +1,5 @@
 /* scalers.c: the actual graphics scalers
- * Copyright (C) 2003-2021 Fredrick Meunier, Philip Kendall, Gergely Szasz
+ * Copyright (C) 2003-2026 Fredrick Meunier, Philip Kendall, Gergely Szasz
  *
  * Originally taken from ScummVM - Scumm Interpreter
  * Copyright (C) 2001  Ludvig Strigeus
@@ -27,14 +27,17 @@
 #include "config.h"
 
 #include <string.h>
+#include <math.h>
 
 #include "libspectrum.h"
 
+#include "display.h"
 #include "scaler.h"
 #include "scaler_internals.h"
 #include "settings.h"
 #include "ui/ui.h"
 #include "ui/uidisplay.h"
+#include "snes_ntsc.h"
 
 #ifndef MIN
 #define MIN(a,b)    (((a) < (b)) ? (a) : (b))
@@ -80,9 +83,9 @@ static const libspectrum_word dotmatrix_555[16] = {
 static const libspectrum_word *dotmatrix;
 
 int 
-scaler_select_bitformat( libspectrum_dword BitFormat )
+scaler_select_bitformat_16( scaler_bitformat_t bitformat )
 {
-  switch( BitFormat ) {
+  switch( bitformat ) {
 
     /* FIXME(?): there is an assumption here that our colour fields
        are (*) xxxx|xyyy|yyyz|zzzz for the 565 mode
@@ -129,7 +132,7 @@ scaler_select_bitformat( libspectrum_dword BitFormat )
     break;
 
   default:
-    ui_error( UI_ERROR_ERROR, "unknown bitformat %d", BitFormat );
+    ui_error( UI_ERROR_ERROR, "unknown bitformat %d", bitformat );
     return 1;
 
   }
@@ -142,10 +145,12 @@ scaler_select_bitformat( libspectrum_dword BitFormat )
 typedef libspectrum_dword scaler_data_type;
 #define FUNCTION( name ) name##_32
 
-/* The assumption here is that the colour fields are laid out in
-   memory as (LSB) red|green|blue|padding (MSB). We wish to access
-   these as 32-bit entities, so make sure we get our masks the right
-   way round. */
+/* The default 32-bit scaler format stores pixels in memory as
+   red|green|blue|padding. Some frontends, such as GTK/Cairo RGB24,
+   instead use native-endian x8r8g8b8, which is blue|green|red|padding on
+   little-endian hosts and padding|red|green|blue on big-endian hosts.
+   The composite scalers need explicit channel-aware handling for both. */
+static scaler_bitformat_t scaler_32bit_bitformat = BITFORMAT_X8B8G8R8;
 
 #ifdef WORDS_BIGENDIAN
 
@@ -192,6 +197,21 @@ static const libspectrum_dword dotmatrix[16] = {
 };
 
 #endif				/* #ifdef WORDS_BIGENDIAN */
+
+int
+scaler_select_bitformat_32( scaler_bitformat_t bitformat )
+{
+  switch( bitformat ) {
+  case BITFORMAT_X8B8G8R8:
+  case BITFORMAT_X8R8G8B8:
+    scaler_32bit_bitformat = bitformat;
+    return 0;
+
+  default:
+    ui_error( UI_ERROR_ERROR, "unknown bitformat %d", bitformat );
+    return 1;
+  }
+}
 
 #else				/* #if SCALER_DATA_SIZE == 2 or 4 */
 #error Unknown SCALER_DATA_SIZE
@@ -1483,138 +1503,32 @@ FUNCTION( scaler_DotMatrix )( const libspectrum_byte *srcPtr,
         ( ( ( (b) & blueMask ) >> 11 ) * 8424 ) >> 10 : \
         ( ( ( (b) & blueMask ) >> 10 ) * 8424 ) >> 10 )
 
-void
-FUNCTION( scaler_PalTV )( const libspectrum_byte *srcPtr,
-                              libspectrum_dword srcPitch,
-                              libspectrum_byte *dstPtr,
-                              libspectrum_dword dstPitch,
-                              int width, int height )
-{
-/*
-   1.a. RGB => 255,255,255 RGB
-   1.b. RGB => YUV
-   2. 422 interstricial color subsampling 
-   3.a. YUV => RGB
-   3.b  255,255,255 RGB => RGB
-*/
-  int i, j;
-  unsigned int nextlineSrc = srcPitch / sizeof( scaler_data_type );
-  const scaler_data_type *p, *p0 = (const scaler_data_type *)srcPtr;
+typedef struct composite_scaler_config {
+  int scale;
+  int cycle_phase;
+  int burst_phase;
+  double dsxd;
+  double brightness[4];
+} composite_scaler_config;
 
-  unsigned int nextlineDst = dstPitch / sizeof( scaler_data_type );
-  scaler_data_type *q, *q0 = (scaler_data_type *)dstPtr;
-  
-  libspectrum_byte  r0, g0, b0,
-                    r1, g1, b1,
-                    r2, g2, b2,
-                    r3, g3, b3;
-  libspectrum_signed_word y1, y2, u1, u2, v1, v2;
+typedef struct composite_scaler_cache {
+  int snes_init;
+  int burst_phase;
+  snes_ntsc_setup_t last_setup;
+  snes_ntsc_t ntsc[4];
+} composite_scaler_cache;
 
-/*
- 422 cosited
-    # + # +             + only Y
-                        # Y and Cb Cr
-    # + # +
-    
-    abcd...    =>  1/2a + a + 1/2b / 2; ...; 1/2a + b + 1/2c; ... ; ...
-    always 3 sample/proc
-
-*/
-  for( j = height; j; j-- ) {
-    p = p0 - 1; q = q0;
-#if SCALER_DATA_SIZE == 2
-    /* 1.a. RGB => RGB */
-    r2 = R_TO_R( *p );
-    g2 = G_TO_G( *p );
-    b2 = B_TO_B( *p );
-    p++;
-    r0 = R_TO_R( *p );
-    g0 = G_TO_G( *p );
-    b0 = B_TO_B( *p );
-    p++;
-    r1 = R_TO_R( *p );
-    g1 = G_TO_G( *p );
-    b1 = B_TO_B( *p );
-    p++;
-#else
-    r2 = (*p & redMask);
-    g2 = (*p & greenMask) >> 8;
-    b2 = (*p & blueMask) >> 16;
-    p++;
-    r0 = (*p & redMask);
-    g0 = (*p & greenMask) >> 8;
-    b0 = (*p & blueMask) >> 16;
-    p++;
-    r1 = (*p & redMask);
-    g1 = (*p & greenMask) >> 8;
-    b1 = (*p & blueMask) >> 16;
-    p++;
-#endif
-    u1 = ( RGB_TO_U( r2, g2, b2 ) + 2 * RGB_TO_U( r0, g0, b0 ) +
-            RGB_TO_U( r1, g1, b1 ) ) >> 2;
-    v1 = ( RGB_TO_V( r2, g2, b2 ) + 2 * RGB_TO_V( r0, g0, b0 ) +
-            RGB_TO_V( r1, g1, b1 ) ) >> 2;
-    for( i = width; i; i -= 2 ) {
-#if SCALER_DATA_SIZE == 2
-      /* 1.a. RGB => RGB */
-      r2 = R_TO_R( *p );
-      g2 = G_TO_G( *p );
-      b2 = B_TO_B( *p );
-      p++;
-      r3 = R_TO_R( *p );
-      g3 = G_TO_G( *p );
-      b3 = B_TO_B( *p );
-      p++;
-#else
-      r2 = (*p & redMask);
-      g2 = (*p & greenMask) >> 8;
-      b2 = (*p & blueMask) >> 16;
-      p++;
-      r3 = (*p & redMask);
-      g3 = (*p & greenMask) >> 8;
-      b3 = (*p & blueMask) >> 16;
-      p++;
-#endif
-/* 1.b. RGB => YUV && 2. YUV subsampling */
-      y1 = RGB_TO_Y( r0, g0, b0 );
-      y2 = RGB_TO_Y( r1, g1, b1 );
-
-      u2 = ( RGB_TO_U( r1, g1, b1 ) + 2 * RGB_TO_U( r2, g2, b2 ) +
-            RGB_TO_U( r3, g3, b3 ) ) >> 2;
-      v2 = ( RGB_TO_V( r1, g1, b1 ) + 2 * RGB_TO_V( r2, g2, b2 ) +
-            RGB_TO_V( r3, g3, b3 ) ) >> 2;
-/* 3.a. YUV => RGB  */
-      r0 = YUV_TO_R(y1, u1, v1);
-      g0 = YUV_TO_G(y1, u1, v1);
-      b0 = YUV_TO_B(y1, u1, v1);
-      
-      u1 = (u1 + u2) >> 1;
-      v1 = (v1 + v2) >> 1;
-
-      r1 = YUV_TO_R(y2, u1, v1);
-      g1 = YUV_TO_G(y2, u1, v1);
-      b1 = YUV_TO_B(y2, u1, v1);
-#if SCALER_DATA_SIZE == 2
-/* 3.b. RGB => RGB */
-      if( green6bit ) {
-        *q++ = RGB_TO_PIXEL_565( r0, g0, b0 );
-        *q++ = RGB_TO_PIXEL_565( r1, g1, b1 );
-      } else {
-        *q++ = RGB_TO_PIXEL_555( r0, g0, b0 );
-        *q++ = RGB_TO_PIXEL_555( r1, g1, b1 );
-      }
-#else
-      *q++ = r0 + (g0 << 8) + (b0 << 16);
-      *q++ = r1 + (g1 << 8) + (b1 << 16);
-#endif
-      u1 = u2; v1 = v2;
-      r0 = r2; g0 = g2; b0 = b2;
-      r1 = r3; g1 = g3; b1 = b3;
-    }
-    p0 += nextlineSrc;
-    q0 += nextlineDst;
-  }
-}
+static void composite_scaler_make_setup( snes_ntsc_setup_t *setup );
+static double composite_scaler_adjust_brightness( double brightness,
+                                                  double factor );
+static void composite_scaler_init( const composite_scaler_config *config,
+                                   composite_scaler_cache *cache );
+static void composite_scaler_blit( const composite_scaler_config *config,
+                                   const libspectrum_byte *srcPtr,
+                                   libspectrum_dword srcPitch,
+                                   libspectrum_byte *dstPtr,
+                                   libspectrum_dword dstPitch,
+                                   int width, int height );
 
 void
 FUNCTION( scaler_PalTV2x )( const libspectrum_byte *srcPtr,
@@ -1623,129 +1537,12 @@ FUNCTION( scaler_PalTV2x )( const libspectrum_byte *srcPtr,
                               libspectrum_dword dstPitch,
                               int width, int height )
 {
-/*
-   1.a. RGB => 255,255,255 RGB
-   1.b. RGB => YUV
-   2. 4:2:2 cosited color subsampling 
-   3.a. YUV => RGB
-   3.b  255,255,255 RGB => RGB
-*/
-  int i, j;
-  unsigned int nextlineSrc = srcPitch / sizeof( scaler_data_type );
-  const scaler_data_type *p, *p0 = (const scaler_data_type *)srcPtr;
+  static const composite_scaler_config config = {
+    2, 0, 0, 7.0 / 6.0, { 1.0, 0.75, 0.0, 0.0 }
+  };
 
-  unsigned int nextlineDst = dstPitch / sizeof( scaler_data_type );
-  scaler_data_type *q, *q0 = (scaler_data_type *)dstPtr;
-  
-  libspectrum_byte  r0, g0, b0,
-                    r1, g1, b1,
-                    rx, gx, bx;
-  libspectrum_signed_dword y1, y2, u1, v1, u2, v2;
-
-/*
- 422 cosited
-    # + # +             + only Y
-                        # Y and Cb Cr
-    # + # +
-    
-    abcd...    =>  1/2a + a + 1/2b / 2; ...; 1/2a + b + 1/2c; ... ; ...
-    always 3 sample/proc
-
-*/
-  for( j = height; j; j-- ) {
-    p = p0 - 1; q = q0;
-#if SCALER_DATA_SIZE == 2
-    r0 = R_TO_R( *p );
-    g0 = G_TO_G( *p );
-    b0 = B_TO_B( *p );
-    p++;
-    r1 = R_TO_R( *p );
-    g1 = G_TO_G( *p );
-    b1 = B_TO_B( *p );
-#else
-    r0 = *p & redMask;
-    g0 = (*p & greenMask) >> 8;
-    b0 = (*p & blueMask) >> 16;
-    p++;
-    r1 = *(p) & redMask;
-    g1 = (*(p) & greenMask) >> 8;
-    b1 = (*(p) & blueMask) >> 16;
-#endif
-    y1 = RGB_TO_Y( r1, g1, b1 );
-    u1 = ( RGB_TO_U( r0, g0, b0 ) + 3 * RGB_TO_U( r1, g1, b1 ) ) >> 2;
-    v1 = ( RGB_TO_V( r0, g0, b0 ) + 3 * RGB_TO_V( r1, g1, b1 ) ) >> 2;
-    for( i = width; i; i-- ) {
-      p++;      /* next point */
-#if SCALER_DATA_SIZE == 2
-      /* 1.a. RGB => RGB */
-      r0 = R_TO_R( *p );
-      g0 = G_TO_G( *p );
-      b0 = B_TO_B( *p );
-#else
-      r0 = (*p & redMask);
-      g0 = (*p & greenMask) >> 8;
-      b0 = (*p & blueMask) >> 16;
-#endif
-/* 1.b. RGB => YUV && 2. YUV subsampling */
-      y2 = RGB_TO_Y( r0, g0, b0 );
-      u2 = ( RGB_TO_U( r1, g1, b1 ) + 3 * RGB_TO_U( r0, g0, b0 ) ) >> 2;
-      v2 = ( RGB_TO_V( r1, g1, b1 ) + 3 * RGB_TO_V( r0, g0, b0 ) ) >> 2;
-
-/* 3.a. YUV => RGB  */
-      rx = YUV_TO_R( y1, u1, v1 );      /* [x0][  ]*/
-      gx = YUV_TO_G( y1, u1, v1 );
-      bx = YUV_TO_B( y1, u1, v1 );
-
-      u1 = ( u1 + u2 ) >> 1;
-      v1 = ( v1 + v2 ) >> 1;
-
-      r1 = YUV_TO_R( y1, u1, v1 );
-      g1 = YUV_TO_G( y1, u1, v1 );
-      b1 = YUV_TO_B( y1, u1, v1 );
-
-#if SCALER_DATA_SIZE == 2
-/* 3.b. RGB => RGB */
-      if( green6bit ) {
-        *q = RGB_TO_PIXEL_565( rx, gx, bx );
-      } else {
-        *q = RGB_TO_PIXEL_555( rx, gx, bx );
-      }
-#else
-      *q = rx + ( gx << 8 ) + ( bx << 16 );
-#endif
-
-      if( settings_current.pal_tv2x )
-        *(q + nextlineDst) =
-            ((((*q & redblueMask) * 7) >> 3) & redblueMask) |
-                ((((*q & greenMask  ) * 7) >> 3) & greenMask);
-      else
-        *(q + nextlineDst) = *q;
-
-      q++;
-#if SCALER_DATA_SIZE == 2
-/* 3.b. RGB => RGB */
-      if( green6bit ) {
-        *q = RGB_TO_PIXEL_565( r1, g1, b1 );
-      } else {
-        *q = RGB_TO_PIXEL_555( r1, g1, b1 );
-      }
-#else
-      *q = r1 + ( g1 << 8 ) + ( b1 << 16 );
-#endif
-      if( settings_current.pal_tv2x )
-        *(q + nextlineDst) =
-            ((((*q & redblueMask) * 7) >> 3) & redblueMask) |
-                ((((*q & greenMask  ) * 7) >> 3) & greenMask);
-      else
-        *(q + nextlineDst) = *q;
-
-      q++;
-      y1 = y2; u1 = u2; v1 = v2;        /* save for next point */
-      r1 = r0; g1 = g0; b1 = b0;
-    }
-    p0 += nextlineSrc;
-    q0 += nextlineDst << 1;
-  }
+  composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
+                         height );
 }
 
 void
@@ -1755,161 +1552,12 @@ FUNCTION( scaler_PalTV3x )( const libspectrum_byte *srcPtr,
                               libspectrum_dword dstPitch,
                               int width, int height )
 {
-/*
-   1.a. RGB => 255,255,255 RGB
-   1.b. RGB => YUV
-   2. 4:2:2 cosited color subsampling 
-   3.a. YUV => RGB
-   3.b  255,255,255 RGB => RGB
-*/
-  int i, j;
-  unsigned int nextlineSrc = srcPitch / sizeof( scaler_data_type );
-  const scaler_data_type *p, *p0 = (const scaler_data_type *)srcPtr;
+  static const composite_scaler_config config = {
+    3, 0, 0, ( 7.0 / 9.0 ) * 1.005, { 0.8, 1.0, 0.5, 0.0 }
+  };
 
-  unsigned int nextlineDst = dstPitch / sizeof( scaler_data_type );
-  scaler_data_type *q, *q0 = (scaler_data_type *)dstPtr;
-  
-  libspectrum_byte  r0, g0, b0,
-                    r1, g1, b1,
-                    r2, g2, b2,
-                    rx, gx, bx;
-  libspectrum_signed_dword y1, y2, u1, v1, u2, v2;
-
-/*
- 422 cosited
-    # + # +             + only Y
-                        # Y and Cb Cr
-    # + # +
-    
-    abcd...    =>  1/2a + a + 1/2b / 2; ...; 1/2a + b + 1/2c; ... ; ...
-    always 3 sample/proc
-
-*/
-  for( j = height; j; j-- ) {
-    p = p0 - 1; q = q0;
-#if SCALER_DATA_SIZE == 2
-    r0 = R_TO_R( *p );
-    g0 = G_TO_G( *p );
-    b0 = B_TO_B( *p );
-    p++;
-    r1 = R_TO_R( *p );
-    g1 = G_TO_G( *p );
-    b1 = B_TO_B( *p );
-#else
-    r0 = *p & redMask;
-    g0 = (*p & greenMask) >> 8;
-    b0 = (*p & blueMask) >> 16;
-    p++;        /* next point */
-    r1 = *(p) & redMask;
-    g1 = (*(p) & greenMask) >> 8;
-    b1 = (*(p) & blueMask) >> 16;
-#endif
-    y1 = RGB_TO_Y( r1, g1, b1 );
-    u1 = ( RGB_TO_U( r0, g0, b0 ) + 3 * RGB_TO_U( r1, g1, b1 ) ) >> 2;
-    v1 = ( RGB_TO_V( r0, g0, b0 ) + 3 * RGB_TO_V( r1, g1, b1 ) ) >> 2;
-    for( i = width; i; i-- ) {
-      p++;
-#if SCALER_DATA_SIZE == 2
-      /* 1.a. RGB => RGB */
-      r0 = R_TO_R( *p );
-      g0 = G_TO_G( *p );
-      b0 = B_TO_B( *p );
-#else
-      r0 = (*p & redMask);
-      g0 = (*p & greenMask) >> 8;
-      b0 = (*p & blueMask) >> 16;
-#endif
-/* 1.b. RGB => YUV && 2. YUV subsampling */
-      y2 = RGB_TO_Y( r0, g0, b0 );
-      u2 = ( RGB_TO_U( r1, g1, b1 ) + 3 * RGB_TO_U( r0, g0, b0 ) ) >> 2;
-      v2 = ( RGB_TO_V( r1, g1, b1 ) + 3 * RGB_TO_V( r0, g0, b0 ) ) >> 2;
-
-/* 3.a. YUV => RGB  */
-      rx = YUV_TO_R( y1, u1, v1 );      /* [x0][  ]*/
-      gx = YUV_TO_G( y1, u1, v1 );
-      bx = YUV_TO_B( y1, u1, v1 );
-
-      u1 = ( u1 + u2 ) >> 1;
-      v1 = ( v1 + v2 ) >> 1;
-
-      r1 = YUV_TO_R( y1, u1, v1 );
-      g1 = YUV_TO_G( y1, u1, v1 );
-      b1 = YUV_TO_B( y1, u1, v1 );
-
-/*
-    ab  => EFG         
-    ab     EFG
-           efg
-*/
-      r2 = ((int)rx + r1) >> 1;                 /* F */
-      g2 = ((int)gx + g1) >> 1;
-      b2 = ((int)bx + b1) >> 1;
-
-#if SCALER_DATA_SIZE == 2
-/* 3.b. RGB => RGB */
-      if( green6bit ) {
-        *q = RGB_TO_PIXEL_565( rx, gx, bx);
-      } else {
-        *q = RGB_TO_PIXEL_555( rx, gx, bx);
-      }
-#else
-      *q = rx + ( gx << 8 ) + ( bx << 16 );     /* E, E, e */
-#endif
-      *(q + nextlineDst) = *q;
-
-      if( settings_current.pal_tv2x )
-        *(q + (nextlineDst << 1)) =
-            ((((*q & redblueMask) * 7) >> 3) & redblueMask) |
-                ((((*q & greenMask  ) * 7) >> 3) & greenMask);
-      else
-        *(q + (nextlineDst << 1)) = *q;
-
-      q++;
-#if SCALER_DATA_SIZE == 2
-/* 3.b. RGB => RGB */
-      if( green6bit ) {
-        *q = RGB_TO_PIXEL_565( r2, g2, b2 );
-      } else {
-        *q = RGB_TO_PIXEL_555( r2, g2, b2 );
-      }
-#else
-      *q = r2 + ( g2 << 8 ) + ( b2 << 16 );     /* F, F, f*/
-#endif
-      *(q + nextlineDst) = *q;
-
-      if( settings_current.pal_tv2x )
-        *(q + (nextlineDst << 1)) =
-            ((((*q & redblueMask) * 7) >> 3) & redblueMask) |
-                ((((*q & greenMask  ) * 7) >> 3) & greenMask);
-      else
-        *(q + (nextlineDst << 1)) = *q;
-
-      q++;
-#if SCALER_DATA_SIZE == 2
-/* 3.b. RGB => RGB */
-      if( green6bit ) {
-        *q = RGB_TO_PIXEL_565( r1, g1, b1 );
-      } else {
-        *q = RGB_TO_PIXEL_555( r1, g1, b1 );
-      }
-#else
-      *q = r1 + ( g1 << 8 ) + ( b1 << 16 );     /* G, G, g*/
-#endif
-      *(q + nextlineDst) = *q;
-      if( settings_current.pal_tv2x )
-        *(q + (nextlineDst << 1)) =
-            ((((*q & redblueMask) * 7) >> 3) & redblueMask) |
-                ((((*q & greenMask  ) * 7) >> 3) & greenMask);
-      else
-        *(q + (nextlineDst << 1)) = *q;
-
-      q++;
-      y1 = y2; u1 = u2; v1 = v2;        /* save for next point */
-      r1 = r0; g1 = g0; b1 = b0;
-    }
-    p0 += nextlineSrc;
-    q0 += (nextlineDst << 1) + nextlineDst;
-  }
+  composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
+                         height );
 }
 
 void
@@ -1919,143 +1567,12 @@ FUNCTION( scaler_PalTV4x )( const libspectrum_byte *srcPtr,
                               libspectrum_dword dstPitch,
                               int width, int height )
 {
-/*
-   1.a. RGB => 255,255,255 RGB
-   1.b. RGB => YUV
-   2. 4:2:2 cosited color subsampling
-   3.a. YUV => RGB
-   3.b  255,255,255 RGB => RGB
-*/
-  int i, j;
-  unsigned int nextlineSrc = srcPitch / sizeof( scaler_data_type );
-  const scaler_data_type *p, *p0 = (const scaler_data_type *)srcPtr;
+  static const composite_scaler_config config = {
+    4, 0, 0, 7.0 / 12.0, { 0.9, 1.0, 0.75, 0.5 }
+  };
 
-  unsigned int nextlineDst = dstPitch / sizeof( scaler_data_type );
-  scaler_data_type *q, *q0 = (scaler_data_type *)dstPtr;
-
-  libspectrum_byte  r0, g0, b0,
-                    r1, g1, b1,
-                    rx, gx, bx;
-  libspectrum_signed_dword y1, y2, u1, v1, u2, v2;
-
-/*
- 422 cosited
-    # + # +             + only Y
-                        # Y and Cb Cr
-    # + # +
-
-    abcd...    =>  1/2a + a + 1/2b / 2; ...; 1/2a + b + 1/2c; ... ; ...
-    always 3 sample/proc
-
-*/
-  for( j = height; j; j-- ) {
-    p = p0 - 1; q = q0;
-#if SCALER_DATA_SIZE == 2
-    r0 = R_TO_R( *p );
-    g0 = G_TO_G( *p );
-    b0 = B_TO_B( *p );
-    p++;
-    r1 = R_TO_R( *p );
-    g1 = G_TO_G( *p );
-    b1 = B_TO_B( *p );
-#else
-    r0 = *p & redMask;
-    g0 = (*p & greenMask) >> 8;
-    b0 = (*p & blueMask) >> 16;
-    p++;
-    r1 = *(p) & redMask;
-    g1 = (*(p) & greenMask) >> 8;
-    b1 = (*(p) & blueMask) >> 16;
-#endif
-    y1 = RGB_TO_Y( r1, g1, b1 );
-    u1 = ( RGB_TO_U( r0, g0, b0 ) + 3 * RGB_TO_U( r1, g1, b1 ) ) >> 2;
-    v1 = ( RGB_TO_V( r0, g0, b0 ) + 3 * RGB_TO_V( r1, g1, b1 ) ) >> 2;
-    for( i = width; i; i-- ) {
-      p++;      /* next point */
-#if SCALER_DATA_SIZE == 2
-      /* 1.a. RGB => RGB */
-      r0 = R_TO_R( *p );
-      g0 = G_TO_G( *p );
-      b0 = B_TO_B( *p );
-#else
-      r0 = (*p & redMask);
-      g0 = (*p & greenMask) >> 8;
-      b0 = (*p & blueMask) >> 16;
-#endif
-/* 1.b. RGB => YUV && 2. YUV subsampling */
-      y2 = RGB_TO_Y( r0, g0, b0 );
-      u2 = ( RGB_TO_U( r1, g1, b1 ) + 3 * RGB_TO_U( r0, g0, b0 ) ) >> 2;
-      v2 = ( RGB_TO_V( r1, g1, b1 ) + 3 * RGB_TO_V( r0, g0, b0 ) ) >> 2;
-
-/* 3.a. YUV => RGB  */
-      rx = YUV_TO_R( y1, u1, v1 );      /* [x0][  ]*/
-      gx = YUV_TO_G( y1, u1, v1 );
-      bx = YUV_TO_B( y1, u1, v1 );
-
-      u1 = ( u1 + u2 ) >> 1;
-      v1 = ( v1 + v2 ) >> 1;
-
-      r1 = YUV_TO_R( y1, u1, v1 );
-      g1 = YUV_TO_G( y1, u1, v1 );
-      b1 = YUV_TO_B( y1, u1, v1 );
-
-#if SCALER_DATA_SIZE == 2
-/*
-   q q+1 | q+2 q+3
-   q q+1 | q+2 q+3
-   _______________
-
-*/
-/* 3.b. RGB => RGB */
-      if( green6bit ) {
-        *q = *(q+1) = RGB_TO_PIXEL_565( rx, gx, bx );
-      } else {
-        *q = *(q+1) = RGB_TO_PIXEL_555( rx, gx, bx );
-      }
-#else
-      *q = *(q+1) = rx + ( gx << 8 ) + ( bx << 16 );
-#endif
-
-      if( settings_current.pal_tv2x )
-        *(q + nextlineDst) = *(q + nextlineDst + 1) =
-        *(q + 2 * nextlineDst) = *(q + 2 * nextlineDst + 1) =
-        *(q + 3 * nextlineDst) = *(q + 3 * nextlineDst + 1) =
-            ((((*q & redblueMask) * 7) >> 3) & redblueMask) |
-                ((((*q & greenMask  ) * 7) >> 3) & greenMask);
-      else
-        *(q + nextlineDst) = *(q + nextlineDst + 1) =
-        *(q + 2 * nextlineDst) = *(q + 2 * nextlineDst + 1) =
-        *(q + 3 * nextlineDst) = *(q + 3 * nextlineDst + 1) = *q;
-
-      q++; q++;
-#if SCALER_DATA_SIZE == 2
-/* 3.b. RGB => RGB */
-      if( green6bit ) {
-        *q = *(q + 1) = RGB_TO_PIXEL_565( r1, g1, b1 );
-      } else {
-        *q = *(q + 1) = RGB_TO_PIXEL_555( r1, g1, b1 );
-      }
-#else
-      *q = *(q + 1) = r1 + ( g1 << 8 ) + ( b1 << 16 );
-#endif
-      if( settings_current.pal_tv2x )
-        *(q + nextlineDst) = *(q + nextlineDst + 1) =
-        *(q + 2 * nextlineDst) = *(q + 2 * nextlineDst + 1) =
-        *(q + 3 * nextlineDst) = *(q + 3 * nextlineDst + 1) =
-            ((((*q & redblueMask) * 7) >> 3) & redblueMask) |
-                ((((*q & greenMask  ) * 7) >> 3) & greenMask);
-      else
-        *(q + nextlineDst) = *(q + nextlineDst + 1) =
-        *(q + 2 * nextlineDst) = *(q + 2 * nextlineDst + 1) =
-        *(q + 3 * nextlineDst) = *(q + 3 * nextlineDst + 1) = *q;
-
-      q++; q++;
-      y1 = y2; u1 = u2; v1 = v2;        /* save for next point */
-      r1 = r0; g1 = g0; b1 = b0;
-    }
-    p0 += nextlineSrc;
-    q0 += nextlineDst << 2;
-  }
+  composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
+                         height );
 }
 
 #define prevline (-nextlineSrc)
@@ -2368,4 +1885,247 @@ FUNCTION( scaler_HQ4x ) ( const libspectrum_byte *srcPtr,
     p0 += nextlineSrc;
     q0 += ( nextlineDst << 2 );
   }
+}
+
+static inline scaler_data_type
+blargg_ntsc_rgb_to_pixel( const uint8_t *rgb )
+{
+#if SCALER_DATA_SIZE == 2
+  const uint8_t blue = rgb[0];
+  const uint8_t green = rgb[1];
+  const uint8_t red = rgb[2];
+
+  return green6bit ? RGB_TO_PIXEL_565( red, green, blue ) :
+                     RGB_TO_PIXEL_555( red, green, blue );
+#else
+  const uint8_t red = rgb[0];
+  const uint8_t green = rgb[1];
+  const uint8_t blue = rgb[2];
+
+#ifdef WORDS_BIGENDIAN
+  return scaler_32bit_bitformat == BITFORMAT_X8R8G8B8 ?
+         green << 8 | red << 16 | blue :
+         blue << 8 | green << 16 | red << 24;
+#else
+  return scaler_32bit_bitformat == BITFORMAT_X8R8G8B8 ?
+         blue | green << 8 | red << 16 :
+         red | green << 8 | blue << 16;
+#endif
+#endif
+}
+
+#if SCALER_DATA_SIZE == 2
+static const SNES_NTSC_IN_T*
+blargg_ntsc_input_row( const libspectrum_byte *srcPtr, int width )
+{
+  static SNES_NTSC_IN_T input_buffer[ DISPLAY_SCREEN_WIDTH ];
+  const scaler_data_type *src = (const scaler_data_type *)srcPtr;
+  int x;
+
+  for( x = 0; x < width; x++ ) {
+    libspectrum_byte red = R_TO_R( src[x] );
+    libspectrum_byte green = G_TO_G( src[x] );
+    libspectrum_byte blue = B_TO_B( src[x] );
+
+    input_buffer[x] = red << 16 | green << 8 | blue;
+  }
+
+  return input_buffer;
+}
+#else
+static const SNES_NTSC_IN_T*
+blargg_ntsc_input_row( const libspectrum_byte *srcPtr, int width )
+{
+  if( scaler_32bit_bitformat == BITFORMAT_X8B8G8R8 )
+    return (const SNES_NTSC_IN_T *)srcPtr;
+
+  static SNES_NTSC_IN_T input_buffer[ DISPLAY_SCREEN_WIDTH ];
+  const scaler_data_type *src = (const scaler_data_type *)srcPtr;
+  int x;
+
+  for( x = 0; x < width; x++ ) {
+    libspectrum_dword pixel = src[x];
+    libspectrum_byte red = ( pixel >> 16 ) & 0xff;
+    libspectrum_byte green = ( pixel >> 8 ) & 0xff;
+    libspectrum_byte blue = pixel & 0xff;
+
+    input_buffer[x] = red | green << 8 | blue << 16;
+  }
+
+  return input_buffer;
+}
+#endif
+
+static void
+composite_scaler_make_setup( snes_ntsc_setup_t *setup )
+{
+  memset( setup, 0, sizeof( *setup ) );
+
+  setup->hue = (double)settings_current.composite_filter_hue / 100.0;
+  setup->saturation =
+    (double)settings_current.composite_filter_saturation / 100.0;
+  setup->contrast =
+    (double)settings_current.composite_filter_contrast / 100.0;
+  setup->brightness =
+    (double)settings_current.composite_filter_brightness / 100.0;
+  setup->sharpness =
+    (double)settings_current.composite_filter_sharpness / 100.0;
+  setup->gamma =
+    (double)settings_current.composite_filter_gamma / 100.0;
+  setup->resolution =
+    (double)settings_current.composite_filter_resolution / 100.0;
+  setup->artifacts =
+    (double)settings_current.composite_filter_artifacts / 100.0;
+  setup->fringing =
+    (double)settings_current.composite_filter_fringing / 100.0;
+  setup->bleed =
+    (double)settings_current.composite_filter_bleed / 100.0;
+  setup->merge_fields   = 1;
+  setup->decoder_matrix = 0;
+  setup->bsnes_colortbl = 0;
+}
+
+static double
+composite_scaler_adjust_brightness( double brightness, double factor )
+{
+  return ( ( brightness + 1 ) * factor ) - 1;
+}
+
+static void
+composite_scaler_init( const composite_scaler_config *config,
+                       composite_scaler_cache *cache )
+{
+  snes_ntsc_setup_t setup;
+  uint32_t n;
+
+  composite_scaler_make_setup( &setup );
+
+  if( cache->snes_init &&
+      !memcmp( &cache->last_setup, &setup, sizeof( cache->last_setup ) ) )
+    return;
+
+  memcpy( &cache->last_setup, &setup, sizeof( cache->last_setup ) );
+
+  for( n = 0; n < config->scale; n++ ) {
+    snes_ntsc_setup_t row_setup;
+
+    row_setup = setup;
+    row_setup.brightness =
+      composite_scaler_adjust_brightness( setup.brightness,
+                                          config->brightness[n] );
+    snes_ntsc_init( &cache->ntsc[n], &row_setup );
+  }
+
+  cache->snes_init = 1;
+}
+
+static void
+composite_scaler_blit( const composite_scaler_config *config,
+                       const libspectrum_byte *srcPtr,
+                       libspectrum_dword srcPitch,
+                       libspectrum_byte *dstPtr,
+                       libspectrum_dword dstPitch,
+                       int width, int height )
+{
+  static composite_scaler_cache cache_2x;
+  static composite_scaler_cache cache_3x;
+  static composite_scaler_cache cache_4x;
+  static uint8_t buffer[4 * SNES_NTSC_OUT_WIDTH( DISPLAY_SCREEN_WIDTH ) + 8];
+  composite_scaler_cache *cache =
+    config->scale == 2 ? &cache_2x :
+    config->scale == 3 ? &cache_3x : &cache_4x;
+  int burst_phase;
+
+  composite_scaler_init( config, cache );
+  memset( buffer, 0, sizeof( buffer ) );
+
+  burst_phase = config->cycle_phase ?
+                ( cache->burst_phase + 1 ) % snes_ntsc_burst_count :
+                config->burst_phase;
+
+  while( height-- ) {
+    const SNES_NTSC_IN_T *input = blargg_ntsc_input_row( srcPtr, width );
+    int line_phase = config->cycle_phase ?
+                     ( burst_phase + height ) % snes_ntsc_burst_count :
+                     burst_phase;
+    uint32_t n;
+
+    for( n = 0; n < config->scale; n++ ) {
+      scaler_data_type *out = (scaler_data_type*)( dstPtr + dstPitch * n );
+      uint32_t x;
+      double dsx;
+
+      snes_ntsc_blit( &cache->ntsc[n], input, width, line_phase, width, 1,
+                      buffer, 4 * SNES_NTSC_OUT_WIDTH( width ) );
+
+      dsx = 0;
+      for( x = 0; x < width * config->scale; x++ ) {
+        uint32_t isx;
+        double fsx;
+        uint8_t rgb[4];
+
+        isx = (int)floor( dsx );
+        fsx = dsx - floor( dsx );
+        rgb[0] = ( ( 1 - fsx ) * buffer[ isx * 4 + 0 ] ) +
+                 ( fsx * buffer[ isx * 4 + 4 ] );
+        rgb[1] = ( ( 1 - fsx ) * buffer[ isx * 4 + 1 ] ) +
+                 ( fsx * buffer[ isx * 4 + 5 ] );
+        rgb[2] = ( ( 1 - fsx ) * buffer[ isx * 4 + 2 ] ) +
+                 ( fsx * buffer[ isx * 4 + 6 ] );
+        out[0] = blargg_ntsc_rgb_to_pixel( rgb );
+        out++;
+        dsx += config->dsxd;
+      }
+    }
+
+    srcPtr += srcPitch;
+    dstPtr += dstPitch * config->scale;
+  }
+
+  if( config->cycle_phase ) cache->burst_phase = burst_phase;
+}
+
+void
+FUNCTION( scaler_blargg_NTSC_2x )( const libspectrum_byte *srcPtr,
+                                   libspectrum_dword srcPitch,
+                                   libspectrum_byte *dstPtr,
+                                   libspectrum_dword dstPitch,
+                                   int width, int height )
+{
+  static const composite_scaler_config config = {
+    2, 1, 0, 7.0 / 6.0, { 1.0, 0.75, 0.0, 0.0 }
+  };
+
+  composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
+                         height );
+}
+
+void
+FUNCTION( scaler_blargg_NTSC_3x )( const libspectrum_byte *srcPtr,
+                                   libspectrum_dword srcPitch,
+                                   libspectrum_byte *dstPtr,
+                                   libspectrum_dword dstPitch,
+                                   int width, int height )
+{
+  static const composite_scaler_config config = {
+    3, 1, 0, ( 7.0 / 9.0 ) * 1.005, { 0.8, 1.0, 0.5, 0.0 }
+  };
+
+  composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
+                         height );
+}
+
+void
+FUNCTION( scaler_blargg_NTSC_4x )( const libspectrum_byte *srcPtr,
+                                   libspectrum_dword srcPitch,
+                                   libspectrum_byte *dstPtr,
+                                   libspectrum_dword dstPitch,
+                                   int width, int height )
+{
+  static const composite_scaler_config config = {
+    4, 1, 0, 7.0 / 12.0, { 0.9, 1.0, 0.75, 0.5 }
+  };
+
+  composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
+                         height );
 }

@@ -1,6 +1,7 @@
 /* commandy.y: Parse a debugger command
    Copyright (c) 2002-2017 Philip Kendall
    Copyright (c) 2015 Sergio Baldoví
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -69,6 +70,8 @@
 %token <token>	 COMPARISON	/* < > <= >= */
 %token <token>   EQUALITY	/* == != */
 %token <token>   NEGATE		/* ! ~ */
+%token           LSHIFT		/* << */
+%token           RSHIFT		/* >> */
 
 %token		 BASE
 %token		 BREAK
@@ -131,8 +134,9 @@
 %left '&'
 %left EQUALITY
 %left COMPARISON
+%left LSHIFT RSHIFT
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
 %right NEGATE		/* Unary minus, unary plus, !, ~ */
 
 /* High precedence */
@@ -272,6 +276,22 @@ expression:   NUMBER { $$ = debugger_expression_new_number( $1, debugger_memory_
 	      }
 	    | expression '/' expression {
 	        $$ = debugger_expression_new_binaryop( '/', $1, $3, debugger_memory_pool );
+		if( !$$ ) YYABORT;
+	      }
+	    | expression '%' expression {
+	        $$ = debugger_expression_new_binaryop( '%', $1, $3, debugger_memory_pool );
+		if( !$$ ) YYABORT;
+	      }
+	    | expression LSHIFT expression {
+	        $$ = debugger_expression_new_binaryop(
+		  DEBUGGER_TOKEN_LEFT_SHIFT, $1, $3, debugger_memory_pool
+		);
+		if( !$$ ) YYABORT;
+	      }
+	    | expression RSHIFT expression {
+	        $$ = debugger_expression_new_binaryop(
+		  DEBUGGER_TOKEN_RIGHT_SHIFT, $1, $3, debugger_memory_pool
+		);
 		if( !$$ ) YYABORT;
 	      }
 	    | expression EQUALITY expression {

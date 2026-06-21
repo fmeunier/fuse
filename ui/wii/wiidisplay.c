@@ -1,5 +1,6 @@
 /* wiidisplay.c: Routines for dealing with the Wii's framebuffer display
    Copyright (c) 2008-2009 Bjoern Giesler, Marek Januszewski
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -215,7 +216,6 @@ register_scalers( void )
     switch( image_scale ) {
     case 1:
       scaler_register( SCALER_NORMAL );
-      scaler_register( SCALER_PALTV );
       if( !scaler_is_supported( current_scaler ) )
 	scaler_select_scaler( SCALER_NORMAL );
       return 0;
@@ -246,7 +246,6 @@ register_scalers( void )
     case 2:
       scaler_register( SCALER_NORMAL );
       scaler_register( SCALER_TIMEXTV );
-      scaler_register( SCALER_PALTV );
       if( !scaler_is_supported( current_scaler ) )
 	scaler_select_scaler( SCALER_NORMAL );
       return 0;

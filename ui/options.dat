@@ -1,5 +1,6 @@
 # options.dat: Data file for options dialog boxes
 # Copyright (c) 2001-2023 Philip Kendall, Marek Januszewski, Stuart Brady
+# Copyright (c) 2026 Fredrick Meunier
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -62,7 +63,6 @@ Checkbox, RS-232 (h)andshake, rs232_handshake, INPUT_KEY_h
 Checkbox, Raw Sinclair(N)ET, raw_s_net, INPUT_KEY_n
 #endif
 Checkbox, Black and white T(V), bw_tv, INPUT_KEY_v
-Checkbox, (P)AL-TV use TV2x effect, pal_tv2x, INPUT_KEY_p
 #ifdef UI_SDL
 Checkbox, Full (s)creen, full_screen, INPUT_KEY_s
 #elif defined UI_SDL2

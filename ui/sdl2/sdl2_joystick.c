@@ -9,7 +9,7 @@
 
 #include "config.h"
 
-#if !defined USE_JOYSTICK || defined HAVE_JSW_H
+#ifndef USE_JOYSTICK
 #include "../uijoystick.c"
 
 #else

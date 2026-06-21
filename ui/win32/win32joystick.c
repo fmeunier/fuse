@@ -1,6 +1,7 @@
 /* win32joystick.c: Joystick emulation
    Copyright (c) 2003-2011 Darren Salt, Philip Kendall, Marek Januszewski
    Copyright (c) 2015 UB880D
+   Copyright (c) 2026 Fredrick Meunier
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -39,11 +40,11 @@
 
 #include "win32joystick.h"
 
-#if !defined USE_JOYSTICK || defined HAVE_JSW_H
+#ifndef USE_JOYSTICK
 
 #include "../uijoystick.c"
 
-#else /* #if !defined USE_JOYSTICK || defined HAVE_JSW_H */
+#else
 
 /* Functions to handle Joystick events */
 #include "ui/ui.h"
@@ -164,7 +165,7 @@ ui_joystick_end( void )
   /* Initialization and unitialization is handled by MS Windows */
 }
 
-#endif /* #if !defined USE_JOYSTICK || defined HAVE_JSW_H */
+#endif
 
 /* Win32 UI functions to handle Joystick options menus */
 struct button_info {
