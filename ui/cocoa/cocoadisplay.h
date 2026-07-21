@@ -26,29 +26,41 @@
 #ifndef FUSE_COCOADISPLAY_H
 #define FUSE_COCOADISPLAY_H
 
-#import <Foundation/NSLock.h>
-
 #include "ui/ui.h"
 #include "dirty.h"
 
-typedef struct Cocoa_Texture {
-  void *pixels;
-  PIG_dirtytable *dirty;
-  int full_height;
-  int full_width;
-  int image_height;
-  int image_width;
-  int image_xoffset;
-  int image_yoffset;
-  int pitch;
-} Cocoa_Texture;
+typedef enum display_framebuffer_pixel_format {
+  DISPLAY_FRAMEBUFFER_PIXEL_FORMAT_RGB565,
+  DISPLAY_FRAMEBUFFER_PIXEL_FORMAT_BGRA8888
+} display_framebuffer_pixel_format;
 
-/* Screen texture */
-extern Cocoa_Texture* screen;
+typedef enum display_framebuffer_ownership {
+  DISPLAY_FRAMEBUFFER_OWNS_BACKING_STORAGE = 1,
+  DISPLAY_FRAMEBUFFER_OWNS_DIRTY_REGIONS = 2
+} display_framebuffer_ownership;
 
-extern NSLock *buffered_screen_lock;
-extern Cocoa_Texture buffered_screen;
+/* This C-compatible state is shared by the emulation and presentation layers.
+   `synchronization` is an opaque lock owned by the display view. */
+typedef struct DisplayFramebuffer {
+  display_framebuffer_pixel_format pixel_format;
+  int storage_height;
+  int storage_width;
+  int height;
+  int width;
+  int x_offset;
+  int y_offset;
+  int stride;
+  void *backing_storage;
+  PIG_dirtytable *dirty_regions;
+  unsigned long generation;
+  void *synchronization;
+  unsigned int ownership;
+} DisplayFramebuffer;
 
-void copy_area( Cocoa_Texture *dest_screen, Cocoa_Texture *src_screen, PIG_rect *r );
+extern DisplayFramebuffer *screen;
+extern DisplayFramebuffer buffered_screen;
+
+void copy_area( DisplayFramebuffer *dest_screen, DisplayFramebuffer *src_screen,
+                PIG_rect *r );
 
 #endif			/* #ifndef FUSE_COCOADISPLAY_H */

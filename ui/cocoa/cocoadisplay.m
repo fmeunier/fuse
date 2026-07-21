@@ -32,7 +32,7 @@
 
 #include <libspectrum.h>
 
-#import "OpenGLDisplayView.h"
+#import "EmulationSessionController.h"
 
 #include "cocoadisplay.h"
 #include "dirty.h"
@@ -54,19 +54,24 @@ static int image_width;
 static int image_height;
 
 /* Screen texture */
-Cocoa_Texture* screen = NULL;
+DisplayFramebuffer* screen = NULL;
 
 /* Screen texture in native size */
-Cocoa_Texture unscaled_screen;
+DisplayFramebuffer unscaled_screen;
 
 /* Screen texture after scaling (only if a transforming scaler is in place) */
-Cocoa_Texture scaled_screen;
+DisplayFramebuffer scaled_screen;
 
 /* Screen texture second buffer */
-Cocoa_Texture buffered_screen;
+DisplayFramebuffer buffered_screen;
 
-/* and a lock to protect it from concurrent access */
-NSLock *buffered_screen_lock = nil;
+static unsigned long framebuffer_generation = 0;
+
+static NSLock *
+framebuffer_lock( DisplayFramebuffer *framebuffer )
+{
+  return (NSLock *)framebuffer->synchronization;
+}
 
 #define COLOUR_COUNT 16
 
@@ -137,48 +142,53 @@ init_scalers( void )
 }
 
 static int
-allocate_screen( Cocoa_Texture* new_screen, int height, int width,
+allocate_screen( DisplayFramebuffer* new_screen, int height, int width,
                  float scaling_factor )
 {
-  new_screen->image_width = width * scaling_factor;
-  new_screen->image_height = height * scaling_factor;
+  new_screen->pixel_format = DISPLAY_FRAMEBUFFER_PIXEL_FORMAT_RGB565;
+  new_screen->width = width * scaling_factor;
+  new_screen->height = height * scaling_factor;
 
   /* Need some extra bytes around when using 2xSaI */
-  new_screen->full_width = new_screen->image_width+3;
-  new_screen->image_xoffset = 1;
-  new_screen->full_height = new_screen->image_height+3;
-  new_screen->image_yoffset = 1;
+  new_screen->storage_width = new_screen->width+3;
+  new_screen->x_offset = 1;
+  new_screen->storage_height = new_screen->height+3;
+  new_screen->y_offset = 1;
 
-  new_screen->pixels = calloc( new_screen->full_width*new_screen->full_height,
+  new_screen->backing_storage = calloc( new_screen->storage_width*new_screen->storage_height,
                            sizeof(uint16_t) );
-  if( !new_screen->pixels ) {
-    fprintf( stderr, "%s: couldn't allocate screen.pixels\n", fuse_progname );
+  if( !new_screen->backing_storage ) {
+    fprintf( stderr, "%s: couldn't allocate screen.backing_storage\n", fuse_progname );
     return 1;
   }
 
-  new_screen->dirty = pig_dirty_open( MAX_UPDATE_RECT );
-  if( !new_screen->dirty ) {
-    free( new_screen->pixels );
-    fprintf( stderr, "%s: couldn't allocate screen.dirty\n", fuse_progname );
+  new_screen->dirty_regions = pig_dirty_open( MAX_UPDATE_RECT );
+  if( !new_screen->dirty_regions ) {
+    free( new_screen->backing_storage );
+    fprintf( stderr, "%s: couldn't allocate screen.dirty_regions\n", fuse_progname );
     return 1;
   }
 
-  new_screen->pitch = new_screen->full_width * sizeof(uint16_t);
+  new_screen->stride = new_screen->storage_width * sizeof(uint16_t);
+  new_screen->generation = ++framebuffer_generation;
+  new_screen->ownership = DISPLAY_FRAMEBUFFER_OWNS_BACKING_STORAGE |
+                          DISPLAY_FRAMEBUFFER_OWNS_DIRTY_REGIONS;
 
   return 0;
 }
 
 static void
-free_screen( Cocoa_Texture* screen )
+free_screen( DisplayFramebuffer* screen )
 {
-  if( screen->pixels ) {
-    free( screen->pixels );
-    screen->pixels = NULL;
+  if( screen->ownership & DISPLAY_FRAMEBUFFER_OWNS_BACKING_STORAGE ) {
+    free( screen->backing_storage );
+    screen->backing_storage = NULL;
   }
-  if( screen->dirty ) {
-    pig_dirty_close( screen->dirty );
-    screen->dirty = NULL;
+  if( screen->ownership & DISPLAY_FRAMEBUFFER_OWNS_DIRTY_REGIONS ) {
+    pig_dirty_close( screen->dirty_regions );
+    screen->dirty_regions = NULL;
   }
+  screen->ownership = 0;
 }
 
 static int
@@ -201,23 +211,14 @@ cocoadisplay_load_gfx_mode( void )
     screen = &scaled_screen;
   }
 
-  error = allocate_screen( &buffered_screen, screen->image_height,
-                           screen->image_width, 1.0f );
+  error = allocate_screen( &buffered_screen, screen->height,
+                           screen->width, 1.0f );
   if( error ) return error;
 
-  /* Destroy any existing OpenGL textures (and their dirty lists) */
-  [[OpenGLDisplayView instance] performSelectorOnMainThread:@selector(destroyTexture)
-                                                 withObject:nil
-                                              waitUntilDone:YES];
-
-  /* Create OpenGL textures for the image in OpenGLDisplayView */
-  {
-    NSValue *screenValue = [NSValue valueWithPointer:&buffered_screen];
-    [[OpenGLDisplayView instance]
-      performSelectorOnMainThread:@selector(createTextureWithValue:)
-                       withObject:screenValue
-                    waitUntilDone:YES];
-  }
+  [[EmulationSessionController instance]
+    performSelectorOnMainThread:@selector(applyFramebufferWithValue:)
+                     withObject:[NSValue valueWithPointer:&buffered_screen]
+                  waitUntilDone:YES];
 
   return 0;
 }
@@ -256,9 +257,9 @@ uidisplay_init( int width, int height )
   if ( scaler_select_scaler( current_scaler ) )
     scaler_select_scaler( SCALER_NORMAL );
 
-  [buffered_screen_lock lock];
+  [framebuffer_lock( &buffered_screen ) lock];
   cocoadisplay_load_gfx_mode();
-  [buffered_screen_lock unlock];
+  [framebuffer_lock( &buffered_screen ) unlock];
 
   /* We can now output error messages to our output device */
   display_ui_initialised = 1;
@@ -272,7 +273,7 @@ uidisplay_hotswap_gfx_mode( void )
   fuse_emulation_pause();
 
   /* obtain lock for buffered screen */
-  [buffered_screen_lock lock];
+  [framebuffer_lock( &buffered_screen ) lock];
 
   /* Free the old surfaces */
   free_screen( &unscaled_screen );
@@ -282,7 +283,7 @@ uidisplay_hotswap_gfx_mode( void )
   /* Setup the new GFX mode */
   cocoadisplay_load_gfx_mode();
 
-  [buffered_screen_lock unlock];
+  [framebuffer_lock( &buffered_screen ) unlock];
 
   fuse_emulation_unpause();
   
@@ -300,19 +301,19 @@ uidisplay_putpixel( int x, int y, int colour )
 
   if( machine_current->timex ) {
     x <<= 1; y <<= 1;
-    dest_base = dest = (uint16_t*)( (uint8_t*)unscaled_screen.pixels +
-                                    (x+unscaled_screen.image_xoffset) * sizeof(uint16_t) +
-                                    (y+unscaled_screen.image_yoffset) * unscaled_screen.pitch );
+    dest_base = dest = (uint16_t*)( (uint8_t*)unscaled_screen.backing_storage +
+                                    (x+unscaled_screen.x_offset) * sizeof(uint16_t) +
+                                    (y+unscaled_screen.y_offset) * unscaled_screen.stride );
 
     *(dest++) = palette_colour;
     *(dest  ) = palette_colour;
-    dest = (uint16_t*)( (uint8_t*)dest_base + unscaled_screen.pitch );
+    dest = (uint16_t*)( (uint8_t*)dest_base + unscaled_screen.stride );
     *(dest++) = palette_colour;
     *(dest  ) = palette_colour;
   } else {
-    dest = (uint16_t*)( (uint8_t*)unscaled_screen.pixels +
-                        (x+unscaled_screen.image_xoffset) * sizeof(uint16_t) +
-                        (y+unscaled_screen.image_yoffset) * unscaled_screen.pitch );
+    dest = (uint16_t*)( (uint8_t*)unscaled_screen.backing_storage +
+                        (x+unscaled_screen.x_offset) * sizeof(uint16_t) +
+                        (y+unscaled_screen.y_offset) * unscaled_screen.stride );
 
     *dest = palette_colour;
   }
@@ -336,9 +337,9 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
 
     x <<= 4; y <<= 1;
 
-    dest_base = (uint16_t*)( (uint8_t*)unscaled_screen.pixels +
-                             (x+unscaled_screen.image_xoffset) * sizeof(uint16_t) +
-                             (y+unscaled_screen.image_yoffset) * unscaled_screen.pitch );
+    dest_base = (uint16_t*)( (uint8_t*)unscaled_screen.backing_storage +
+                             (x+unscaled_screen.x_offset) * sizeof(uint16_t) +
+                             (y+unscaled_screen.y_offset) * unscaled_screen.stride );
 
     for( i=0; i<2; i++ ) {
       dest = dest_base;
@@ -360,13 +361,13 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
       *(dest++) = ( data & 0x01 ) ? palette_ink : palette_paper;
       *dest     = ( data & 0x01 ) ? palette_ink : palette_paper;
 
-      dest_base = (uint16_t*)( (uint8_t*)dest_base + unscaled_screen.pitch );
+      dest_base = (uint16_t*)( (uint8_t*)dest_base + unscaled_screen.stride );
     }
   } else {
     x <<= 3;
-    dest = (uint16_t*)( (uint8_t*)unscaled_screen.pixels +
-                        (x+unscaled_screen.image_xoffset) * sizeof(uint16_t) +
-                        (y+unscaled_screen.image_yoffset) * unscaled_screen.pitch );
+    dest = (uint16_t*)( (uint8_t*)unscaled_screen.backing_storage +
+                        (x+unscaled_screen.x_offset) * sizeof(uint16_t) +
+                        (y+unscaled_screen.y_offset) * unscaled_screen.stride );
 
     *(dest++) = ( data & 0x80 ) ? palette_ink : palette_paper;
     *(dest++) = ( data & 0x40 ) ? palette_ink : palette_paper;
@@ -392,9 +393,9 @@ uidisplay_plot16( int x, int y, libspectrum_word data,
   uint16_t palette_paper = palette_values[ paper ];
   x <<= 4; y <<= 1;
 
-  dest_base = (uint16_t*)( (uint8_t*)unscaled_screen.pixels + (x+unscaled_screen.image_xoffset) *
-                           sizeof(uint16_t) + (y+unscaled_screen.image_yoffset) *
-                           unscaled_screen.pitch );
+  dest_base = (uint16_t*)( (uint8_t*)unscaled_screen.backing_storage + (x+unscaled_screen.x_offset) *
+                           sizeof(uint16_t) + (y+unscaled_screen.y_offset) *
+                           unscaled_screen.stride );
 
   for( i=0; i<2; i++ ) {
     dest = dest_base;
@@ -416,21 +417,21 @@ uidisplay_plot16( int x, int y, libspectrum_word data,
     *(dest++) = ( data & 0x0002 ) ? palette_ink : palette_paper;
     *dest     = ( data & 0x0001 ) ? palette_ink : palette_paper;
 
-    dest_base = (uint16_t*)( (uint8_t*)dest_base + unscaled_screen.pitch );
+    dest_base = (uint16_t*)( (uint8_t*)dest_base + unscaled_screen.stride );
   }
 }
 
 void
-copy_area( Cocoa_Texture *dest_screen, Cocoa_Texture *src_screen, PIG_rect *r )
+copy_area( DisplayFramebuffer *dest_screen, DisplayFramebuffer *src_screen, PIG_rect *r )
 {
   int y;
 
   for( y = r->y; y <= r->y + r->h; y++ ) {
-    int src_offset = (y + src_screen->image_yoffset) * src_screen->pitch +
-                     sizeof(uint16_t) * ( r->x + src_screen->image_xoffset);
-    int dest_offset = (y + dest_screen->image_yoffset) * dest_screen->pitch +
-                      sizeof(uint16_t) * ( r->x + dest_screen->image_xoffset);
-    memcpy( dest_screen->pixels + dest_offset, src_screen->pixels + src_offset,
+    int src_offset = (y + src_screen->y_offset) * src_screen->stride +
+                     sizeof(uint16_t) * ( r->x + src_screen->x_offset);
+    int dest_offset = (y + dest_screen->y_offset) * dest_screen->stride +
+                      sizeof(uint16_t) * ( r->x + dest_screen->x_offset);
+    memcpy( dest_screen->backing_storage + dest_offset, src_screen->backing_storage + src_offset,
             r->w * sizeof(uint16_t) );
   }
 }
@@ -446,20 +447,20 @@ uidisplay_frame_end( void )
 
   if( display_updated ) {
     /* obtain lock for buffered screen */
-    [buffered_screen_lock lock];
+    [framebuffer_lock( &buffered_screen ) lock];
 
     /* copy screen data to buffered screen */
-    for(i = 0; i < screen->dirty->count; ++i)
-      copy_area( &buffered_screen, screen, screen->dirty->rects + i );
+    for(i = 0; i < screen->dirty_regions->count; ++i)
+      copy_area( &buffered_screen, screen, screen->dirty_regions->rects + i );
 
-    pig_dirty_merge( buffered_screen.dirty, screen->dirty );
+    pig_dirty_merge( buffered_screen.dirty_regions, screen->dirty_regions );
 
     /* release lock for buffered screen */
-    [buffered_screen_lock unlock];
+    [framebuffer_lock( &buffered_screen ) unlock];
 
     display_updated = 0;
-    unscaled_screen.dirty->count = 0;
-    if( current_scaler != SCALER_NORMAL ) scaled_screen.dirty->count = 0;
+    unscaled_screen.dirty_regions->count = 0;
+    if( current_scaler != SCALER_NORMAL ) scaled_screen.dirty_regions->count = 0;
   }
 }
 
@@ -471,7 +472,7 @@ uidisplay_area( int x, int y, int width, int height )
   display_updated = 1;
 
   if( current_scaler == SCALER_NORMAL ) {
-    pig_dirty_add( unscaled_screen.dirty, &r );
+    pig_dirty_add( unscaled_screen.dirty_regions, &r );
     return;
   }
 
@@ -484,31 +485,32 @@ uidisplay_area( int x, int y, int width, int height )
   r.y = display_current_size * y;
   r.w = display_current_size * width;
   r.h = display_current_size * height;
-  pig_dirty_add( scaled_screen.dirty, &r );
+  pig_dirty_add( scaled_screen.dirty_regions, &r );
 
   /* Create scaled image */
-  scaler_proc16( unscaled_screen.pixels + ( y + unscaled_screen.image_yoffset ) *
-                   unscaled_screen.pitch + sizeof(uint16_t) *
-                   ( x + unscaled_screen.image_xoffset ),
-                 unscaled_screen.pitch,
-                 scaled_screen.pixels + ( r.y + scaled_screen.image_yoffset ) *
-                   scaled_screen.pitch + sizeof(uint16_t) *
-                   ( r.x + scaled_screen.image_xoffset ),
-                 scaled_screen.pitch, width, height );
+  scaler_proc16( unscaled_screen.backing_storage + ( y + unscaled_screen.y_offset ) *
+                   unscaled_screen.stride + sizeof(uint16_t) *
+                   ( x + unscaled_screen.x_offset ),
+                 unscaled_screen.stride,
+                 scaled_screen.backing_storage + ( r.y + scaled_screen.y_offset ) *
+                   scaled_screen.stride + sizeof(uint16_t) *
+                   ( r.x + scaled_screen.x_offset ),
+                 scaled_screen.stride, width, height );
 }
 
 int
 uidisplay_end( void )
 {
-  [buffered_screen_lock lock];
+  [framebuffer_lock( &buffered_screen ) lock];
 
-  if( screen && screen->pixels ) {
-    [[OpenGLDisplayView instance] performSelectorOnMainThread:@selector(destroyTexture)
-                                                   withObject:nil
-                                                waitUntilDone:YES];
+  if( screen && screen->backing_storage ) {
+    [[EmulationSessionController instance]
+      performSelectorOnMainThread:@selector(removeFramebuffer)
+                       withObject:nil
+                    waitUntilDone:YES];
   }
 
-  [buffered_screen_lock unlock];
+  [framebuffer_lock( &buffered_screen ) unlock];
 
   free_screen( &unscaled_screen );
   free_screen( &scaled_screen );
