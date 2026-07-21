@@ -23,7 +23,7 @@
 
 #include <config.h>
 
-#import "DisplayOpenGLView.h"
+#import "OpenGLDisplayView.h"
 
 #include "cocoadisplay.h"
 #include "settings.h"
@@ -36,7 +36,7 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
   switch( item ) {
 
   case UI_STATUSBAR_ITEM_DISK:
-    [[DisplayOpenGLView instance]
+    [[OpenGLDisplayView instance]
           performSelectorOnMainThread:@selector(setDiskState:)
           withObject:[NSNumber numberWithUnsignedChar:state]
           waitUntilDone:NO
@@ -48,7 +48,7 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
     return 0;
 
   case UI_STATUSBAR_ITEM_TAPE:
-    [[DisplayOpenGLView instance]
+    [[OpenGLDisplayView instance]
           performSelectorOnMainThread:@selector(setTapeState:)
           withObject:[NSNumber numberWithUnsignedChar:state]
           waitUntilDone:NO
@@ -56,7 +56,7 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
     return 0;
 
   case UI_STATUSBAR_ITEM_MICRODRIVE:
-    [[DisplayOpenGLView instance]
+    [[OpenGLDisplayView instance]
           performSelectorOnMainThread:@selector(setMdrState:)
           withObject:[NSNumber numberWithUnsignedChar:state]
           waitUntilDone:NO

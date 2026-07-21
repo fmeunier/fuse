@@ -32,7 +32,7 @@
 
 #include <libspectrum.h>
 
-#import "DisplayOpenGLView.h"
+#import "OpenGLDisplayView.h"
 
 #include "cocoadisplay.h"
 #include "dirty.h"
@@ -206,14 +206,14 @@ cocoadisplay_load_gfx_mode( void )
   if( error ) return error;
 
   /* Destroy any existing OpenGL textures (and their dirty lists) */
-  [[DisplayOpenGLView instance] performSelectorOnMainThread:@selector(destroyTexture)
+  [[OpenGLDisplayView instance] performSelectorOnMainThread:@selector(destroyTexture)
                                                  withObject:nil
                                               waitUntilDone:YES];
 
-  /* Create OpenGL textures for the image in DisplayOpenGLView */
+  /* Create OpenGL textures for the image in OpenGLDisplayView */
   {
     NSValue *screenValue = [NSValue valueWithPointer:&buffered_screen];
-    [[DisplayOpenGLView instance]
+    [[OpenGLDisplayView instance]
       performSelectorOnMainThread:@selector(createTextureWithValue:)
                        withObject:screenValue
                     waitUntilDone:YES];
@@ -503,7 +503,7 @@ uidisplay_end( void )
   [buffered_screen_lock lock];
 
   if( screen && screen->pixels ) {
-    [[DisplayOpenGLView instance] performSelectorOnMainThread:@selector(destroyTexture)
+    [[OpenGLDisplayView instance] performSelectorOnMainThread:@selector(destroyTexture)
                                                    withObject:nil
                                                 waitUntilDone:YES];
   }
