@@ -455,19 +455,18 @@ uidisplay_frame_end( void )
     }
 
     presentation_framebuffer = NULL;
+    /* The slot state is protected by MetalDisplayView's lock, so this must
+       not synchronously dispatch to the main thread. The main thread may be
+       waiting for this emulation thread to handle a command. */
     [[EmulationSessionController instance]
-      performSelectorOnMainThread:@selector(acquireFramebufferWithValue:)
-                       withObject:[NSValue valueWithPointer:&presentation_framebuffer]
-                    waitUntilDone:YES];
+      acquireFramebufferWithValue:[NSValue valueWithPointer:&presentation_framebuffer]];
     if( presentation_framebuffer ) {
       for( i = 0; i < presentation_framebuffer->dirty_regions->count; i++ )
         copy_area( presentation_framebuffer, screen,
                    presentation_framebuffer->dirty_regions->rects + i );
       presentation_framebuffer->dirty_regions->count = 0;
       [[EmulationSessionController instance]
-        performSelectorOnMainThread:@selector(publishFramebufferWithValue:)
-                         withObject:[NSValue valueWithPointer:presentation_framebuffer]
-                      waitUntilDone:YES];
+        publishFramebufferWithValue:[NSValue valueWithPointer:presentation_framebuffer]];
     }
 
     display_updated = 0;
