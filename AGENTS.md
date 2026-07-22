@@ -222,7 +222,7 @@ count. Test functions return `int` (0 = pass, >0 = number of failures).
 ## macOS Cocoa Port — Thread Safety
 
 The emulator runs on a **background thread** via `-[Emulator connectWithPorts:]`
-in `../fusepb/models/Emulator.m`. All AppKit and OpenGL operations **must** be
+in `../fusepb/models/Emulator.m`. All AppKit and Metal operations **must** be
 dispatched to the main thread or macOS will hard-crash (this enforcement became
 strict on macOS 26+).
 
