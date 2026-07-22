@@ -41,6 +41,8 @@ typedef enum display_framebuffer_ownership {
 
 /* This C-compatible state is shared by the emulation and presentation layers.
    `synchronization` is an opaque lock owned by the display view. */
+#define DISPLAY_FRAMEBUFFER_SLOT_COUNT 3
+
 typedef struct DisplayFramebuffer {
   display_framebuffer_pixel_format pixel_format;
   int storage_height;
@@ -57,8 +59,13 @@ typedef struct DisplayFramebuffer {
   unsigned int ownership;
 } DisplayFramebuffer;
 
+typedef struct DisplayFramebufferRing {
+  DisplayFramebuffer *slots[ DISPLAY_FRAMEBUFFER_SLOT_COUNT ];
+} DisplayFramebufferRing;
+
 extern DisplayFramebuffer *screen;
 extern DisplayFramebuffer buffered_screen;
+extern DisplayFramebufferRing buffered_screen_ring;
 
 void copy_area( DisplayFramebuffer *dest_screen, DisplayFramebuffer *src_screen,
                 PIG_rect *r );

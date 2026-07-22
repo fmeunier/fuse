@@ -64,14 +64,9 @@ DisplayFramebuffer scaled_screen;
 
 /* Screen texture second buffer */
 DisplayFramebuffer buffered_screen;
+DisplayFramebufferRing buffered_screen_ring;
 
 static unsigned long framebuffer_generation = 0;
-
-static NSLock *
-framebuffer_lock( DisplayFramebuffer *framebuffer )
-{
-  return (NSLock *)framebuffer->synchronization;
-}
 
 #define COLOUR_COUNT 16
 
@@ -143,8 +138,9 @@ init_scalers( void )
 
 static int
 allocate_screen( DisplayFramebuffer* new_screen, int height, int width,
-                 float scaling_factor )
+                 float scaling_factor, int allocate_backing_storage )
 {
+  memset( new_screen, 0, sizeof( *new_screen ) );
   new_screen->pixel_format = DISPLAY_FRAMEBUFFER_PIXEL_FORMAT_RGB565;
   new_screen->width = width * scaling_factor;
   new_screen->height = height * scaling_factor;
@@ -155,24 +151,28 @@ allocate_screen( DisplayFramebuffer* new_screen, int height, int width,
   new_screen->storage_height = new_screen->height+3;
   new_screen->y_offset = 1;
 
-  new_screen->backing_storage = calloc( new_screen->storage_width*new_screen->storage_height,
-                           sizeof(uint16_t) );
-  if( !new_screen->backing_storage ) {
-    fprintf( stderr, "%s: couldn't allocate screen.backing_storage\n", fuse_progname );
-    return 1;
+  if( allocate_backing_storage ) {
+    new_screen->backing_storage = calloc( new_screen->storage_width *
+                                          new_screen->storage_height,
+                                          sizeof( uint16_t ) );
+    if( !new_screen->backing_storage ) {
+      fprintf( stderr, "%s: couldn't allocate screen.backing_storage\n", fuse_progname );
+      return 1;
+    }
+
+    new_screen->dirty_regions = pig_dirty_open( MAX_UPDATE_RECT );
+    if( !new_screen->dirty_regions ) {
+      free( new_screen->backing_storage );
+      fprintf( stderr, "%s: couldn't allocate screen.dirty_regions\n", fuse_progname );
+      return 1;
+    }
+
+    new_screen->ownership = DISPLAY_FRAMEBUFFER_OWNS_BACKING_STORAGE |
+                            DISPLAY_FRAMEBUFFER_OWNS_DIRTY_REGIONS;
   }
 
-  new_screen->dirty_regions = pig_dirty_open( MAX_UPDATE_RECT );
-  if( !new_screen->dirty_regions ) {
-    free( new_screen->backing_storage );
-    fprintf( stderr, "%s: couldn't allocate screen.dirty_regions\n", fuse_progname );
-    return 1;
-  }
-
-  new_screen->stride = new_screen->storage_width * sizeof(uint16_t);
+  new_screen->stride = new_screen->storage_width * sizeof( uint16_t );
   new_screen->generation = ++framebuffer_generation;
-  new_screen->ownership = DISPLAY_FRAMEBUFFER_OWNS_BACKING_STORAGE |
-                          DISPLAY_FRAMEBUFFER_OWNS_DIRTY_REGIONS;
 
   return 0;
 }
@@ -198,27 +198,35 @@ cocoadisplay_load_gfx_mode( void )
 
   display_current_size = scaler_get_scaling_factor( current_scaler );
 
-  error = allocate_screen( &unscaled_screen, image_height, image_width, 1.0f );
+  error = allocate_screen( &unscaled_screen, image_height, image_width, 1.0f, 1 );
   if( error ) return error;
 
   screen = &unscaled_screen;
 
   if( current_scaler != SCALER_NORMAL ) {
     error = allocate_screen( &scaled_screen, image_height, image_width,
-                             display_current_size );
+                             display_current_size, 1 );
     if( error ) return error;
 
     screen = &scaled_screen;
   }
 
   error = allocate_screen( &buffered_screen, screen->height,
-                           screen->width, 1.0f );
+                           screen->width, 1.0f, 0 );
   if( error ) return error;
 
   [[EmulationSessionController instance]
     performSelectorOnMainThread:@selector(applyFramebufferWithValue:)
                      withObject:[NSValue valueWithPointer:&buffered_screen]
                   waitUntilDone:YES];
+
+  for( error = 0; error < DISPLAY_FRAMEBUFFER_SLOT_COUNT; error++ ) {
+    PIG_rect area = { 0, 0, screen->width, screen->height };
+
+    if( buffered_screen_ring.slots[ error ] )
+      pig_dirty_add( buffered_screen_ring.slots[ error ]->dirty_regions,
+                     &area );
+  }
 
   return 0;
 }
@@ -257,9 +265,7 @@ uidisplay_init( int width, int height )
   if ( scaler_select_scaler( current_scaler ) )
     scaler_select_scaler( SCALER_NORMAL );
 
-  [framebuffer_lock( &buffered_screen ) lock];
   cocoadisplay_load_gfx_mode();
-  [framebuffer_lock( &buffered_screen ) unlock];
 
   /* We can now output error messages to our output device */
   display_ui_initialised = 1;
@@ -272,9 +278,6 @@ uidisplay_hotswap_gfx_mode( void )
 {
   fuse_emulation_pause();
 
-  /* obtain lock for buffered screen */
-  [framebuffer_lock( &buffered_screen ) lock];
-
   /* Free the old surfaces */
   free_screen( &unscaled_screen );
   free_screen( &scaled_screen );
@@ -282,8 +285,6 @@ uidisplay_hotswap_gfx_mode( void )
 
   /* Setup the new GFX mode */
   cocoadisplay_load_gfx_mode();
-
-  [framebuffer_lock( &buffered_screen ) unlock];
 
   fuse_emulation_unpause();
   
@@ -439,6 +440,7 @@ copy_area( DisplayFramebuffer *dest_screen, DisplayFramebuffer *src_screen, PIG_
 void
 uidisplay_frame_end( void )
 {
+  DisplayFramebuffer *presentation_framebuffer;
   int i;
 
   if( scaler_flags & SCALER_FLAGS_FULL_REFRESH ) {
@@ -446,17 +448,27 @@ uidisplay_frame_end( void )
   }
 
   if( display_updated ) {
-    /* obtain lock for buffered screen */
-    [framebuffer_lock( &buffered_screen ) lock];
+    for( i = 0; i < DISPLAY_FRAMEBUFFER_SLOT_COUNT; i++ ) {
+      if( buffered_screen_ring.slots[i] )
+        pig_dirty_merge( buffered_screen_ring.slots[i]->dirty_regions,
+                         screen->dirty_regions );
+    }
 
-    /* copy screen data to buffered screen */
-    for(i = 0; i < screen->dirty_regions->count; ++i)
-      copy_area( &buffered_screen, screen, screen->dirty_regions->rects + i );
-
-    pig_dirty_merge( buffered_screen.dirty_regions, screen->dirty_regions );
-
-    /* release lock for buffered screen */
-    [framebuffer_lock( &buffered_screen ) unlock];
+    presentation_framebuffer = NULL;
+    [[EmulationSessionController instance]
+      performSelectorOnMainThread:@selector(acquireFramebufferWithValue:)
+                       withObject:[NSValue valueWithPointer:&presentation_framebuffer]
+                    waitUntilDone:YES];
+    if( presentation_framebuffer ) {
+      for( i = 0; i < presentation_framebuffer->dirty_regions->count; i++ )
+        copy_area( presentation_framebuffer, screen,
+                   presentation_framebuffer->dirty_regions->rects + i );
+      presentation_framebuffer->dirty_regions->count = 0;
+      [[EmulationSessionController instance]
+        performSelectorOnMainThread:@selector(publishFramebufferWithValue:)
+                         withObject:[NSValue valueWithPointer:presentation_framebuffer]
+                      waitUntilDone:YES];
+    }
 
     display_updated = 0;
     unscaled_screen.dirty_regions->count = 0;
@@ -501,8 +513,6 @@ uidisplay_area( int x, int y, int width, int height )
 int
 uidisplay_end( void )
 {
-  [framebuffer_lock( &buffered_screen ) lock];
-
   if( screen && screen->backing_storage ) {
     [[EmulationSessionController instance]
       performSelectorOnMainThread:@selector(removeFramebuffer)
@@ -510,11 +520,10 @@ uidisplay_end( void )
                     waitUntilDone:YES];
   }
 
-  [framebuffer_lock( &buffered_screen ) unlock];
-
   free_screen( &unscaled_screen );
   free_screen( &scaled_screen );
   free_screen( &buffered_screen );
+  memset( &buffered_screen_ring, 0, sizeof( buffered_screen_ring ) );
 
   return 0;
 }
