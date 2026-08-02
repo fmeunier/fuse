@@ -66,6 +66,14 @@
 #define DISPLAY_FLASH_HALF_PERIOD 16
 #define DISPLAY_FLASH_PERIOD      32
 
+/* Byte sizes of the ZX Spectrum display file areas.
+   The pixel data area holds 192 rows × 32 bytes = 6144 bytes (0x1800).
+   The attribute area holds 24 rows × 32 bytes = 768 bytes (0x300).
+   The combined display file is 6912 bytes (0x1b00). */
+#define DISPLAY_PIXEL_BYTES ( DISPLAY_HEIGHT * DISPLAY_WIDTH_COLS )
+#define DISPLAY_ATTR_BYTES  ( DISPLAY_HEIGHT_ROWS * DISPLAY_WIDTH_COLS )
+#define DISPLAY_FILE_SIZE   ( DISPLAY_PIXEL_BYTES + DISPLAY_ATTR_BYTES )
+
 extern int display_ui_initialised;
 
 extern libspectrum_byte display_lores_border;

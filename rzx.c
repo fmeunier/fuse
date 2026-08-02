@@ -722,7 +722,7 @@ static int playback_frame( void )
    R register */
 static int counter_reset( void )
 {
-  R &= 0x7f;		/* Clear all but the 7 lowest bits of the R register */
+  R &= Z80_R_LOWER_BITS;	/* Normalise R to its lower seven bits */
   rzx_instructions_offset = -R; /* Gives us a zero count */
 
   return 0;

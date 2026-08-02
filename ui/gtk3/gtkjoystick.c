@@ -56,7 +56,6 @@ enum
 struct button_info {
   int *setting;
   char name[80];
-  GtkWidget *label;
   keyboard_key_name key;
 };
 
@@ -86,7 +85,8 @@ static void create_joystick_type_selector( struct joystick_info *info,
 static void
 create_fire_button_selector( const char *title, struct button_info *info,
                              GtkBox *parent, GtkTreeModel *model );
-static void set_key_text( GtkWidget *label, keyboard_key_name key );
+static gboolean find_key_iter( GtkTreeModel *model, GtkTreeIter *iter,
+                               GtkTreeIter *match, keyboard_key_name key );
 
 static void key_callback( GtkComboBox *widget, gpointer user_data );
 static void joystick_done( GtkButton *button, gpointer user_data );
@@ -353,9 +353,7 @@ create_fire_button_selector( const char *title, struct button_info *info,
 {
   GtkWidget *frame, *box, *combo;
   GtkCellRenderer *renderer;
-  GtkTreeIter iter;
-  GtkTreePath *path;
-  size_t i;
+  GtkTreeIter iter, selected;
 
   frame = gtk_frame_new( title );
   gtk_box_pack_start( parent, frame, TRUE, TRUE, 0 );
@@ -364,27 +362,10 @@ create_fire_button_selector( const char *title, struct button_info *info,
   gtk_container_set_border_width( GTK_CONTAINER( box ), 2 );
   gtk_container_add( GTK_CONTAINER( frame ), box );
 
-  /* Create label */
   info->key = *info->setting;
-  info->label = gtk_label_new( "" );
-
-  for( i = 0; i < ARRAY_SIZE( key_menu ); i++ ) {
-    
-    keyboard_key_name key;
-
-    key = key_menu[i].key;
-
-    if( key_menu[i].item != KEY_GROUP && key == (unsigned int)*info->setting ) {
-      set_key_text( info->label, key );
-      break;
-    }
-
-  }
-
-  gtk_box_pack_start( GTK_BOX( box ), info->label, TRUE, TRUE, 0 );
 
   /* Create combobox */
-  combo = gtk_combo_box_new_with_model( model );    
+  combo = gtk_combo_box_new_with_model( model );
   renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start( GTK_CELL_LAYOUT( combo ), renderer, TRUE );
   gtk_cell_layout_set_attributes( GTK_CELL_LAYOUT( combo ), renderer,
@@ -392,11 +373,9 @@ create_fire_button_selector( const char *title, struct button_info *info,
   gtk_cell_layout_set_cell_data_func( GTK_CELL_LAYOUT( combo ), renderer,
                                       set_entry_properties, NULL, NULL );
 
-  /* Select first item */
-  path = gtk_tree_path_new_from_indices( 0, -1 );
-  gtk_tree_model_get_iter( model, &iter, path );
-  gtk_tree_path_free( path );
-  gtk_combo_box_set_active_iter( GTK_COMBO_BOX( combo ), &iter );
+  if( gtk_tree_model_get_iter_first( model, &iter ) &&
+      find_key_iter( model, &iter, &selected, info->key ) )
+    gtk_combo_box_set_active_iter( GTK_COMBO_BOX( combo ), &selected );
 
   gtk_box_pack_start( GTK_BOX( box ), combo, TRUE, TRUE, 0 );
 
@@ -404,17 +383,32 @@ create_fire_button_selector( const char *title, struct button_info *info,
                     info );
 }
 
-static void
-set_key_text( GtkWidget *label, keyboard_key_name key )
+static gboolean
+find_key_iter( GtkTreeModel *model, GtkTreeIter *iter, GtkTreeIter *match,
+               keyboard_key_name key )
 {
-  const char *text;
-  char buffer[40];
+  do {
+    GValue value = G_VALUE_INIT;
+    GtkTreeIter child;
 
-  text = keyboard_key_text( key );
+    gtk_tree_model_get_value( model, iter, COL_KEY, &value );
 
-  snprintf( buffer, 40, "%s", text );
+    if( g_value_get_int( &value ) == key &&
+        !gtk_tree_model_iter_has_child( model, iter ) ) {
+      *match = *iter;
+      g_value_unset( &value );
+      return TRUE;
+    }
 
-  gtk_label_set_text( GTK_LABEL( label ), buffer );
+    g_value_unset( &value );
+
+    if( gtk_tree_model_iter_children( model, &child, iter ) &&
+        find_key_iter( model, &child, match, key ) )
+      return TRUE;
+
+  } while( gtk_tree_model_iter_next( model, iter ) );
+
+  return FALSE;
 }
 
 static void
@@ -434,9 +428,8 @@ key_callback( GtkComboBox *widget, gpointer user_data )
   key = g_value_get_int( &value );
   g_value_unset( &value );
 
-  /* Store and display selection */
+  /* Store selection */
   info->key = key;
-  set_key_text( info->label, info->key );
 }
 
 static void

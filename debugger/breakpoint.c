@@ -72,8 +72,6 @@ static debugger_breakpoint* get_breakpoint_by_id( size_t id );
 static gint find_breakpoint_by_id( gconstpointer data,
 				   gconstpointer user_data );
 static void remove_time( gpointer data, gpointer user_data );
-static gint find_breakpoint_by_id( gconstpointer data,
-				   gconstpointer user_data );
 static gint find_breakpoint_by_address( gconstpointer data,
 					gconstpointer user_data );
 static void free_breakpoint( gpointer data, gpointer user_data );

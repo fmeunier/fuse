@@ -17,6 +17,18 @@
     <category>Emulator</category>
   </categories>
   <releases>
+    <release date="2026-07-25" version="1.9.1">
+      <description>
+        <ul>
+          <li>GTK3: added freely resizable, aspect-ratio-preserving display scaling and improved fullscreen behaviour</li>
+          <li>Improved PAL composite scaler chroma blending across lines</li>
+          <li>Improved tape header names by decoding BASIC tokens and symbols</li>
+          <li>Fall back to default settings if loading the settings file fails</li>
+          <li>Debugger: corrected decimal rendering of large values</li>
+          <li>Various other minor bug fixes and improvements</li>
+        </ul>
+      </description>
+    </release>
     <release date="2026-06-15" version="1.9.0">
       <description>
         <ul>

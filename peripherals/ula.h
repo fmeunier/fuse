@@ -24,6 +24,12 @@
 #ifndef FUSE_ULA_H
 #define FUSE_ULA_H
 
+/* ULA port 0xFE bit masks */
+#define ULA_PORT_BORDER_BITS  0x07  /* bits 2-0: border colour */
+#define ULA_PORT_MIC_BIT      0x08  /* bit 3: MIC output (tape recording) */
+#define ULA_PORT_EAR_BIT      0x10  /* bit 4: EAR output (speaker) */
+#define ULA_PORT_EAR_IN_BIT   0x40  /* bit 6: EAR input (tape signal) */
+
 #define ULA_CONTENTION_SIZE 80000
 
 /* How much contention do we get at every tstate when MREQ is active? */

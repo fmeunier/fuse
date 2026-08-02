@@ -322,7 +322,7 @@ z80_to_snapshot( libspectrum_snap *snap )
 {
   libspectrum_byte r_register;
 
-  r_register = ( R7 & 0x80 ) | ( R & 0x7f );
+  r_register = ( R7 & Z80_R7_MASK ) | ( R & Z80_R_LOWER_BITS );
 
   libspectrum_snap_set_a  ( snap, A   ); libspectrum_snap_set_f  ( snap, F   );
   libspectrum_snap_set_a_ ( snap, A_  ); libspectrum_snap_set_f_ ( snap, F_  );

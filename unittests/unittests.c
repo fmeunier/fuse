@@ -56,6 +56,7 @@
 #include "snapshot.h"
 #include "bitmap.h"
 #include "rectangle.h"
+#include "ui/scaler/scaler.h"
 #include "unittests.h"
 #include "utils.h"
 
@@ -1221,6 +1222,133 @@ rectangle_realloc_test( void )
   return 0;
 }
 
+/* Unit tests for scaler_for_size().
+   The function looks up which family a scaler belongs to and returns the
+   scaler in that family matching the requested 1x–4x size.  Tests cover:
+     - all four size positions in the Normal family
+     - lookup starting from a non-1x family member
+     - size clamping (< 1 → 1, > 4 → 4)
+     - scaler not in any fully-registered family returns unchanged
+     - family with fewer than all four members registered returns unchanged
+     - the TV family's duplicate 1x/2x slot (TV2X appears twice)
+     - the Timex family's remapping (SCALER_NORMAL maps to position 2) */
+static int
+scaler_for_size_test( void )
+{
+  int r = 0;
+
+  /* --- Normal family: NORMAL(1x), DOUBLESIZE(2x), TRIPLESIZE(3x), QUADSIZE(4x) --- */
+  scaler_register_clear();
+  scaler_register( SCALER_NORMAL );
+  scaler_register( SCALER_DOUBLESIZE );
+  scaler_register( SCALER_TRIPLESIZE );
+  scaler_register( SCALER_QUADSIZE );
+
+  if( scaler_for_size( SCALER_NORMAL, 1 ) != SCALER_NORMAL ) {
+    printf( "scaler_for_size: normal-at-1x: expected SCALER_NORMAL\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_NORMAL, 2 ) != SCALER_DOUBLESIZE ) {
+    printf( "scaler_for_size: normal-at-2x: expected SCALER_DOUBLESIZE\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_NORMAL, 3 ) != SCALER_TRIPLESIZE ) {
+    printf( "scaler_for_size: normal-at-3x: expected SCALER_TRIPLESIZE\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_NORMAL, 4 ) != SCALER_QUADSIZE ) {
+    printf( "scaler_for_size: normal-at-4x: expected SCALER_QUADSIZE\n" );
+    r++;
+  }
+
+  /* Lookup from a non-1x family member still resolves the correct size */
+  if( scaler_for_size( SCALER_DOUBLESIZE, 1 ) != SCALER_NORMAL ) {
+    printf( "scaler_for_size: doublesize-at-1x: expected SCALER_NORMAL\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_TRIPLESIZE, 4 ) != SCALER_QUADSIZE ) {
+    printf( "scaler_for_size: triplesize-at-4x: expected SCALER_QUADSIZE\n" );
+    r++;
+  }
+
+  /* Size clamping: values < 1 and > 4 are clamped */
+  if( scaler_for_size( SCALER_NORMAL, 0 ) != SCALER_NORMAL ) {
+    printf( "scaler_for_size: normal-at-0: expected SCALER_NORMAL (clamp to 1)\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_NORMAL, 5 ) != SCALER_QUADSIZE ) {
+    printf( "scaler_for_size: normal-at-5: expected SCALER_QUADSIZE (clamp to 4)\n" );
+    r++;
+  }
+
+  /* Scaler not in any family with all members registered: returned unchanged.
+     SCALER_DOTMATRIX is a single-size scaler and not listed in any family row. */
+  scaler_register( SCALER_DOTMATRIX );
+  if( scaler_for_size( SCALER_DOTMATRIX, 2 ) != SCALER_DOTMATRIX ) {
+    printf( "scaler_for_size: dotmatrix-at-2x: expected SCALER_DOTMATRIX (no family)\n" );
+    r++;
+  }
+
+  /* --- Incomplete family: only PALTV2X registered, not PALTV3X or PALTV4X --- */
+  scaler_register_clear();
+  scaler_register( SCALER_PALTV2X );
+  if( scaler_for_size( SCALER_PALTV2X, 3 ) != SCALER_PALTV2X ) {
+    printf( "scaler_for_size: paltv2x-incomplete: expected SCALER_PALTV2X\n" );
+    r++;
+  }
+
+  /* --- TV family: TV2X appears in both the 1x and 2x slot --- */
+  scaler_register_clear();
+  scaler_register( SCALER_TV2X );
+  scaler_register( SCALER_TV3X );
+  scaler_register( SCALER_TV4X );
+
+  if( scaler_for_size( SCALER_TV2X, 1 ) != SCALER_TV2X ) {
+    printf( "scaler_for_size: tv2x-at-1x: expected SCALER_TV2X\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_TV2X, 2 ) != SCALER_TV2X ) {
+    printf( "scaler_for_size: tv2x-at-2x: expected SCALER_TV2X\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_TV2X, 3 ) != SCALER_TV3X ) {
+    printf( "scaler_for_size: tv2x-at-3x: expected SCALER_TV3X\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_TV2X, 4 ) != SCALER_TV4X ) {
+    printf( "scaler_for_size: tv2x-at-4x: expected SCALER_TV4X\n" );
+    r++;
+  }
+
+  /* --- Timex family: HALF(1x), NORMAL(2x), TIMEX1_5X(3x), TIMEX2X(4x).
+     With this family registered, SCALER_NORMAL is at position 2 (size 2), so
+     requesting size 1 from SCALER_NORMAL returns SCALER_HALF. --- */
+  scaler_register_clear();
+  scaler_register( SCALER_HALF );
+  scaler_register( SCALER_NORMAL );
+  scaler_register( SCALER_TIMEX1_5X );
+  scaler_register( SCALER_TIMEX2X );
+
+  if( scaler_for_size( SCALER_NORMAL, 1 ) != SCALER_HALF ) {
+    printf( "scaler_for_size: timex-normal-at-1x: expected SCALER_HALF\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_NORMAL, 2 ) != SCALER_NORMAL ) {
+    printf( "scaler_for_size: timex-normal-at-2x: expected SCALER_NORMAL\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_HALF, 3 ) != SCALER_TIMEX1_5X ) {
+    printf( "scaler_for_size: timex-half-at-3x: expected SCALER_TIMEX1_5X\n" );
+    r++;
+  }
+  if( scaler_for_size( SCALER_TIMEX2X, 1 ) != SCALER_HALF ) {
+    printf( "scaler_for_size: timex-timex2x-at-1x: expected SCALER_HALF\n" );
+    r++;
+  }
+
+  return r;
+}
+
 int
 unittests_run( void )
 {
@@ -1240,6 +1368,7 @@ unittests_run( void )
   r += debugger_expression_unittest();
   r += rectangle_test();
   r += rectangle_realloc_test();
+  r += scaler_for_size_test();
 
   printf("Final return value: %d (should be 0)\n", r);
 

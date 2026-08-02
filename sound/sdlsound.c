@@ -63,13 +63,18 @@ sound_lowlevel_init( const char *device, int *freqptr, int *stereoptr )
     strcpy( command, environment );
     strcat( command, device );
     error = putenv( command );
-    libspectrum_free( command );
-    if( error ) { 
+    if( error ) {
+      /* putenv() failed: the string was not inserted into the environment,
+         so it is safe to free here. */
+      libspectrum_free( command );
       settings_current.sound = 0;
       ui_error( UI_ERROR_ERROR, "Couldn't set SDL_AUDIODRIVER: %s",
-                strerror ( error ) );
+                strerror( errno ) );
       return 1;
     }
+    /* On POSIX, putenv() stores the pointer directly in the environment
+       rather than copying it, so command must remain allocated for the
+       lifetime of the process.  Do not free it here. */
   }
 #endif			/* #ifndef __MORPHOS__ */
 
@@ -134,7 +139,7 @@ sound_lowlevel_init( const char *device, int *freqptr, int *stereoptr )
                                          * received.channels
                                          * sound_framesiz + 1 ) ) ) {
     ui_error( UI_ERROR_ERROR, "Problem initialising sound fifo: %s",
-              strerror ( error ) );
+              strerror( -error ) );
     return 1;
   }
 
@@ -176,7 +181,7 @@ sound_lowlevel_frame( libspectrum_signed_word *data, int len )
   }
   if( i < 0 ) {
     ui_error( UI_ERROR_ERROR, "Couldn't write sound fifo: %s",
-              strerror( i ) );
+              strerror( -i ) );
   }
 
   if( !audio_output_started ) {

@@ -322,7 +322,7 @@ no_write_if_data_unchanged( void )
 {
   /* Arrange */
   RAM[0][0] = 0;
-  RAM[0][6144] = 0;
+  RAM[0][DISPLAY_PIXEL_BYTES] = 0;
 
   /* Act */
   display_write_if_dirty_sinclair( 0, 0 );
@@ -338,7 +338,7 @@ write_called_for_new_data( void )
 {
   /* Arrange */
   RAM[0][0] = 0x01;
-  RAM[0][6144] = 0x02;
+  RAM[0][DISPLAY_PIXEL_BYTES] = 0x02;
 
   /* Act */
   display_write_if_dirty_sinclair( 0, 0 );
@@ -348,7 +348,7 @@ write_called_for_new_data( void )
   if( display_last_screen[ 964 ] != 0x201 ) {
     fprintf( stderr,
              "display_last_screen[964]: expected 0x201, got 0x%x (attr=0x%02x, scld=0x%02x)\n",
-             display_last_screen[ 964 ], RAM[0][6144], scld_last_dec.byte );
+             display_last_screen[ 964 ], RAM[0][DISPLAY_PIXEL_BYTES], scld_last_dec.byte );
     return 1;
   }
   if( display_get_is_dirty( 24 ) != ( (libspectrum_qword)1 << 4 ) ) {
@@ -366,7 +366,7 @@ write_reads_from_appropriate_x( void )
 {
   /* Arrange */
   RAM[0][31] = 0x12;
-  RAM[0][6144 + 31] = 0x34;
+  RAM[0][DISPLAY_PIXEL_BYTES + 31] = 0x34;
 
   /* Act */
   display_write_if_dirty_sinclair( 31, 0 );
@@ -384,7 +384,7 @@ write_reads_from_appropriate_y( void )
 {
   /* Arrange */
   RAM[0][32] = 0x56;
-  RAM[0][6144 + 32] = 0x78;
+  RAM[0][DISPLAY_PIXEL_BYTES + 32] = 0x78;
 
   /* Act */
   display_write_if_dirty_sinclair( 0, 8 );
@@ -402,7 +402,7 @@ flash_inverts_colours( void )
 {
   /* Arrange */
   RAM[0][0] = 0x01;
-  RAM[0][6144] = 0x82;
+  RAM[0][DISPLAY_PIXEL_BYTES] = 0x82;
 
   display_set_flash_reversed( 1 );
 
@@ -482,6 +482,27 @@ no_write_if_modified_area_ahead_of_critical_region( void )
 
   /* Assert */
   if( write_if_dirty_count ) return 1;
+
+  return 0;
+}
+
+static int
+attribute_write_marks_correct_cell( void )
+{
+  int y;
+
+  /* Arrange: the final attribute byte is column 31, character row 23. */
+
+  /* Act */
+  display_dirty_sinclair( 0x1aff );
+
+  /* Assert: mark column 31 in each of the cell's eight pixel rows only. */
+  for( y = 0; y < DISPLAY_HEIGHT; y++ ) {
+    libspectrum_dword expected =
+      y >= 184 ? ( (libspectrum_dword)1 << 31 ) : 0;
+
+    if( display_get_maybe_dirty( y ) != expected ) return 1;
+  }
 
   return 0;
 }
@@ -692,7 +713,7 @@ timex_lores_write_called_for_new_data( void )
   /* Arrange: STANDARD mode, non-zero pixel and attribute data */
   timex_test_before( STANDARD );
   RAM[0][0] = 0x01;
-  RAM[0][6144] = 0x02; /* ink=2, paper=0 */
+  RAM[0][DISPLAY_PIXEL_BYTES] = 0x02; /* ink=2, paper=0 */
 
   /* Act */
   display_write_if_dirty_timex( 0, 0 );
@@ -715,7 +736,7 @@ timex_mode_change_causes_redraw( void )
   /* Arrange: draw once in STANDARD mode to prime the cache */
   timex_test_before( STANDARD );
   RAM[0][0] = 0x01;
-  RAM[0][6144] = 0x02;
+  RAM[0][DISPLAY_PIXEL_BYTES] = 0x02;
   display_write_if_dirty_timex( 0, 0 );
   plot8_count = 0;
 
@@ -869,6 +890,7 @@ static const struct test_t tests[] = {
     no_write_if_dirty_area_ahead_of_beam },
   { "no_write_if_modified_area_ahead_of_critical_region",
     no_write_if_modified_area_ahead_of_critical_region },
+  { "attribute_write_marks_correct_cell", attribute_write_marks_correct_cell },
 
   /* display_dirty_flashing_sinclair() tests */
   { "flash_dirty_no_flash_attrs", flash_dirty_no_flash_attrs },

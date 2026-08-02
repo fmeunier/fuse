@@ -1,23 +1,41 @@
 Running Fuse's unit tests
 =========================
 
-Fuse's unit tests are built into the main `fuse' binary rather than
-being exposed as separate Automake `TESTS' executables.
-
-The normal developer entry point is:
+Fuse's test suite is split across several test binaries. The normal
+developer entry point is:
 
   make check
 
-This builds `fuse' and runs the embedded unit test framework via
-`./fuse --unittests'. Contributors should run it before submitting
-changes.
+This builds all test binaries and runs them in sequence:
 
-If you want to run the test framework directly, use:
+  fuse --unittests
+      Embedded tests for the debugger expression evaluator,
+      disassembler, memory paging, and other core subsystems.
+      Exits 0 on success or non-zero on failure.
+
+  unittests/displaytest
+      Display write/dirty tests covering Sinclair, Timex, and
+      Pentagon screen modes.
+
+  unittests/sdl2displaytest
+  unittests/sdl2scalerstatetest
+  unittests/sdl2joysticktest
+  unittests/sdl2mousetest
+      SDL2 UI subsystem tests (display pipeline, scaler state
+      machine, joystick mapping, mouse input).
+
+  z80/coretest z80/tests/tests.in
+      Z80 CPU core regression suite. Output is written to
+      z80/tests.actual and compared against
+      z80/tests/tests.expected using cmp(1).
+
+Contributors should run `make check' before submitting changes.
+
+To run a single test binary directly (from the build directory), use
+e.g.:
 
   ./fuse --unittests
-
-The `--unittests' option runs the embedded test framework, prints any
-failures to stdout, and exits with status 0 on success or a non-zero
-status on failure.
+  ./unittests/displaytest
+  ./z80/coretest z80/tests/tests.in
 
 For manual peripheral smoke tests, see `hacking/peripheral_tests.txt'.

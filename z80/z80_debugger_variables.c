@@ -129,7 +129,7 @@ DEBUGGER_CALLBACKS(Q)
 static libspectrum_dword
 get_R( void )
 {
-  return ( R7 & 0x80 ) | ( R & 0x7f );
+  return ( R7 & Z80_R7_MASK ) | ( R & Z80_R_LOWER_BITS );
 }
 
 static void

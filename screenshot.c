@@ -39,7 +39,7 @@
 #include "ui/ui.h"
 #include "utils.h"
 
-#define MONO_BITMAP_SIZE 6144
+#define MONO_BITMAP_SIZE  DISPLAY_PIXEL_BYTES
 #define HICOLOUR_SCR_SIZE (2 * MONO_BITMAP_SIZE)
 #define MLT_SIZE (2 * MONO_BITMAP_SIZE)
 #define HIRES_ATTR HICOLOUR_SCR_SIZE

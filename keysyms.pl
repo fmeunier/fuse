@@ -124,7 +124,11 @@ my %ui_data = (
 					   'Hyper_L','Hyper_R',
 					   'Super_L','Super_R',
 					   'KP_Enter',
-					   'Mode_switch' ) },
+					   'Mode_switch',
+					   'dollar','less','greater','exclam',
+					   'ampersand','parenleft','parenright',
+					   'asterisk','plus','colon','bar',
+					   'asciicircum','dead_circumflex' ) },
 	      function => \&wii_keysym
 	    },
 

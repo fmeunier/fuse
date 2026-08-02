@@ -1507,6 +1507,7 @@ typedef struct composite_scaler_config {
   int scale;
   int cycle_phase;
   int burst_phase;
+  int pal_delay;
   double dsxd;
   double brightness[4];
 } composite_scaler_config;
@@ -1523,6 +1524,12 @@ static double composite_scaler_adjust_brightness( double brightness,
                                                   double factor );
 static void composite_scaler_init( const composite_scaler_config *config,
                                    composite_scaler_cache *cache );
+static libspectrum_byte composite_scaler_clamp_colour(
+  libspectrum_signed_dword colour );
+static void composite_scaler_yuv_to_rgb( libspectrum_signed_dword y,
+                                         libspectrum_signed_dword u,
+                                         libspectrum_signed_dword v,
+                                         uint8_t rgb[4] );
 static void composite_scaler_blit( const composite_scaler_config *config,
                                    const libspectrum_byte *srcPtr,
                                    libspectrum_dword srcPitch,
@@ -1538,7 +1545,7 @@ FUNCTION( scaler_PalTV2x )( const libspectrum_byte *srcPtr,
                               int width, int height )
 {
   static const composite_scaler_config config = {
-    2, 0, 0, 7.0 / 6.0, { 1.0, 0.75, 0.0, 0.0 }
+    2, 0, 0, 1, 7.0 / 6.0, { 1.0, 0.75, 0.0, 0.0 }
   };
 
   composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
@@ -1553,7 +1560,7 @@ FUNCTION( scaler_PalTV3x )( const libspectrum_byte *srcPtr,
                               int width, int height )
 {
   static const composite_scaler_config config = {
-    3, 0, 0, ( 7.0 / 9.0 ) * 1.005, { 0.8, 1.0, 0.5, 0.0 }
+    3, 0, 0, 1, ( 7.0 / 9.0 ) * 1.005, { 0.8, 1.0, 0.5, 0.0 }
   };
 
   composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
@@ -1568,7 +1575,7 @@ FUNCTION( scaler_PalTV4x )( const libspectrum_byte *srcPtr,
                               int width, int height )
 {
   static const composite_scaler_config config = {
-    4, 0, 0, 7.0 / 12.0, { 0.9, 1.0, 0.75, 0.5 }
+    4, 0, 0, 1, 7.0 / 12.0, { 0.9, 1.0, 0.75, 0.5 }
   };
 
   composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
@@ -2019,6 +2026,28 @@ composite_scaler_init( const composite_scaler_config *config,
   cache->snes_init = 1;
 }
 
+static libspectrum_byte
+composite_scaler_clamp_colour( libspectrum_signed_dword colour )
+{
+  if( colour < 0 ) return 0;
+  if( colour > 255 ) return 255;
+
+  return colour;
+}
+
+static void
+composite_scaler_yuv_to_rgb( libspectrum_signed_dword y,
+                             libspectrum_signed_dword u,
+                             libspectrum_signed_dword v, uint8_t rgb[4] )
+{
+  rgb[0] = composite_scaler_clamp_colour(
+    ( 8192L * y              + 11485L * v + 16384 ) >> 15 );
+  rgb[1] = composite_scaler_clamp_colour(
+    ( 8192L * y - 2819L * u -  5850L * v + 16384 ) >> 15 );
+  rgb[2] = composite_scaler_clamp_colour(
+    ( 8192L * y + 14516L * u              + 16384 ) >> 15 );
+}
+
 static void
 composite_scaler_blit( const composite_scaler_config *config,
                        const libspectrum_byte *srcPtr,
@@ -2031,10 +2060,13 @@ composite_scaler_blit( const composite_scaler_config *config,
   static composite_scaler_cache cache_3x;
   static composite_scaler_cache cache_4x;
   static uint8_t buffer[4 * SNES_NTSC_OUT_WIDTH( DISPLAY_SCREEN_WIDTH ) + 8];
+  static libspectrum_signed_dword previous_u[4][ DISPLAY_SCREEN_WIDTH * 4 ];
+  static libspectrum_signed_dword previous_v[4][ DISPLAY_SCREEN_WIDTH * 4 ];
   composite_scaler_cache *cache =
     config->scale == 2 ? &cache_2x :
     config->scale == 3 ? &cache_3x : &cache_4x;
   int burst_phase;
+  int have_previous = 0;
 
   composite_scaler_init( config, cache );
   memset( buffer, 0, sizeof( buffer ) );
@@ -2042,6 +2074,38 @@ composite_scaler_blit( const composite_scaler_config *config,
   burst_phase = config->cycle_phase ?
                 ( cache->burst_phase + 1 ) % snes_ntsc_burst_count :
                 config->burst_phase;
+
+  if( config->pal_delay ) {
+    const SNES_NTSC_IN_T *input = blargg_ntsc_input_row( srcPtr - srcPitch,
+                                                          width );
+    uint32_t n;
+
+    for( n = 0; n < config->scale; n++ ) {
+      uint32_t x;
+      double dsx = 0;
+
+      snes_ntsc_blit( &cache->ntsc[n], input, width, burst_phase, width, 1,
+                      buffer, 4 * SNES_NTSC_OUT_WIDTH( width ) );
+
+      for( x = 0; x < width * config->scale; x++ ) {
+        uint32_t isx = (int)floor( dsx );
+        double fsx = dsx - floor( dsx );
+        uint8_t rgb[4];
+
+        rgb[0] = ( ( 1 - fsx ) * buffer[ isx * 4 + 0 ] ) +
+                 ( fsx * buffer[ isx * 4 + 4 ] );
+        rgb[1] = ( ( 1 - fsx ) * buffer[ isx * 4 + 1 ] ) +
+                 ( fsx * buffer[ isx * 4 + 5 ] );
+        rgb[2] = ( ( 1 - fsx ) * buffer[ isx * 4 + 2 ] ) +
+                 ( fsx * buffer[ isx * 4 + 6 ] );
+        previous_u[n][x] = RGB_TO_U( rgb[0], rgb[1], rgb[2] );
+        previous_v[n][x] = RGB_TO_V( rgb[0], rgb[1], rgb[2] );
+        dsx += config->dsxd;
+      }
+    }
+
+    have_previous = 1;
+  }
 
   while( height-- ) {
     const SNES_NTSC_IN_T *input = blargg_ntsc_input_row( srcPtr, width );
@@ -2063,6 +2127,9 @@ composite_scaler_blit( const composite_scaler_config *config,
         uint32_t isx;
         double fsx;
         uint8_t rgb[4];
+        libspectrum_signed_dword y;
+        libspectrum_signed_dword u;
+        libspectrum_signed_dword v;
 
         isx = (int)floor( dsx );
         fsx = dsx - floor( dsx );
@@ -2072,12 +2139,27 @@ composite_scaler_blit( const composite_scaler_config *config,
                  ( fsx * buffer[ isx * 4 + 5 ] );
         rgb[2] = ( ( 1 - fsx ) * buffer[ isx * 4 + 2 ] ) +
                  ( fsx * buffer[ isx * 4 + 6 ] );
+
+        if( config->pal_delay ) {
+          y = RGB_TO_Y( rgb[0], rgb[1], rgb[2] );
+          u = RGB_TO_U( rgb[0], rgb[1], rgb[2] );
+          v = RGB_TO_V( rgb[0], rgb[1], rgb[2] );
+
+          if( have_previous ) {
+            composite_scaler_yuv_to_rgb( y, ( u + previous_u[n][x] ) / 2,
+                                         ( v + previous_v[n][x] ) / 2, rgb );
+          }
+          previous_u[n][x] = u;
+          previous_v[n][x] = v;
+        }
+
         out[0] = blargg_ntsc_rgb_to_pixel( rgb );
         out++;
         dsx += config->dsxd;
       }
     }
 
+    have_previous = 1;
     srcPtr += srcPitch;
     dstPtr += dstPitch * config->scale;
   }
@@ -2093,7 +2175,7 @@ FUNCTION( scaler_blargg_NTSC_2x )( const libspectrum_byte *srcPtr,
                                    int width, int height )
 {
   static const composite_scaler_config config = {
-    2, 1, 0, 7.0 / 6.0, { 1.0, 0.75, 0.0, 0.0 }
+    2, 1, 0, 0, 7.0 / 6.0, { 1.0, 0.75, 0.0, 0.0 }
   };
 
   composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
@@ -2108,7 +2190,7 @@ FUNCTION( scaler_blargg_NTSC_3x )( const libspectrum_byte *srcPtr,
                                    int width, int height )
 {
   static const composite_scaler_config config = {
-    3, 1, 0, ( 7.0 / 9.0 ) * 1.005, { 0.8, 1.0, 0.5, 0.0 }
+    3, 1, 0, 0, ( 7.0 / 9.0 ) * 1.005, { 0.8, 1.0, 0.5, 0.0 }
   };
 
   composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,
@@ -2123,7 +2205,7 @@ FUNCTION( scaler_blargg_NTSC_4x )( const libspectrum_byte *srcPtr,
                                    int width, int height )
 {
   static const composite_scaler_config config = {
-    4, 1, 0, 7.0 / 12.0, { 0.9, 1.0, 0.75, 0.5 }
+    4, 1, 0, 0, 7.0 / 12.0, { 0.9, 1.0, 0.75, 0.5 }
   };
 
   composite_scaler_blit( &config, srcPtr, srcPitch, dstPtr, dstPitch, width,

@@ -53,6 +53,20 @@
 #include "z80/z80.h"
 #include "z80/z80_macros.h"
 
+/* Length of a standard ZX Spectrum ROM tape header block (flag byte +
+   1 type + 10 name + 2 length + 2 param1 + 2 param2 + 1 parity = 19 bytes) */
+#define TAPE_ROM_HEADER_LEN 19
+
+/* Flag byte for a ZX Spectrum ROM tape header block */
+#define TAPE_ROM_HEADER_FLAG 0x00
+
+/* Pause appended after each ROM-routine tape-save block (milliseconds) */
+#define TAPE_ROM_SAVE_PAUSE_MS 1000
+
+/* Sample rate and initial buffer size for tape recording */
+#define TAPE_RECORDING_SAMPLE_RATE 44100
+#define TAPE_RECORDING_BUFFER_SIZE 8192
+
 /* The current tape */
 static libspectrum_tape *tape;
 
@@ -92,7 +106,6 @@ static libspectrum_dword next_tape_edge_tstates;
 static int tape_autoload( libspectrum_machine hardware );
 static int trap_load_block( libspectrum_tape_block *block );
 static int tape_play( int autoplay );
-static void make_name( unsigned char *name, const unsigned char *data );
 static void
 tape_event_record_sample( libspectrum_dword last_tstates, int type,
 			  void *user_data );
@@ -234,8 +247,8 @@ does_tape_load_with_code( void )
     block_length = libspectrum_tape_block_data_length( block );
     data = libspectrum_tape_block_data( block );
     needs_code =
-      (block_length == 19) &&
-      (data[0] == 0x00) &&
+      (block_length == TAPE_ROM_HEADER_LEN) &&
+      (data[0] == TAPE_ROM_HEADER_FLAG) &&
       (data[1] == 0x03);
 
     /* Stop looking now - either we found an appropriate block or we found
@@ -614,7 +627,7 @@ tape_save_trap( void )
   data[ DE+1 ] = parity;
 
   /* Give a 1 second pause after this block */
-  libspectrum_tape_block_set_pause( block, 1000 );
+  libspectrum_tape_block_set_pause( block, TAPE_ROM_SAVE_PAUSE_MS );
 
   libspectrum_tape_append_block( tape, block );
 
@@ -759,9 +772,9 @@ tape_record_start( void )
 {
   /* sample rate will be 44.1KHz */
   rec_state.tstates_per_sample =
-    machine_current->timings.processor_speed/44100;
+    machine_current->timings.processor_speed/TAPE_RECORDING_SAMPLE_RATE;
 
-  rec_state.tape_buffer_size = 8192;
+  rec_state.tape_buffer_size = TAPE_RECORDING_BUFFER_SIZE;
   rec_state.tape_buffer = libspectrum_new(libspectrum_byte,
 					  rec_state.tape_buffer_size);
   rec_state.tape_buffer_used = 0;
@@ -978,7 +991,7 @@ tape_block_details( char *buffer, size_t length,
 		    libspectrum_tape_block *block )
 {
   libspectrum_byte *data;
-  const char *type; unsigned char name[11];
+  const char *type; char name[ 10 * 9 + 1 ];
   int offset;
   size_t i;
   unsigned long total_pulses;
@@ -991,12 +1004,12 @@ tape_block_details( char *buffer, size_t length,
   case LIBSPECTRUM_TAPE_BLOCK_DATA_BLOCK:
     /* See if this looks like a standard Spectrum header and if so
        display some extra data */
-    if( libspectrum_tape_block_data_length( block ) != 19 ) goto normal;
+    if( libspectrum_tape_block_data_length( block ) != TAPE_ROM_HEADER_LEN ) goto normal;
 
     data = libspectrum_tape_block_data( block );
 
-    /* Flag byte is 0x00 for headers */
-    if( data[0] != 0x00 ) goto normal;
+    /* Flag byte is TAPE_ROM_HEADER_FLAG (0x00) for headers */
+    if( data[0] != TAPE_ROM_HEADER_FLAG ) goto normal;
 
     switch( data[1] ) {
     case 0x00: type = "Program"; break;
@@ -1006,7 +1019,8 @@ tape_block_details( char *buffer, size_t length,
     default: goto normal;
     }
     
-    make_name( name, &data[2] );
+    if( libspectrum_zx_string_to_utf8( name, sizeof( name ), &data[2], 10 ) )
+      goto normal;
 
     snprintf( buffer, length, "%s: \"%s\"", type, name );
 
@@ -1093,20 +1107,4 @@ tape_block_details( char *buffer, size_t length,
   }
 
   return 0;
-}
-
-static void
-make_name( unsigned char *name, const unsigned char *data )
-{
-  size_t i;
-
-  for( i = 0; i < 10; i++, name++, data++ ) {
-    if( *data >= 32 && *data < 127 ) {
-      *name = *data;
-    } else {
-      *name = '?';
-    }
-  }
-
-  *name = '\0';
 }

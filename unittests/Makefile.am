@@ -31,6 +31,8 @@ noinst_PROGRAMS += unittests/sdl2displaytest
 noinst_PROGRAMS += unittests/sdl2scalerstatetest
 noinst_PROGRAMS += unittests/sdl2joysticktest
 noinst_PROGRAMS += unittests/sdl2mousetest
+noinst_PROGRAMS += unittests/palcompositetest
+noinst_PROGRAMS += unittests/scalerexpandtest
 
 unittests_displaytest_SOURCES = unittests/displaytest.c display.c
 unittests_displaytest_LDADD = $(LIBSPECTRUM_LIBS) $(GLIB_LIBS)
@@ -59,3 +61,17 @@ unittests_sdl2mousetest_SOURCES = \
         ui/sdl2/sdl2_mouse_internal.c
 unittests_sdl2mousetest_LDADD = $(LIBSPECTRUM_LIBS)
 unittests_sdl2mousetest_CPPFLAGS = $(AM_CPPFLAGS)
+
+unittests_palcompositetest_SOURCES = \
+        unittests/palcompositetest.c \
+        ui/scaler/snes_ntsc.c
+unittests_palcompositetest_LDADD = $(LIBSPECTRUM_LIBS) \
+        ui/scaler/scalers16.o ui/scaler/scalers32.o
+unittests_palcompositetest_CPPFLAGS = $(AM_CPPFLAGS)
+
+unittests_scalerexpandtest_SOURCES = \
+        unittests/scalerexpandtest.c \
+        ui/scaler/scaler.c
+unittests_scalerexpandtest_LDADD = $(LIBSPECTRUM_LIBS) \
+        ui/scaler/scalers16.o ui/scaler/scalers32.o ui/scaler/snes_ntsc.o
+unittests_scalerexpandtest_CPPFLAGS = $(AM_CPPFLAGS)

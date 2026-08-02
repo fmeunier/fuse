@@ -70,23 +70,25 @@ debugger_system_variable_register( const char *type, const char *detail,
 }
 
 static int
-system_variable_matches( system_variable_t *sysvar, const char *type, const char *detail )
+system_variable_matches( const system_variable_t *sysvar, const char *type,
+                         const char *detail )
 {
   return strcasecmp( type, sysvar->type ) == 0 &&
          strcasecmp( detail, sysvar->detail ) == 0;
 }
 
 static int
-find_system_variable( const char *type, const char *detail, system_variable_t *out )
+find_system_variable( const char *type, const char *detail,
+                      system_variable_t *out )
 {
   size_t i;
 
   for( i = 0; i < system_variables->len; i++ ) {
-    system_variable_t sysvar =
-      g_array_index( system_variables, system_variable_t, i );
+    const system_variable_t *sysvar =
+      &g_array_index( system_variables, system_variable_t, i );
 
-    if( system_variable_matches( &sysvar, type, detail ) ) {
-      if( out != NULL ) *out = sysvar;
+    if( system_variable_matches( sysvar, type, detail ) ) {
+      if( out != NULL ) *out = *sysvar;
       return i;
     }
   }

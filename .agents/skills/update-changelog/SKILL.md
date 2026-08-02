@@ -1,6 +1,6 @@
 ---
 name: update-changelog
-description: Drafts a new top-of-file Fuse release entry in ChangeLog using unrecorded commits and the project’s existing grouped format. Drafts first, then waits for confirmation before editing ChangeLog.
+description: Drafts a new top-of-file Fuse release entry in ChangeLog and a high-level AppStream release entry using unrecorded commits and the project’s existing formats. Drafts first, then waits for confirmation before editing release notes.
 ---
 
 # Update ChangeLog
@@ -14,7 +14,7 @@ Use this skill when the user wants to update `ChangeLog` for a release.
 - Follow the existing style in `ChangeLog` exactly.
 - Preserve all existing entries unchanged.
 - Draft first.
-- Do not edit `ChangeLog` until the user confirms.
+- Do not edit `ChangeLog` or `data/net.sourceforge.fuse_emulator.Fuse.metainfo.xml` until the user confirms.
 - If the release version is not yet known, ask the user for it before drafting the new entry.
 - Use the most recent unrecorded commit date for the new heading.
 - Use Philip Kendall’s maintainer identity in the heading:
@@ -36,8 +36,13 @@ Update the ChangeLog file in the current directory `ChangeLog` with any commits 
    `YYYY-MM-DD  Philip Kendall  <philip-fuse@shadowmagic.org.uk>`
 7. Under that date, add a `* Fuse X.Y.Z released.` entry.
 8. Under that date, add entries grouped by category, 8-space indented, matching the existing format.
-9. Show the proposed new entry to the user and ask for confirmation.
-10. Only after confirmation, write the updated `ChangeLog`.
+9. Draft a corresponding high-level `<release>` entry for
+   `data/net.sourceforge.fuse_emulator.Fuse.metainfo.xml`. Use the same version and date, insert it first in
+   `<releases>`, and follow the existing XML format. Summarise only the most notable user-facing changes in a
+   concise `<ul>`; do not duplicate every ChangeLog item.
+10. Show both proposed entries to the user and ask for confirmation.
+11. Only after confirmation, update both `ChangeLog` and
+    `data/net.sourceforge.fuse_emulator.Fuse.metainfo.xml`.
 
 ## ChangeLog grouping structure
 
@@ -99,11 +104,14 @@ bullets under the heading:
 
 When presenting the draft:
 
-- show only the proposed new ChangeLog entry
-- do not edit the file yet
+- show only the proposed new ChangeLog and AppStream release entries
+- do not edit either file yet
 - ask the user to confirm or request changes
 
 When the user confirms:
 
 - insert the new entry at the top of `ChangeLog` after the first line
+- insert the matching high-level release entry first in `<releases>` in
+  `data/net.sourceforge.fuse_emulator.Fuse.metainfo.xml`
 - do not alter older entries
+- validate the AppStream XML after editing
