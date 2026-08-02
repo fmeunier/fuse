@@ -31,6 +31,7 @@
 #include "gtkinternals.h"
 #include "input.h"
 #include "keyboard.h"
+#include "settings.h"
 #include "ui/ui.h"
 
 /* Given a hardware keycode, return the keyval which would have been returned if
@@ -82,8 +83,12 @@ gtkkeyboard_keypress( GtkWidget *widget GCC_UNUSED, GdkEvent *event,
 {
   input_event_t fuse_event;
 
-  if( event->key.keyval == GDK_KEY_F1 && event->key.state == 0 )
+  if( event->key.keyval == GDK_KEY_F1 && event->key.state == 0 ) {
     ui_mouse_suspend();
+    if( settings_current.full_screen ) {
+      gtkui_set_bars_visible( 1 );
+    }
+  }
 
   fuse_event.type = INPUT_EVENT_KEYPRESS;
   get_keysyms( &fuse_event, event->key.hardware_keycode, event->key.keyval, event->key.group );

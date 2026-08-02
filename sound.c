@@ -420,13 +420,8 @@ ay_do_tone( int level, unsigned int tone_count, int *var, int chan )
     ay_tone_high[ chan ] = !ay_tone_high[ chan ];
   }
 
-  if( level ) {
-    if( ay_tone_high[ chan ] )
-      *var = level;
-    else {
-      *var = 0;
-    }
-  }
+  if( level && ay_tone_high[ chan ] )
+    *var = level;
 }
 
 /* bitmasks for envelope */
@@ -624,16 +619,14 @@ sound_ay_overlay( void )
     while( ay_noise_tick >= ay_noise_period ) {
       ay_noise_tick -= ay_noise_period;
 
-      if( ( rng & 1 ) ^ ( ( rng & 2 ) ? 1 : 0 ) )
-        noise_toggle = !noise_toggle;
-
-      /* rng is 17-bit shift reg, bit 0 is output.
-       * input is bit 0 xor bit 3.
+      /* rng is 17-bit LFSR, bit 0 is output.
+       * Feedback input is bit 0 XOR bit 1 (drives noise_toggle).
+       * Shift taps at bits 14 and 17 produce the next state.
+       * Rewritten branch-free: XOR/mask replaces two conditional branches
+       * whose outcomes are pseudo-random and therefore poorly predicted.
        */
-      if( rng & 1 ) {
-        rng ^= 0x24000;
-      }
-      rng >>= 1;
+      noise_toggle ^= ( rng ^ ( rng >> 1 ) ) & 1;
+      rng = ( rng >> 1 ) ^ ( 0x12000 & -( rng & 1 ) );
 
       /* don't keep trying if period is zero */
       if( !ay_noise_period )

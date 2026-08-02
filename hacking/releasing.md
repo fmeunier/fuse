@@ -69,13 +69,15 @@ existing style.
    new top-of-file release entry, review it, and then apply it after
    confirmation. Otherwise, update `ChangeLog` manually in the existing
    format.
-2. Run `update-release.py` with `--dry-run`.
-3. Run it again without `--dry-run` once the changes look correct.
-4. Review the resulting diff.
-5. If `configure.ac` changed, regenerate the build system as needed.
-6. Build the project.
-7. Run the test suite.
-8. Create the release tarball, tag, and publish using the normal
+2. Update `data/net.sourceforge.fuse_emulator.Fuse.metainfo.xml` with
+   the high level changes in the release.
+3. Run `update-release.py` with `--dry-run`.
+4. Run it again without `--dry-run` once the changes look correct.
+5. Review the resulting diff.
+6. If `configure.ac` changed, regenerate the build system as needed.
+7. Build the project.
+8. Run the test suite.
+9. Create the release tarball, tag, and publish using the normal
    maintainer process.
 
 ## Verification

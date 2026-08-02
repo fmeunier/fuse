@@ -35,6 +35,7 @@
 extern libspectrum_dword gtkdisplay_colours[ 16 ];
 
 void gtkdisplay_update_geometry( void );
+void gtkdisplay_get_window_size( int *width, int *height );
 
 /*
  * Keyboard routines (gtkkeyboard.c)
@@ -67,6 +68,8 @@ int gtkui_confirm( const char *string );
 int gtkui_picture( const char *filename, int border );
 
 extern void gtkui_popup_menu(void);
+
+void gtkui_fullscreen_apply( void );
 
 GtkAccelGroup* gtkstock_add_accel_group( GtkWidget *widget );
 
@@ -119,6 +122,9 @@ int gtkui_get_monospaced_font( PangoFontDescription **font );
 void gtkui_free_font( PangoFontDescription *font );
 
 int gtkui_menubar_get_height( void );
+
+/* Show/hide the menu bar and status bar */
+void gtkui_set_bars_visible( int visible );
 
 /*
  * The menu data (menu_data.c)

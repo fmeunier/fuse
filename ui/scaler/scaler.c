@@ -64,8 +64,8 @@ static void expand_1( int *x, int *y, int *w, int *h,
 		      int image_width, int image_height );
 static void expand_sai( int *x, int *y, int *w, int *h,
 			int image_width, int image_height );
-static void expand_full_width( int *x, int *y, int *w, int *h,
-			      int image_width, int image_height );
+static void expand_full_width_and_1_line( int *x, int *y, int *w, int *h,
+                                           int image_width, int image_height );
 static void expand_dotmatrix( int *x, int *y, int *w, int *h,
 			      int image_width, int image_height );
 
@@ -110,11 +110,11 @@ static struct scaler_info available_scalers[] = {
   { "Timex 2x",        "timex2x",    SCALER_FLAGS_NONE,        SCALE_FACTOR_TWO,
     scaler_Normal2x_16,  NULL,    NULL                },
   { "PAL TV 2x",       "paltv2x",   SCALER_FLAGS_EXPAND,       SCALE_FACTOR_TWO,
-    scaler_PalTV2x_16,    NULL,    expand_full_width   },
+    scaler_PalTV2x_16,    NULL,    expand_full_width_and_1_line },
   { "PAL TV 3x",       "paltv3x",   SCALER_FLAGS_EXPAND,       SCALE_FACTOR_THREE,
-    scaler_PalTV3x_16,    NULL,    expand_full_width   },
+    scaler_PalTV3x_16,    NULL,    expand_full_width_and_1_line },
   { "PAL TV 4x",       "paltv4x",   SCALER_FLAGS_EXPAND,       SCALE_FACTOR_FOUR,
-    scaler_PalTV4x_16,    NULL,    expand_full_width   },
+    scaler_PalTV4x_16,    NULL,    expand_full_width_and_1_line },
   { "HQ 2x",           "hq2x",      SCALER_FLAGS_EXPAND,       SCALE_FACTOR_TWO,
     scaler_HQ2x_16,       NULL,       expand_1            },
   { "HQ 3x",           "hq3x",      SCALER_FLAGS_EXPAND,       SCALE_FACTOR_THREE,
@@ -127,6 +127,27 @@ static struct scaler_info available_scalers[] = {
     scaler_blargg_NTSC_3x_16, NULL, NULL        },
   { "NTSC TV 4x",      "ntsctv4x",  SCALER_FLAGS_FULL_REFRESH, SCALE_FACTOR_FOUR,
     scaler_blargg_NTSC_4x_16, NULL, NULL        },
+};
+
+/* Scalers that share the same look but render the image at a different scale
+   belong to the same family. Single-size scalers (2xSaI, Dot Matrix, ...) are
+   not listed here and are left untouched when the display is resized.
+
+   Important: a machine cannot have a scaler listed in more than one family,
+   that is, a scaler cannot be in two different rows unless those two rows
+   are for different machines. In this case SCALER_NORMAL appears twice
+   precisely because no machine can use both families of scalers. */
+#define SCALER_SIZES 4
+static const scaler_type scaler_family_table[][ SCALER_SIZES ] = {
+  /*   1x                 2x                 3x                 4x          */
+  { SCALER_NORMAL,    SCALER_DOUBLESIZE, SCALER_TRIPLESIZE, SCALER_QUADSIZE  },
+  { SCALER_TV2X,      SCALER_TV2X,       SCALER_TV3X,       SCALER_TV4X      },
+  { SCALER_PALTV2X,   SCALER_PALTV2X,    SCALER_PALTV3X,    SCALER_PALTV4X   },
+  { SCALER_HQ2X,      SCALER_HQ2X,       SCALER_HQ3X,       SCALER_HQ4X      },
+  { SCALER_NTSC2X,    SCALER_NTSC2X,     SCALER_NTSC3X,     SCALER_NTSC4X    },
+  { SCALER_ADVMAME2X, SCALER_ADVMAME2X,  SCALER_ADVMAME3X,  SCALER_ADVMAME3X },
+  /* Timex sizes 1x-4x correspond to scaling factors 0.5x, 1x, 1.5x and 2x */
+  { SCALER_HALF,      SCALER_NORMAL,     SCALER_TIMEX1_5X,  SCALER_TIMEX2X   },
 };
 
 scaler_type current_scaler = SCALER_NUM;
@@ -304,6 +325,41 @@ scaler_get_expander( scaler_type scaler )
   return available_scalers[scaler].expander;
 }
 
+/* Return the scaler that should be used at the given size (1x to 4x)
+   from the same family as 'scaler' (e.g. PAL TV, HQ, etc.).
+
+   SCALER_NORMAL belongs to two families (the regular one and the Timex one),
+   so we only consider families whose scalers are all currently registered.
+   That is the family for the current machine. */
+scaler_type
+scaler_for_size( scaler_type scaler, int size )
+{
+  size_t family, i;
+
+  if( size < 1 ) size = 1;
+  if( size > SCALER_SIZES ) size = SCALER_SIZES;
+
+  for( family = 0; family < ARRAY_SIZE( scaler_family_table ); family++ ) {
+    int found = 0, supported = 1;
+
+    /* For every row of scalers, check if:
+       - The current one ('scaler') is there.
+       - All four scalers are supported by the current machine */
+    for( i = 0; i < SCALER_SIZES; i++ ) {
+      if( scaler_family_table[family][i] == scaler ) found = 1;
+      if( !scaler_is_supported( scaler_family_table[family][i] ) )
+        supported = 0;
+    }
+
+    /* If that's the case, select the best scaler for the given size */
+    if( found && supported )
+      return scaler_family_table[family][size - 1];
+  }
+
+  /* Single-size scaler (or not in any family): leave it as it is */
+  return scaler;
+}
+
 /* The expansion functions */
 
 /* Clip after expansion */
@@ -332,13 +388,14 @@ expand_sai( int *x, int *y, int *w, int *h, int image_width, int image_height )
   clip( x, y, w, h, image_width, image_height );
 }
 
-/* Expand to the full source-line width */
+/* Expand to the full source-line width and the following line. */
 static void
-expand_full_width( int *x, int *y, int *w, int *h,
+expand_full_width_and_1_line( int *x, int *y, int *w, int *h,
                    int image_width, int image_height )
 {
   *x = 0;
   *w = image_width;
+  (*h)++;
   clip( x, y, w, h, image_width, image_height );
 }
 

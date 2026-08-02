@@ -78,11 +78,15 @@
 #define R  z80.r
 #define R7 z80.r7
 
+/* Masks for the Z80 R register: low seven bits auto-increment, bit 7 is static */
+#define Z80_R_LOWER_BITS 0x7f
+#define Z80_R7_MASK      0x80
+
 #define IFF1 z80.iff1
 #define IFF2 z80.iff2
 #define IM   z80.im
 
-#define IR ( ( z80.i ) << 8 | ( z80.r7 & 0x80 ) | ( z80.r & 0x7f ) )
+#define IR ( ( z80.i ) << 8 | ( z80.r7 & Z80_R7_MASK ) | ( z80.r & Z80_R_LOWER_BITS ) )
 
 #define IS_CMOS settings_current.z80_is_cmos
 

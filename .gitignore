@@ -102,6 +102,7 @@ tags
 /unittests/sdl2scalerstatetest
 /unittests/sdl2joysticktest
 /unittests/sdl2mousetest
+/unittests/*.exe
 /ylwrap
 /z80/coretest
 /z80/coretest.exe

@@ -1,3 +1,38 @@
+2026-07-25  Fredrick Meunier  <fredm@spamcop.net>
+
+        * Fuse 1.9.1 released.
+
+        * UI improvements:
+          * GTK3: add freely resizable, aspect-ratio-preserving display
+            scaling, including improved fullscreen behaviour (part of feature
+            request #135) (Alberto Garcia).
+          * GTK3: preserve scaler families when resizing and prevent stale
+            display borders (Alberto Garcia).
+          * GTK3/Windows: fix drag-and-drop file paths (Sergio Baldoví).
+          * Wii: skip symbol characters (fixes bug #266) (Sergio Baldoví).
+
+        * Debugger improvements:
+          * Correct decimal rendering of values greater than INT_MAX
+            (Fredrick Meunier).
+
+        * Scaler improvements:
+          * Implement PAL composite scaler chroma blending across lines
+            (Fredrick Meunier).
+
+        * Miscellaneous improvements:
+          * Fall back to default settings when loading a settings file fails
+            (Fredrick Meunier).
+          * Decode BASIC tokens and symbols in tape header names (Fredrick
+            Meunier).
+          * Always initialise persistent memory-pool allocations (fixes bug
+            #232) (Fredrick Meunier).
+
+        * Testing improvements:
+          * Include Z80 core tests in `make check` and expand disassembler,
+            debugger-expression and scaler test coverage (Fredrick Meunier).
+
+        * Various other minor bugfixes.
+
 2026-06-15  Fredrick Meunier  <fredm@spamcop.net>
 
         * Fuse 1.9.0 released.

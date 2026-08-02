@@ -112,6 +112,7 @@ ScalerProc *scaler_get_proc32( scaler_type scaler );
 scaler_flags_t scaler_get_flags( scaler_type scaler );
 float scaler_get_scaling_factor( scaler_type scaler );
 scaler_expand_fn* scaler_get_expander( scaler_type scaler );
+scaler_type scaler_for_size( scaler_type scaler, int size );
 
 int scaler_select_bitformat( scaler_bitformat_t bitformat );
 

@@ -255,7 +255,7 @@ _fuse()
             --no-rzx-autosaves --no-simpleide --no-slt --no-sound
             --no-sound-force-8bit --no-speccyboot --no-specdrum
             --no-spectranet --no-spectranet-disable --no-statusbar
-            --no-strict-aspect-hint --no-traps --no-ttx2000s --no-unittests
+            --no-traps --no-ttx2000s --no-unittests
             --no-usource --no-uspeech --no-writable-roms
             --no-zxatasp --no-zxatasp-upload
             --no-zxatasp-write-protect --no-zxcf --no-zxcf-upload --no-zxmmc
@@ -284,7 +284,7 @@ _fuse()
             --snapshot --snet --sound --sound-device --sound-force-8bit
             --sound-freq --speaker-type --speccyboot --speccyboot-tap
             --specdrum --spectranet --spectranet-disable --speed
-            --statusbar --strict-aspect-hint --tape
+            --statusbar --tape
             --teletext-addr-1 --teletext-addr-2 --teletext-addr-3
             --teletext-addr-4 --teletext-port-1 --teletext-port-2
             --teletext-port-3 --teletext-port-4 --textfile --traps --ttx2000s

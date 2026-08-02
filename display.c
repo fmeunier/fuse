@@ -68,14 +68,6 @@ static libspectrum_word
 static libspectrum_word
   display_dirty_xtable[ DISPLAY_WIDTH_COLS * DISPLAY_HEIGHT ];
 
-/* If you write to the byte at display_dirty_?table2[n+0x5800], then
-   the 64 pixels starting at (8*xtable2[n],ytable2[n]) must be
-   replotted */
-static libspectrum_word
-  display_dirty_ytable2[ DISPLAY_WIDTH_COLS * DISPLAY_HEIGHT_ROWS ];
-static libspectrum_word
-  display_dirty_xtable2[ DISPLAY_WIDTH_COLS * DISPLAY_HEIGHT_ROWS ];
-
 /* The number of frames mod 32 that have elapsed.
     0<=d_f_c<16 => Flashing characters are normal
    16<=d_f_c<32 => Flashing characters are reversed
@@ -101,6 +93,14 @@ static int display_redraw_all;
 /* The last point at which we updated the screen display */
 static int critical_region_x = 0, critical_region_y = 0;
 
+/* Cache the most-recently computed beam position keyed on tstates.
+   get_beam_position() is called once per dirty screen write, and attribute
+   writes trigger eight consecutive calls all at the same tstates value.
+   Caching the fully adjusted/clamped screen coordinates avoids the border
+   subtraction and clamping branches on each cache hit (~7/8 of calls). */
+static libspectrum_dword display_cached_beam_tstates = (libspectrum_dword)-1;
+static int display_cached_screen_x, display_cached_screen_y;
+
 /* The border colour changes which have occurred in this frame */
 struct border_change_t {
   int x, y;
@@ -118,9 +118,6 @@ int current_border[ DISPLAY_SCREEN_HEIGHT ][ DISPLAY_SCREEN_WIDTH_COLS ];
 
 static void display_dirty8( libspectrum_word address );
 static void display_dirty64( libspectrum_word address );
-
-static void display_get_attr( int x, int y,
-			      libspectrum_byte *ink, libspectrum_byte *paper);
 
 static int border_changes_last = 0;
 static struct border_change_t *border_changes = NULL;
@@ -159,10 +156,8 @@ display_init( int *argc, char ***argv )
   if(ui_init(argc, argv))
     return 1;
 
-  /* Set up the 'all pixels must be refreshed' marker */
-  display_all_dirty = 0;
-  for( i = 0; i < DISPLAY_SCREEN_WIDTH_COLS; i++ )
-    display_all_dirty = ( display_all_dirty << 1 ) | 0x01;
+  /* Set up the 'all pixels must be refreshed' marker: one bit per column */
+  display_all_dirty = ( (libspectrum_qword)1 << DISPLAY_SCREEN_WIDTH_COLS ) - 1;
 
   for(i=0;i<3;i++)
     for(j=0;j<8;j++)
@@ -171,19 +166,13 @@ display_init( int *argc, char ***argv )
 	  32 * ( (64*i) + j + (k*8) );
 
   for(y=0;y<DISPLAY_HEIGHT;y++) {
-    display_attr_start[y]=6144 + (32*(y/8));
+    display_attr_start[y]=DISPLAY_PIXEL_BYTES + (DISPLAY_WIDTH_COLS*(y/8));
   }
 
   for(y=0;y<DISPLAY_HEIGHT;y++)
     for(x=0;x<DISPLAY_WIDTH_COLS;x++) {
       display_dirty_ytable[ display_line_start[y]+x ] = y;
       display_dirty_xtable[ display_line_start[y]+x ] = x;
-    }
-
-  for(y=0;y<DISPLAY_HEIGHT_ROWS;y++)
-    for(x=0;x<DISPLAY_WIDTH_COLS;x++) {
-      display_dirty_ytable2[ (32*y) + x ] = y * 8;
-      display_dirty_xtable2[ (32*y) + x ] = x;
     }
 
   display_frame_count=0; display_flash_reversed=0;
@@ -231,8 +220,8 @@ display_dirty_timex( libspectrum_word offset )
 
     case STANDARD: /* standard Speccy screen */
     case HIRESATTR: /* strange mode */
-      if( offset >= 0x1b00 ) break;
-      if( offset <  0x1800 ) {		/* 0x1800 = first attributes byte */
+      if( offset >= DISPLAY_FILE_SIZE ) break;
+      if( offset <  DISPLAY_PIXEL_BYTES ) {
         display_dirty8( offset );
       } else {
         display_dirty64( offset );
@@ -241,8 +230,9 @@ display_dirty_timex( libspectrum_word offset )
 
     case ALTDFILE: /* second screen */
     case HIRESATTRALTD: /* strange mode using second screen */      
-      if( offset < 0x2000 || offset >= 0x3b00 ) break;
-      if( offset < 0x3800 ) {		/* 0x3800 = first attributes byte */
+      if( offset < ALTDFILE_OFFSET ||
+          offset >= ALTDFILE_OFFSET + DISPLAY_FILE_SIZE ) break;
+      if( offset < ALTDFILE_OFFSET + DISPLAY_PIXEL_BYTES ) {
         display_dirty8( offset - ALTDFILE_OFFSET );
       } else {
         display_dirty64( offset - ALTDFILE_OFFSET );
@@ -251,9 +241,9 @@ display_dirty_timex( libspectrum_word offset )
 
     case EXTCOLOUR: /* extended colours */
     case HIRES: /* hires mode */
-      if( offset >= 0x3800 ) break;
-      if( offset >= 0x1800 && offset < 0x2000 ) break;
-      if( offset >= 0x2000 ) offset -= ALTDFILE_OFFSET;
+      if( offset >= ALTDFILE_OFFSET + DISPLAY_PIXEL_BYTES ) break;
+      if( offset >= DISPLAY_PIXEL_BYTES && offset < ALTDFILE_OFFSET ) break;
+      if( offset >= ALTDFILE_OFFSET ) offset -= ALTDFILE_OFFSET;
       display_dirty8( offset );
       break;
 
@@ -262,7 +252,8 @@ display_dirty_timex( libspectrum_word offset )
        taken from second screen */
     /* case HIRESDOUBLECOL: hires mode, but data taken only from
        second screen */
-      if( offset >= 0x2000 && offset < 0x3800 )
+      if( offset >= ALTDFILE_OFFSET &&
+          offset < ALTDFILE_OFFSET + DISPLAY_PIXEL_BYTES )
 	display_dirty8( offset - ALTDFILE_OFFSET );
       break;
   }
@@ -271,11 +262,11 @@ display_dirty_timex( libspectrum_word offset )
 void
 display_dirty_pentagon_16_col( libspectrum_word offset )
 {
-  /* The only relevant sections of the page will be the two 6144 byte sections
-     separated by ALTDFILE_OFFSET, which have the same display offset */
-  if( offset >= 0x2000 ) offset -= ALTDFILE_OFFSET;
+  /* The only relevant sections of the page will be the two DISPLAY_PIXEL_BYTES
+     sections separated by ALTDFILE_OFFSET, which have the same display offset */
+  if( offset >= ALTDFILE_OFFSET ) offset -= ALTDFILE_OFFSET;
   /* No attributes are relevent in this mode */
-  if( offset <  0x1800 ) {		/* 0x1800 = first attributes byte */
+  if( offset <  DISPLAY_PIXEL_BYTES ) {
     display_dirty8( offset );
   }
 }
@@ -283,8 +274,8 @@ display_dirty_pentagon_16_col( libspectrum_word offset )
 void
 display_dirty_sinclair( libspectrum_word offset )
 {
-  if( offset >= 0x1b00 ) return;
-  if( offset <  0x1800 ) {		/* 0x1800 = first attributes byte */
+  if( offset >= DISPLAY_FILE_SIZE ) return;
+  if( offset <  DISPLAY_PIXEL_BYTES ) {
     display_dirty8( offset );
   } else {
     display_dirty64( offset );
@@ -420,11 +411,15 @@ display_write_if_dirty_timex( int x, int y )
   index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
   if( display_last_screen[ index ] != last_chunk_detail ) {
     libspectrum_byte ink, paper;
-    display_get_attr( x, y, &ink, &paper );
     if( scld_last_dec.name.hires ) {
+      /* In hires mode the attr byte is not in data2, so we must look it up. */
+      display_parse_attr( display_get_attr_byte( x, y ), &ink, &paper );
       libspectrum_word hires_data = (data << 8) + data2;
       uidisplay_plot16( beam_x, beam_y, hires_data, ink, paper );
     } else {
+      /* In lores mode data2 already holds the attr byte (set above), so
+         parse it directly instead of reading it a second time. */
+      display_parse_attr( data2, &ink, &paper );
       uidisplay_plot8( beam_x, beam_y, data, ink, paper );
     }
 
@@ -657,38 +652,38 @@ get_beam_position( int *x, int *y )
   else *x = 0;
 }
 
-inline static void
-update_critical_internal( int x, int y )
-{
-  int beam_x, beam_y;
-
-  get_beam_position( &beam_x, &beam_y );
-
-  beam_x -= DISPLAY_BORDER_WIDTH_COLS;
-  beam_y -= DISPLAY_BORDER_HEIGHT;
-
-  if( beam_y < 0 ) {
-    beam_x = beam_y = 0;
-  } else if( beam_y >= DISPLAY_HEIGHT ) {
-    beam_x = DISPLAY_WIDTH_COLS;
-    beam_y = DISPLAY_HEIGHT - 1;
-  }
-
-  if( beam_x < 0 ) {
-    beam_x = 0;
-  } else if( beam_x > DISPLAY_WIDTH_COLS ) {
-    beam_x = DISPLAY_WIDTH_COLS;
-  }
-
-  if(   y <  beam_y                 ||
-      ( y == beam_y && x < beam_x )    )
-    copy_critical_region( beam_x, beam_y );
-}
-
 void
 display_update_critical( int x, int y )
 {
-  update_critical_internal( x, y );
+  int beam_x, beam_y;
+
+  if( tstates != display_cached_beam_tstates ) {
+    get_beam_position( &beam_x, &beam_y );
+    display_cached_beam_tstates = tstates;
+
+    beam_x -= DISPLAY_BORDER_WIDTH_COLS;
+    beam_y -= DISPLAY_BORDER_HEIGHT;
+
+    if( beam_y < 0 ) {
+      beam_x = beam_y = 0;
+    } else if( beam_y >= DISPLAY_HEIGHT ) {
+      beam_x = DISPLAY_WIDTH_COLS;
+      beam_y = DISPLAY_HEIGHT - 1;
+    }
+
+    if( beam_x < 0 ) {
+      beam_x = 0;
+    } else if( beam_x > DISPLAY_WIDTH_COLS ) {
+      beam_x = DISPLAY_WIDTH_COLS;
+    }
+
+    display_cached_screen_x = beam_x;
+    display_cached_screen_y = beam_y;
+  }
+
+  if(   y <  display_cached_screen_y                              ||
+      ( y == display_cached_screen_y && x < display_cached_screen_x ) )
+    copy_critical_region( display_cached_screen_x, display_cached_screen_y );
 }
 
 /* Mark the 8-pixel chunk at (x,y) as maybe dirty and update the critical
@@ -701,7 +696,7 @@ display_dirty_chunk( int x, int y )
   if(   y >  critical_region_y                             ||
       ( y == critical_region_y && x >= critical_region_x )    ) {
 
-    update_critical_internal( x, y );
+    display_update_critical( x, y );
   }
 
   display_maybe_dirty[y] |= ( (libspectrum_dword)1 << x );
@@ -722,14 +717,19 @@ static void
 display_dirty64( libspectrum_word offset )
 {
   int i, x, y;
+  int idx = offset - ( DISPLAY_HEIGHT * DISPLAY_WIDTH_COLS );
 
-  x=display_dirty_xtable2[ offset - 0x1800 ];
-  y=display_dirty_ytable2[ offset - 0x1800 ];
+  /* The attribute area is laid out linearly: column x, row y, so:
+     x = idx % DISPLAY_WIDTH_COLS
+     y = (idx / DISPLAY_WIDTH_COLS) * 8
+     Both divisions are exact powers of two and optimise to shifts/masks. */
+  x = idx & ( DISPLAY_WIDTH_COLS - 1 );
+  y = ( idx / DISPLAY_WIDTH_COLS ) * 8;
 
   for( i = 0; i < 8; i++ ) display_dirty_chunk( x, y + i );
 }
 
-inline void
+void
 display_parse_attr( libspectrum_byte attr,
 		    libspectrum_byte *ink, libspectrum_byte *paper )
 {
@@ -740,15 +740,6 @@ display_parse_attr( libspectrum_byte attr,
     *ink= (attr & 0x07) + ( (attr & 0x40) >> 3 );
     *paper= (attr & ( 0x0f << 3 ) ) >> 3;
   }
-}
-
-/* Get the attributes for the eight pixels starting at
-   ( (8*x) , y ) */
-static void
-display_get_attr( int x, int y,
-                  libspectrum_byte *ink, libspectrum_byte *paper )
-{
-  display_parse_attr( display_get_attr_byte( x, y ), ink, paper );
 }
 
 static void
@@ -963,6 +954,10 @@ update_ui_screen( void )
 int
 display_frame( void )
 {
+  /* Invalidate the beam position cache so get_beam_position() is called
+     fresh in the new frame (machine timing may have changed on reset). */
+  display_cached_beam_tstates = (libspectrum_dword)-1;
+
   /* Copy all the critical region to the display */
   copy_critical_region( DISPLAY_WIDTH_COLS, DISPLAY_HEIGHT - 1 );
   critical_region_x = critical_region_y = 0;
@@ -997,14 +992,18 @@ display_dirty_flashing_timex(void)
   if( !scld_last_dec.name.hires ) {
     if( scld_last_dec.name.b1 ) {
 
-      for( offset = ALTDFILE_OFFSET; offset < 0x3800; offset++ ) {
+      for( offset = ALTDFILE_OFFSET;
+           offset < ALTDFILE_OFFSET + DISPLAY_PIXEL_BYTES;
+           offset++ ) {
         attr = screen[ offset ];
         if( attr & 0x80 ) display_dirty8( offset - ALTDFILE_OFFSET );
       }
 
     } else if( scld_last_dec.name.altdfile ) {
 
-      for( offset= 0x3800; offset < 0x3b00; offset++ ) {
+      for( offset= ALTDFILE_OFFSET + DISPLAY_PIXEL_BYTES;
+           offset < ALTDFILE_OFFSET + DISPLAY_FILE_SIZE;
+           offset++ ) {
         attr = screen[ offset ];
         if( attr & 0x80 ) display_dirty64( offset - ALTDFILE_OFFSET );
       }
@@ -1032,7 +1031,7 @@ display_dirty_flashing_sinclair(void)
   screen = RAM[ memory_current_screen ];
   
   /* Standard Speccy screen */
-  for( offset = 0x1800; offset < 0x1b00; offset++ ) {
+  for( offset = DISPLAY_PIXEL_BYTES; offset < DISPLAY_FILE_SIZE; offset++ ) {
     attr = screen[ offset ];
     if( attr & 0x80 ) display_dirty64( offset );
   }

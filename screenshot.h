@@ -24,6 +24,8 @@
 #ifndef FUSE_SCREENSHOT_H
 #define FUSE_SCREENSHOT_H
 
+#include "display.h"
+
 #ifndef SCALER_H
 #include "ui/scaler/scaler.h"
 #endif				/* #ifndef SCALER_H */
@@ -43,6 +45,6 @@ int screenshot_scr_read( const char *filename );
 int screenshot_mlt_write( const char *filename );
 int screenshot_mlt_read( const char *filename );
 
-#define STANDARD_SCR_SIZE 6912
+#define STANDARD_SCR_SIZE DISPLAY_FILE_SIZE
 
 #endif				/* #ifndef FUSE_SCREENSHOT_H */

@@ -30,6 +30,7 @@
 #include "libspectrum.h"
 
 #include "infrastructure/startup_manager.h"
+#include "display.h"
 #include "module.h"
 #include "settings.h"
 #include "slt.h"
@@ -115,9 +116,9 @@ slt_from_snapshot( libspectrum_snap *snap )
 
   if( libspectrum_snap_slt_screen( snap ) ) {
 
-    slt_screen = memory_pool_allocate( 6912 * sizeof( libspectrum_byte ) );
+    slt_screen = memory_pool_allocate( DISPLAY_FILE_SIZE * sizeof( libspectrum_byte ) );
 
-    memcpy( slt_screen, libspectrum_snap_slt_screen( snap ), 6912 );
+    memcpy( slt_screen, libspectrum_snap_slt_screen( snap ), DISPLAY_FILE_SIZE );
     slt_screen_level = libspectrum_snap_slt_screen_level( snap );
   }
 }
@@ -143,9 +144,9 @@ slt_to_snapshot( libspectrum_snap *snap )
 
   if( slt_screen ) {
  
-    buffer = libspectrum_new( libspectrum_byte, 6912 );
+    buffer = libspectrum_new( libspectrum_byte, DISPLAY_FILE_SIZE );
 
-    memcpy( buffer, slt_screen, 6912 );
+    memcpy( buffer, slt_screen, DISPLAY_FILE_SIZE );
     libspectrum_snap_set_slt_screen( snap, buffer );
     libspectrum_snap_set_slt_screen_level( snap, slt_screen_level );
   }

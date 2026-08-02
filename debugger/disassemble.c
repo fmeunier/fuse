@@ -37,6 +37,9 @@
 #include "memory_pages.h"
 #include "ui/ui.h"
 
+/* Size of temporary string buffers used throughout the disassembler */
+#define DISASM_BUF_LEN 40
+
 /* Used to flag whether we're after a DD or FD prefix */
 enum hl_type { USE_HL, USE_IX, USE_IY };
 
@@ -109,7 +112,7 @@ disassemble_main( libspectrum_word address, char *buffer, size_t buflen,
 		  size_t *length, enum hl_type use_hl )
 {
   libspectrum_byte b;
-  char buffer2[40], buffer3[40];
+  char buffer2[DISASM_BUF_LEN], buffer3[DISASM_BUF_LEN];
   size_t prefix_length = 0;
 
   b = readbyte_internal( address );
@@ -130,16 +133,16 @@ disassemble_main( libspectrum_word address, char *buffer, size_t buflen,
   } else if( b < 0x80 ) {
 
     if( ( b & 0x07 ) == 0x06 ) {		 /* LD something,(HL) */
-      dest_reg( address, USE_HL, buffer2, 40 );
-      source_reg( address, use_hl, buffer3, 40 );
+      dest_reg( address, USE_HL, buffer2, DISASM_BUF_LEN );
+      source_reg( address, use_hl, buffer3, DISASM_BUF_LEN );
       *length = ( use_hl == USE_HL ? 1 : 2 );
     } else if( ( ( b >> 3 ) & 0x07 ) == 0x06 ) { /* LD (HL),something */
-      dest_reg( address, use_hl, buffer2, 40 );
-      source_reg( address, USE_HL, buffer3, 40 );
+      dest_reg( address, use_hl, buffer2, DISASM_BUF_LEN );
+      source_reg( address, USE_HL, buffer3, DISASM_BUF_LEN );
       *length = ( use_hl == USE_HL ? 1 : 2 );
     } else {				/* Does not involve (HL) at all */
-      dest_reg( address, use_hl, buffer2, 40 );
-      source_reg( address, use_hl, buffer3, 40 );
+      dest_reg( address, use_hl, buffer2, DISASM_BUF_LEN );
+      source_reg( address, use_hl, buffer3, DISASM_BUF_LEN );
       *length = 1;
     }
     /* Note LD (HL),(HL) does not exist */
@@ -147,7 +150,7 @@ disassemble_main( libspectrum_word address, char *buffer, size_t buflen,
     snprintf( buffer, buflen, "LD %s,%s", buffer2, buffer3 );
 
   } else if( b < 0xc0 ) {
-    *length = 1 + source_reg( address, use_hl, buffer2, 40 );
+    *length = 1 + source_reg( address, use_hl, buffer2, DISASM_BUF_LEN );
     snprintf( buffer, buflen, addition_op( b ), buffer2 );
   } else {
     disassemble_11xxxxxx( address, buffer, buflen, length, use_hl );
@@ -168,7 +171,7 @@ disassemble_00xxxxxx( libspectrum_word address, char *buffer, size_t buflen,
   const char *opcode_00xxx111[] = {
     "RLCA", "RRCA", "RLA", "RRA", "DAA", "CPL", "SCF", "CCF"
   };
-  char buffer2[40], buffer3[40];
+  char buffer2[DISASM_BUF_LEN], buffer3[DISASM_BUF_LEN];
 
   libspectrum_byte b = readbyte_internal( address );
 
@@ -178,14 +181,14 @@ disassemble_00xxxxxx( libspectrum_word address, char *buffer, size_t buflen,
     if( b <= 0x08 ) {
       snprintf( buffer, buflen, "%s", opcode_00xxx000[ b >> 3 ] ); *length = 1;
     } else {
-      get_offset( buffer2, 40, address + 2, readbyte_internal( address + 1 ) );
+      get_offset( buffer2, DISASM_BUF_LEN, address + 2, readbyte_internal( address + 1 ) );
       snprintf( buffer, buflen, "%s%s", opcode_00xxx000[ b >> 3 ], buffer2 );
       *length = 2;
     }
     break;
 
   case 0x01:
-    get_word( buffer2, 40, address + 1 );
+    get_word( buffer2, DISASM_BUF_LEN, address + 1 );
     snprintf( buffer, buflen, "LD %s,%s", reg_pair( b, use_hl ), buffer2 );
     *length = 3;
     break;
@@ -199,18 +202,18 @@ disassemble_00xxxxxx( libspectrum_word address, char *buffer, size_t buflen,
     break;
 
   case 0x04: case 0x0c:
-    *length = 1 + dest_reg( address, use_hl, buffer2, 40 );
+    *length = 1 + dest_reg( address, use_hl, buffer2, DISASM_BUF_LEN );
     snprintf( buffer, buflen, "INC %s", buffer2 );
     break;
 
   case 0x05: case 0x0d:
-    *length = 1 + dest_reg( address, use_hl, buffer2, 40 );
+    *length = 1 + dest_reg( address, use_hl, buffer2, DISASM_BUF_LEN );
     snprintf( buffer, buflen, "DEC %s", buffer2 );
     break;
 
   case 0x06: case 0x0e:
-    *length = 2 + dest_reg( address, use_hl, buffer2, 40 );
-    get_byte( buffer3, 40, readbyte_internal( address + *length - 1 ) );
+    *length = 2 + dest_reg( address, use_hl, buffer2, DISASM_BUF_LEN );
+    get_byte( buffer3, DISASM_BUF_LEN, readbyte_internal( address + *length - 1 ) );
     snprintf( buffer, buflen, "LD %s,%s", buffer2, buffer3 );
     break;
 
@@ -241,7 +244,7 @@ static void
 disassemble_00xxx010( libspectrum_word address, char *buffer, size_t buflen,
 		      size_t *length, enum hl_type use_hl )
 {
-  char buffer2[40];
+  char buffer2[DISASM_BUF_LEN];
   libspectrum_byte b = readbyte_internal( address );
 
   switch( b >> 4 ) {
@@ -252,13 +255,13 @@ disassemble_00xxx010( libspectrum_word address, char *buffer, size_t buflen,
     break;
 
   case 2:
-    get_word( buffer2, 40, address + 1 );
+    get_word( buffer2, DISASM_BUF_LEN, address + 1 );
     snprintf( buffer, buflen, "LD (%s),%s", buffer2, hl_ix_iy( use_hl ) );
     *length = 3;
     break;
 
   case 3:
-    get_word( buffer2, 40, address + 1 );
+    get_word( buffer2, DISASM_BUF_LEN, address + 1 );
     snprintf( buffer, buflen, "LD (%s),A", buffer2 ); *length = 3;
     break;
   }
@@ -269,7 +272,7 @@ static void
 disassemble_00xxx110( libspectrum_word address, char *buffer, size_t buflen,
 		      size_t *length, enum hl_type use_hl )
 {
-  char buffer2[40];
+  char buffer2[DISASM_BUF_LEN];
   libspectrum_byte b = readbyte_internal( address );
 
   switch( b >> 4 ) {
@@ -280,13 +283,13 @@ disassemble_00xxx110( libspectrum_word address, char *buffer, size_t buflen,
     break;
 
   case 2:
-    get_word( buffer2, 40, address + 1 );
+    get_word( buffer2, DISASM_BUF_LEN, address + 1 );
     snprintf( buffer, buflen, "LD %s,(%s)", hl_ix_iy( use_hl ), buffer2 );
     *length = 3;
     break;
 
   case 3:
-    get_word( buffer2, 40, address + 1 );
+    get_word( buffer2, DISASM_BUF_LEN, address + 1 );
     snprintf( buffer, buflen, "LD A,(%s)", buffer2 ); *length = 3;
     break;
   }
@@ -297,7 +300,7 @@ static void
 disassemble_11xxxxxx( libspectrum_word address, char *buffer, size_t buflen,
 		      size_t *length, enum hl_type use_hl )
 {
-  char buffer2[40];
+  char buffer2[DISASM_BUF_LEN];
   libspectrum_byte b = readbyte_internal( address );
 
   switch( b & 0x07 ) {
@@ -311,7 +314,7 @@ disassemble_11xxxxxx( libspectrum_word address, char *buffer, size_t buflen,
     break;
 
   case 0x02:
-    get_word( buffer2, 40, address + 1 );
+    get_word( buffer2, DISASM_BUF_LEN, address + 1 );
     snprintf( buffer, buflen, "JP %s,%s", condition( b ), buffer2 );
     *length = 3;
     break;
@@ -321,7 +324,7 @@ disassemble_11xxxxxx( libspectrum_word address, char *buffer, size_t buflen,
     break;
 
   case 0x04:
-    get_word( buffer2, 40, address + 1 );
+    get_word( buffer2, DISASM_BUF_LEN, address + 1 );
     snprintf( buffer, buflen, "CALL %s,%s", condition( b ), buffer2 );
     *length = 3;
     break;
@@ -331,7 +334,7 @@ disassemble_11xxxxxx( libspectrum_word address, char *buffer, size_t buflen,
     break;
 
   case 0x06:
-    get_byte( buffer2, 40, readbyte_internal( address + 1 ) );
+    get_byte( buffer2, DISASM_BUF_LEN, readbyte_internal( address + 1 ) );
     snprintf( buffer, buflen, addition_op( b ), buffer2 );
     *length = 2;
     break;
@@ -374,13 +377,13 @@ static void
 disassemble_11xxx011( libspectrum_word address, char *buffer, size_t buflen,
 		      size_t *length, enum hl_type use_hl )
 {
-  char buffer2[40];
+  char buffer2[DISASM_BUF_LEN];
   libspectrum_byte b = readbyte_internal( address );
 
   switch( ( b >> 3 ) - 0x18 ) {
 
   case 0x00:
-    get_word( buffer2, 40, address + 1 );
+    get_word( buffer2, DISASM_BUF_LEN, address + 1 );
     snprintf( buffer, buflen, "JP %s", buffer2 ); *length = 3;
     break;
 
@@ -396,12 +399,12 @@ disassemble_11xxx011( libspectrum_word address, char *buffer, size_t buflen,
     break;
 
   case 0x02:
-    get_byte( buffer2, 40, readbyte_internal( address + 1 ) );
+    get_byte( buffer2, DISASM_BUF_LEN, readbyte_internal( address + 1 ) );
     snprintf( buffer, buflen, "OUT (%s),A", buffer2 ); *length = 2;
     break;
 
   case 0x03:
-    get_byte( buffer2, 40, readbyte_internal( address + 1 ) );
+    get_byte( buffer2, DISASM_BUF_LEN, readbyte_internal( address + 1 ) );
     snprintf( buffer, buflen, "IN A,(%s)", buffer2 ); *length = 2;
     break;
 
@@ -429,7 +432,7 @@ static void
 disassemble_11xxx101( libspectrum_word address, char *buffer, size_t buflen,
 		      size_t *length, enum hl_type use_hl )
 {
-  char buffer2[40];
+  char buffer2[DISASM_BUF_LEN];
   libspectrum_byte b = readbyte_internal( address );
 
   switch( ( b >> 3 ) - 0x18 ) {
@@ -439,7 +442,7 @@ disassemble_11xxx101( libspectrum_word address, char *buffer, size_t buflen,
     break;
 
   case 0x01:
-    get_word( buffer2, 40, address + 1 );
+    get_word( buffer2, DISASM_BUF_LEN, address + 1 );
     snprintf( buffer, buflen, "CALL %s", buffer2 ); *length = 3;
     break;
 
@@ -466,10 +469,10 @@ static void
 disassemble_cb( libspectrum_word address, char *buffer, size_t buflen,
 		size_t *length )
 {
-  char buffer2[40];
+  char buffer2[DISASM_BUF_LEN];
   libspectrum_byte b = readbyte_internal( address );
 
-  source_reg( address, USE_HL, buffer2, 40 );
+  source_reg( address, USE_HL, buffer2, DISASM_BUF_LEN );
 
   if( b < 0x40 ) {
     snprintf( buffer, buflen, "%s %s", rotate_op( b ), buffer2 );
@@ -487,7 +490,7 @@ disassemble_ed( libspectrum_word address, char *buffer, size_t buflen,
 		size_t *length )
 {
   libspectrum_byte b;
-  char buffer2[40];
+  char buffer2[DISASM_BUF_LEN];
 
   const char *opcode_01xxx111[] = {
     "LD I,A", "LD R,A", "LD A,I", "LD A,R", "RRD", "RLD", "NOPD", "NOPD"
@@ -516,7 +519,7 @@ disassemble_ed( libspectrum_word address, char *buffer, size_t buflen,
       if( b == 0x70 ) {
 	snprintf( buffer, buflen, "IN F,(C)" ); *length = 1;
       } else {
-	dest_reg( address, USE_HL, buffer2, 40 );
+	dest_reg( address, USE_HL, buffer2, DISASM_BUF_LEN );
 	snprintf( buffer, buflen, "IN %s,(C)", buffer2 ); *length = 1;
       }
       break;
@@ -525,7 +528,7 @@ disassemble_ed( libspectrum_word address, char *buffer, size_t buflen,
       if( b == 0x71 ) {
 	snprintf( buffer, buflen, "OUT (C),0" ); *length = 1;
       } else {
-	dest_reg( address, USE_HL, buffer2, 40 );
+	dest_reg( address, USE_HL, buffer2, DISASM_BUF_LEN );
 	snprintf( buffer, buflen, "OUT (C),%s", buffer2 ); *length = 1;
       }
       break;
@@ -536,7 +539,7 @@ disassemble_ed( libspectrum_word address, char *buffer, size_t buflen,
       break;
 
     case 0x03:
-      get_word( buffer2, 40, address + 1 );
+      get_word( buffer2, DISASM_BUF_LEN, address + 1 );
       snprintf( buffer, buflen, "LD (%s),%s", buffer2, reg_pair( b, USE_HL ) );
       *length = 3;
       break;
@@ -569,7 +572,7 @@ disassemble_ed( libspectrum_word address, char *buffer, size_t buflen,
       break;
 
     case 0x0b:
-      get_word( buffer2, 40, address + 1 );
+      get_word( buffer2, DISASM_BUF_LEN, address + 1 );
       snprintf( buffer, buflen, "LD %s,(%s)", reg_pair( b, USE_HL ), buffer2 );
       *length = 3;
       break;
@@ -590,33 +593,33 @@ disassemble_ddfd_cb( libspectrum_word address, char offset,
 		     size_t *length )
 {
   libspectrum_byte b = readbyte_internal( address );
-  char buffer2[40], buffer3[40];
+  char buffer2[DISASM_BUF_LEN], buffer3[DISASM_BUF_LEN];
 
   if( b < 0x40 ) {
     if( ( b & 0x07 ) == 0x06 ) {
-      ix_iy_offset( buffer2, 40, use_hl, offset );
+      ix_iy_offset( buffer2, DISASM_BUF_LEN, use_hl, offset );
       snprintf( buffer, buflen, "%s %s", rotate_op( b ), buffer2 );
       *length = 1;
     } else {
-      source_reg( address, USE_HL, buffer2, 40 );
-      ix_iy_offset( buffer3, 40, use_hl, offset );
+      source_reg( address, USE_HL, buffer2, DISASM_BUF_LEN );
+      ix_iy_offset( buffer3, DISASM_BUF_LEN, use_hl, offset );
       snprintf( buffer, buflen, "LD %s,%s %s", buffer2,
 		rotate_op( b ), buffer3 );
       *length = 1;
     }
   } else if( b < 0x80 ) {
-    ix_iy_offset( buffer2, 40, use_hl, offset );
+    ix_iy_offset( buffer2, DISASM_BUF_LEN, use_hl, offset );
     snprintf( buffer, buflen, "%s %d,%s", bit_op( b ), bit_op_bit( b ), buffer2 );
     *length = 1;
   } else {
     if( ( b & 0x07 ) == 0x06 ) {
-      ix_iy_offset( buffer2, 40, use_hl, offset );
+      ix_iy_offset( buffer2, DISASM_BUF_LEN, use_hl, offset );
       snprintf( buffer, buflen, "%s %d,%s", bit_op( b ), bit_op_bit( b ),
 		buffer2 );
       *length = 1;
     } else {
-      source_reg( address, USE_HL, buffer2, 40 );
-      ix_iy_offset( buffer3, 40, use_hl, offset );
+      source_reg( address, USE_HL, buffer2, DISASM_BUF_LEN );
+      ix_iy_offset( buffer3, DISASM_BUF_LEN, use_hl, offset );
       snprintf( buffer, buflen, "LD %s,%s %d,%s", buffer2, bit_op( b ), bit_op_bit( b ), buffer3 );
       *length = 1;
     }
@@ -718,7 +721,7 @@ static int
 single_reg( int i, enum hl_type use_hl, libspectrum_byte offset,
 	    char *buffer, size_t buflen )
 {
-  char buffer2[40];
+  char buffer2[DISASM_BUF_LEN];
 
   if( i == 0x04 && use_hl != USE_HL ) {
     snprintf( buffer, buflen, "%sh", hl_ix_iy( use_hl ) );
@@ -727,7 +730,7 @@ single_reg( int i, enum hl_type use_hl, libspectrum_byte offset,
     snprintf( buffer, buflen, "%sl", hl_ix_iy( use_hl ) );
     return 0;
   } else if( i == 0x06 && use_hl != USE_HL ) {
-    ix_iy_offset( buffer2, 40, use_hl, offset );
+    ix_iy_offset( buffer2, DISASM_BUF_LEN, use_hl, offset );
     snprintf( buffer, buflen, "%s", buffer2 );
     return 1;
   } else {
@@ -1224,10 +1227,138 @@ libspectrum_byte test253_data[] = { 0xfd, 0xcb, 0x55, 0x07 };  /* LD A,RLC (IY+5
 /* DD CB undocumented: non-RLC rotation op to verify rotate_op() selection */
 libspectrum_byte test254_data[] = { 0xdd, 0xcb, 0x55, 0x38 };  /* LD B,SRL (IX+55) */
 
+/* DD/FD prefix: LD r,(IX/IY+d) — remaining registers C, D, E, H, L */
+libspectrum_byte test255_data[] = { 0xdd, 0x4e, 0x05 };  /* LD C,(IX+05) */
+libspectrum_byte test256_data[] = { 0xdd, 0x56, 0x05 };  /* LD D,(IX+05) */
+libspectrum_byte test257_data[] = { 0xdd, 0x5e, 0x05 };  /* LD E,(IX+05) */
+libspectrum_byte test258_data[] = { 0xdd, 0x66, 0x05 };  /* LD H,(IX+05) */
+libspectrum_byte test259_data[] = { 0xdd, 0x6e, 0x05 };  /* LD L,(IX+05) */
+libspectrum_byte test260_data[] = { 0xfd, 0x4e, 0x05 };  /* LD C,(IY+05) */
+libspectrum_byte test261_data[] = { 0xfd, 0x56, 0x05 };  /* LD D,(IY+05) */
+libspectrum_byte test262_data[] = { 0xfd, 0x5e, 0x05 };  /* LD E,(IY+05) */
+libspectrum_byte test263_data[] = { 0xfd, 0x66, 0x05 };  /* LD H,(IY+05) */
+libspectrum_byte test264_data[] = { 0xfd, 0x6e, 0x05 };  /* LD L,(IY+05) */
+libspectrum_byte test265_data[] = { 0xfd, 0x7e, 0x05 };  /* LD A,(IY+05) */
+
+/* DD/FD prefix: LD (IX/IY+d),r — remaining registers C, D, E, H, L, A */
+libspectrum_byte test266_data[] = { 0xdd, 0x71, 0x05 };  /* LD (IX+05),C */
+libspectrum_byte test267_data[] = { 0xdd, 0x72, 0x05 };  /* LD (IX+05),D */
+libspectrum_byte test268_data[] = { 0xdd, 0x73, 0x05 };  /* LD (IX+05),E */
+libspectrum_byte test269_data[] = { 0xdd, 0x74, 0x05 };  /* LD (IX+05),H */
+libspectrum_byte test270_data[] = { 0xdd, 0x75, 0x05 };  /* LD (IX+05),L */
+libspectrum_byte test271_data[] = { 0xdd, 0x77, 0x05 };  /* LD (IX+05),A */
+libspectrum_byte test272_data[] = { 0xfd, 0x71, 0x05 };  /* LD (IY+05),C */
+libspectrum_byte test273_data[] = { 0xfd, 0x72, 0x05 };  /* LD (IY+05),D */
+libspectrum_byte test274_data[] = { 0xfd, 0x73, 0x05 };  /* LD (IY+05),E */
+libspectrum_byte test275_data[] = { 0xfd, 0x74, 0x05 };  /* LD (IY+05),H */
+libspectrum_byte test276_data[] = { 0xfd, 0x75, 0x05 };  /* LD (IY+05),L */
+libspectrum_byte test277_data[] = { 0xfd, 0x77, 0x05 };  /* LD (IY+05),A */
+
+/* CB prefix: all 8 rotate/shift operations with register A (rrr = 111).
+   Together with the existing B tests (test72-79) these verify that
+   source_reg() returns the correct register name at both ends of
+   the register range used by disassemble_cb(). */
+static libspectrum_byte test278_data[] = { 0xcb, 0x07 };  /* RLC A */
+static libspectrum_byte test279_data[] = { 0xcb, 0x0f };  /* RRC A */
+static libspectrum_byte test280_data[] = { 0xcb, 0x17 };  /* RL A */
+static libspectrum_byte test281_data[] = { 0xcb, 0x1f };  /* RR A */
+static libspectrum_byte test282_data[] = { 0xcb, 0x27 };  /* SLA A */
+static libspectrum_byte test283_data[] = { 0xcb, 0x2f };  /* SRA A */
+static libspectrum_byte test284_data[] = { 0xcb, 0x37 };  /* SLL A (undocumented) */
+static libspectrum_byte test285_data[] = { 0xcb, 0x3f };  /* SRL A */
+
+/* CB prefix: all remaining rotate/shift operations with (HL) (rrr = 110).
+   RLC (HL) is already covered by test80; these add the other seven ops
+   to verify rotate_op() selects each mnemonic when the register is (HL). */
+static libspectrum_byte test286_data[] = { 0xcb, 0x0e };  /* RRC (HL) */
+static libspectrum_byte test287_data[] = { 0xcb, 0x16 };  /* RL (HL) */
+static libspectrum_byte test288_data[] = { 0xcb, 0x1e };  /* RR (HL) */
+static libspectrum_byte test289_data[] = { 0xcb, 0x26 };  /* SLA (HL) */
+static libspectrum_byte test290_data[] = { 0xcb, 0x2e };  /* SRA (HL) */
+static libspectrum_byte test291_data[] = { 0xcb, 0x36 };  /* SLL (HL) (undocumented) */
+static libspectrum_byte test292_data[] = { 0xcb, 0x3e };  /* SRL (HL) */
+
+/* CB prefix: BIT, RES and SET with bit 7 and (HL) (rrr = 110).
+   Exercises bit_op(), bit_op_bit() with the maximum bit number,
+   and source_reg() with the (HL) register in the >= 0x40 branch. */
+static libspectrum_byte test293_data[] = { 0xcb, 0x7e };  /* BIT 7,(HL) */
+static libspectrum_byte test294_data[] = { 0xcb, 0xbe };  /* RES 7,(HL) */
+static libspectrum_byte test295_data[] = { 0xcb, 0xfe };  /* SET 7,(HL) */
+
+/* CB prefix: all eight rotation/shift ops for register C (rrr = 001).
+   Verifies that the dest_reg()/source_reg() lookup returns "C" for
+   every shift-group opcode.  Opcode = (op << 3) | 001. */
+static libspectrum_byte test296_data[] = { 0xcb, 0x01 };  /* RLC C */
+static libspectrum_byte test297_data[] = { 0xcb, 0x09 };  /* RRC C */
+static libspectrum_byte test298_data[] = { 0xcb, 0x11 };  /* RL  C */
+static libspectrum_byte test299_data[] = { 0xcb, 0x19 };  /* RR  C */
+static libspectrum_byte test300_data[] = { 0xcb, 0x21 };  /* SLA C */
+static libspectrum_byte test301_data[] = { 0xcb, 0x29 };  /* SRA C */
+static libspectrum_byte test302_data[] = { 0xcb, 0x31 };  /* SLL C (undocumented) */
+static libspectrum_byte test303_data[] = { 0xcb, 0x39 };  /* SRL C */
+
+/* CB prefix: one rotation op per remaining register to verify register
+   name lookup for rrr = 010 (D), 011 (E), 100 (H), 101 (L). */
+static libspectrum_byte test304_data[] = { 0xcb, 0x02 };  /* RLC D */
+static libspectrum_byte test305_data[] = { 0xcb, 0x03 };  /* RLC E */
+static libspectrum_byte test306_data[] = { 0xcb, 0x04 };  /* RLC H */
+static libspectrum_byte test307_data[] = { 0xcb, 0x05 };  /* RLC L */
+
+/* CB prefix BIT/RES/SET: cover all non-A, non-(HL) register names.
+   The existing tests (test16-18) cover register A; test293-295 add (HL).
+   These six tests exercise source_reg() for B(0), C(1), D(2), E(3), H(4), L(5)
+   and bit_op_bit() for several mid-range bit numbers. */
+static libspectrum_byte test308_data[] = { 0xcb, 0x58 };  /* BIT 3,B */
+static libspectrum_byte test309_data[] = { 0xcb, 0x69 };  /* BIT 5,C */
+static libspectrum_byte test310_data[] = { 0xcb, 0xa2 };  /* RES 4,D */
+static libspectrum_byte test311_data[] = { 0xcb, 0x94 };  /* RES 2,H */
+static libspectrum_byte test312_data[] = { 0xcb, 0xf5 };  /* SET 6,L */
+static libspectrum_byte test313_data[] = { 0xcb, 0xdb };  /* SET 3,E */
+
+/* CB prefix: remaining 7 rotation/shift ops for each of D, E, H, L.
+   Completes single-register coverage so every op×register combination
+   in the rotate_op()/source_reg() dispatch path is exercised.
+   Opcode = (op_index << 3) | register_index, with:
+     op:  0=RLC 1=RRC 2=RL 3=RR 4=SLA 5=SRA 6=SLL 7=SRL
+     reg: 2=D  3=E  4=H  5=L */
+/* D (rrr = 010) */
+static libspectrum_byte test314_data[] = { 0xcb, 0x0a };  /* RRC D */
+static libspectrum_byte test315_data[] = { 0xcb, 0x12 };  /* RL  D */
+static libspectrum_byte test316_data[] = { 0xcb, 0x1a };  /* RR  D */
+static libspectrum_byte test317_data[] = { 0xcb, 0x22 };  /* SLA D */
+static libspectrum_byte test318_data[] = { 0xcb, 0x2a };  /* SRA D */
+static libspectrum_byte test319_data[] = { 0xcb, 0x32 };  /* SLL D (undocumented) */
+static libspectrum_byte test320_data[] = { 0xcb, 0x3a };  /* SRL D */
+/* E (rrr = 011) */
+static libspectrum_byte test321_data[] = { 0xcb, 0x0b };  /* RRC E */
+static libspectrum_byte test322_data[] = { 0xcb, 0x13 };  /* RL  E */
+static libspectrum_byte test323_data[] = { 0xcb, 0x1b };  /* RR  E */
+static libspectrum_byte test324_data[] = { 0xcb, 0x23 };  /* SLA E */
+static libspectrum_byte test325_data[] = { 0xcb, 0x2b };  /* SRA E */
+static libspectrum_byte test326_data[] = { 0xcb, 0x33 };  /* SLL E (undocumented) */
+static libspectrum_byte test327_data[] = { 0xcb, 0x3b };  /* SRL E */
+/* H (rrr = 100) */
+static libspectrum_byte test328_data[] = { 0xcb, 0x0c };  /* RRC H */
+static libspectrum_byte test329_data[] = { 0xcb, 0x14 };  /* RL  H */
+static libspectrum_byte test330_data[] = { 0xcb, 0x1c };  /* RR  H */
+static libspectrum_byte test331_data[] = { 0xcb, 0x24 };  /* SLA H */
+static libspectrum_byte test332_data[] = { 0xcb, 0x2c };  /* SRA H */
+static libspectrum_byte test333_data[] = { 0xcb, 0x34 };  /* SLL H (undocumented) */
+static libspectrum_byte test334_data[] = { 0xcb, 0x3c };  /* SRL H */
+/* L (rrr = 101) */
+static libspectrum_byte test335_data[] = { 0xcb, 0x0d };  /* RRC L */
+static libspectrum_byte test336_data[] = { 0xcb, 0x15 };  /* RL  L */
+static libspectrum_byte test337_data[] = { 0xcb, 0x1d };  /* RR  L */
+static libspectrum_byte test338_data[] = { 0xcb, 0x25 };  /* SLA L */
+static libspectrum_byte test339_data[] = { 0xcb, 0x2d };  /* SRA L */
+static libspectrum_byte test340_data[] = { 0xcb, 0x35 };  /* SLL L (undocumented) */
+static libspectrum_byte test341_data[] = { 0xcb, 0x3d };  /* SRL L */
+
+
 static int
 run_test( libspectrum_byte *data, size_t data_length, const char *expected )
 {
-  char disassembly[40];
+  char disassembly[DISASM_BUF_LEN];
   size_t length;
 
   memcpy( memory_map_read[8].page, data, data_length );
@@ -1289,6 +1420,14 @@ debugger_disassemble_unittest( void )
   r += run_test( test16_data, sizeof( test16_data ), "BIT 0,A" );
   r += run_test( test17_data, sizeof( test17_data ), "RES 0,A" );
   r += run_test( test18_data, sizeof( test18_data ), "SET 1,A" );
+
+  /* CB prefix BIT/RES/SET — remaining registers B, C, D, E, H, L */
+  r += run_test( test308_data, sizeof( test308_data ), "BIT 3,B" );
+  r += run_test( test309_data, sizeof( test309_data ), "BIT 5,C" );
+  r += run_test( test310_data, sizeof( test310_data ), "RES 4,D" );
+  r += run_test( test311_data, sizeof( test311_data ), "RES 2,H" );
+  r += run_test( test312_data, sizeof( test312_data ), "SET 6,L" );
+  r += run_test( test313_data, sizeof( test313_data ), "SET 3,E" );
 
   /* DD CB prefix BIT/RES/SET on (IX+d) */
   r += run_test( test19_data, sizeof( test19_data ), "BIT 0,(IX+55)" );
@@ -1614,6 +1753,109 @@ debugger_disassemble_unittest( void )
 
   /* DD CB: verify rotation-op selection (SRL) independent of destination */
   r += run_test( test254_data, sizeof( test254_data ), "LD B,SRL (IX+55)" );
+
+  /* DD/FD prefix: LD r,(IX/IY+d) — remaining registers C, D, E, H, L */
+  r += run_test( test255_data, sizeof( test255_data ), "LD C,(IX+05)" );
+  r += run_test( test256_data, sizeof( test256_data ), "LD D,(IX+05)" );
+  r += run_test( test257_data, sizeof( test257_data ), "LD E,(IX+05)" );
+  r += run_test( test258_data, sizeof( test258_data ), "LD H,(IX+05)" );
+  r += run_test( test259_data, sizeof( test259_data ), "LD L,(IX+05)" );
+  r += run_test( test260_data, sizeof( test260_data ), "LD C,(IY+05)" );
+  r += run_test( test261_data, sizeof( test261_data ), "LD D,(IY+05)" );
+  r += run_test( test262_data, sizeof( test262_data ), "LD E,(IY+05)" );
+  r += run_test( test263_data, sizeof( test263_data ), "LD H,(IY+05)" );
+  r += run_test( test264_data, sizeof( test264_data ), "LD L,(IY+05)" );
+  r += run_test( test265_data, sizeof( test265_data ), "LD A,(IY+05)" );
+
+  /* DD/FD prefix: LD (IX/IY+d),r — remaining registers C, D, E, H, L, A */
+  r += run_test( test266_data, sizeof( test266_data ), "LD (IX+05),C" );
+  r += run_test( test267_data, sizeof( test267_data ), "LD (IX+05),D" );
+  r += run_test( test268_data, sizeof( test268_data ), "LD (IX+05),E" );
+  r += run_test( test269_data, sizeof( test269_data ), "LD (IX+05),H" );
+  r += run_test( test270_data, sizeof( test270_data ), "LD (IX+05),L" );
+  r += run_test( test271_data, sizeof( test271_data ), "LD (IX+05),A" );
+  r += run_test( test272_data, sizeof( test272_data ), "LD (IY+05),C" );
+  r += run_test( test273_data, sizeof( test273_data ), "LD (IY+05),D" );
+  r += run_test( test274_data, sizeof( test274_data ), "LD (IY+05),E" );
+  r += run_test( test275_data, sizeof( test275_data ), "LD (IY+05),H" );
+  r += run_test( test276_data, sizeof( test276_data ), "LD (IY+05),L" );
+  r += run_test( test277_data, sizeof( test277_data ), "LD (IY+05),A" );
+
+  /* CB prefix: all rotate/shift ops with register A */
+  r += run_test( test278_data, sizeof( test278_data ), "RLC A" );
+  r += run_test( test279_data, sizeof( test279_data ), "RRC A" );
+  r += run_test( test280_data, sizeof( test280_data ), "RL A" );
+  r += run_test( test281_data, sizeof( test281_data ), "RR A" );
+  r += run_test( test282_data, sizeof( test282_data ), "SLA A" );
+  r += run_test( test283_data, sizeof( test283_data ), "SRA A" );
+  r += run_test( test284_data, sizeof( test284_data ), "SLL A" );
+  r += run_test( test285_data, sizeof( test285_data ), "SRL A" );
+
+  /* CB prefix: remaining rotate/shift ops with (HL) */
+  r += run_test( test286_data, sizeof( test286_data ), "RRC (HL)" );
+  r += run_test( test287_data, sizeof( test287_data ), "RL (HL)" );
+  r += run_test( test288_data, sizeof( test288_data ), "RR (HL)" );
+  r += run_test( test289_data, sizeof( test289_data ), "SLA (HL)" );
+  r += run_test( test290_data, sizeof( test290_data ), "SRA (HL)" );
+  r += run_test( test291_data, sizeof( test291_data ), "SLL (HL)" );
+  r += run_test( test292_data, sizeof( test292_data ), "SRL (HL)" );
+
+  /* CB prefix: BIT, RES, SET with bit 7 and (HL) */
+  r += run_test( test293_data, sizeof( test293_data ), "BIT 7,(HL)" );
+  r += run_test( test294_data, sizeof( test294_data ), "RES 7,(HL)" );
+  r += run_test( test295_data, sizeof( test295_data ), "SET 7,(HL)" );
+
+  /* CB prefix: all rotation/shift ops for register C (rrr = 001) */
+  r += run_test( test296_data, sizeof( test296_data ), "RLC C" );
+  r += run_test( test297_data, sizeof( test297_data ), "RRC C" );
+  r += run_test( test298_data, sizeof( test298_data ), "RL C" );
+  r += run_test( test299_data, sizeof( test299_data ), "RR C" );
+  r += run_test( test300_data, sizeof( test300_data ), "SLA C" );
+  r += run_test( test301_data, sizeof( test301_data ), "SRA C" );
+  r += run_test( test302_data, sizeof( test302_data ), "SLL C" );
+  r += run_test( test303_data, sizeof( test303_data ), "SRL C" );
+
+  /* CB prefix: RLC for registers D, E, H, L (rrr = 010, 011, 100, 101) */
+  r += run_test( test304_data, sizeof( test304_data ), "RLC D" );
+  r += run_test( test305_data, sizeof( test305_data ), "RLC E" );
+  r += run_test( test306_data, sizeof( test306_data ), "RLC H" );
+  r += run_test( test307_data, sizeof( test307_data ), "RLC L" );
+
+  /* CB prefix: remaining rotation/shift ops for D (rrr = 010) */
+  r += run_test( test314_data, sizeof( test314_data ), "RRC D" );
+  r += run_test( test315_data, sizeof( test315_data ), "RL D" );
+  r += run_test( test316_data, sizeof( test316_data ), "RR D" );
+  r += run_test( test317_data, sizeof( test317_data ), "SLA D" );
+  r += run_test( test318_data, sizeof( test318_data ), "SRA D" );
+  r += run_test( test319_data, sizeof( test319_data ), "SLL D" );
+  r += run_test( test320_data, sizeof( test320_data ), "SRL D" );
+
+  /* CB prefix: remaining rotation/shift ops for E (rrr = 011) */
+  r += run_test( test321_data, sizeof( test321_data ), "RRC E" );
+  r += run_test( test322_data, sizeof( test322_data ), "RL E" );
+  r += run_test( test323_data, sizeof( test323_data ), "RR E" );
+  r += run_test( test324_data, sizeof( test324_data ), "SLA E" );
+  r += run_test( test325_data, sizeof( test325_data ), "SRA E" );
+  r += run_test( test326_data, sizeof( test326_data ), "SLL E" );
+  r += run_test( test327_data, sizeof( test327_data ), "SRL E" );
+
+  /* CB prefix: remaining rotation/shift ops for H (rrr = 100) */
+  r += run_test( test328_data, sizeof( test328_data ), "RRC H" );
+  r += run_test( test329_data, sizeof( test329_data ), "RL H" );
+  r += run_test( test330_data, sizeof( test330_data ), "RR H" );
+  r += run_test( test331_data, sizeof( test331_data ), "SLA H" );
+  r += run_test( test332_data, sizeof( test332_data ), "SRA H" );
+  r += run_test( test333_data, sizeof( test333_data ), "SLL H" );
+  r += run_test( test334_data, sizeof( test334_data ), "SRL H" );
+
+  /* CB prefix: remaining rotation/shift ops for L (rrr = 101) */
+  r += run_test( test335_data, sizeof( test335_data ), "RRC L" );
+  r += run_test( test336_data, sizeof( test336_data ), "RL L" );
+  r += run_test( test337_data, sizeof( test337_data ), "RR L" );
+  r += run_test( test338_data, sizeof( test338_data ), "SLA L" );
+  r += run_test( test339_data, sizeof( test339_data ), "SRA L" );
+  r += run_test( test340_data, sizeof( test340_data ), "SLL L" );
+  r += run_test( test341_data, sizeof( test341_data ), "SRL L" );
 
   return r;
 }

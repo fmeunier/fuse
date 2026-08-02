@@ -63,6 +63,10 @@ GtkWidget *gtkui_drawing_area;
 
 static GtkWidget *menu_bar;
 
+/* Wait until the window has reached its final size before applying
+   fullscreen changes. See gtkui_window_configure() for more details */
+static int fullscreen_ready = 0;
+
 /* The UIManager used to create the menu bar */
 GtkUIManager *ui_manager_menu = NULL;
 
@@ -92,6 +96,10 @@ static gboolean gtkui_make_menu(GtkAccelGroup **accel_group,
 
 static gboolean gtkui_lose_focus( GtkWidget*, GdkEvent*, gpointer );
 static gboolean gtkui_gain_focus( GtkWidget*, GdkEvent*, gpointer );
+static gboolean gtkui_window_state ( GtkWidget *, GdkEventWindowState *,
+				     gpointer );
+static gboolean gtkui_window_configure ( GtkWidget *,
+					 GdkEventConfigure *, gpointer );
 
 static gboolean gtkui_delete( GtkWidget *widget, GdkEvent *event,
 			      gpointer data );
@@ -110,40 +118,43 @@ static void gtkui_drag_data_received( GtkWidget *widget GCC_UNUSED,
                                       GtkSelectionData *data,
                                       guint info GCC_UNUSED, guint timestamp )
 {
-  static char uri_prefix[] = "file://";
-  char *filename, *selection_filename;
-  const guchar *selection_data, *data_begin, *data_end, *p;
+  gchar *filename, **uris;
   gint selection_length;
+  GdkAtom selection_target;
+  gboolean success = FALSE;
+
+  if( !data ) {
+    gtk_drag_finish( drag_context, FALSE, FALSE, timestamp );
+    return;
+  }
 
   selection_length = gtk_selection_data_get_length( data );
+  selection_target = gtk_selection_data_get_target( data );
 
-  if ( data && selection_length > (gint) sizeof( uri_prefix ) ) {
-    selection_data = gtk_selection_data_get_data( data );
-    data_begin = selection_data + sizeof( uri_prefix ) - 1;
-    data_end = selection_data + selection_length;
-    p = data_begin; 
-    do {
-      if ( *p == '\r' || *p == '\n' ) {
-        data_end = p;
-        break;
+  if ( selection_length > 0 &&
+       selection_target == gdk_atom_intern( "text/uri-list", FALSE ) ) {
+
+    uris = gtk_selection_data_get_uris( data );
+    if( uris ) {
+      if( uris[0] ) {
+        /* Convert URI to a local path (handles %20 spaces and translates
+           to the backend format) */
+        filename = g_filename_from_uri( uris[0], NULL, NULL );
+
+        if( filename ) {
+          fuse_emulation_pause();
+          utils_open_file( filename, settings_current.auto_load, NULL );
+          g_free( filename );
+          display_refresh_all();
+          fuse_emulation_unpause();
+          success = TRUE;
+        }
       }
-    } while ( p++ != data_end );
-
-    selection_filename = g_strndup( (const gchar *)data_begin,
-                                    data_end - data_begin );
-
-    filename = g_uri_unescape_string( selection_filename, NULL );
-    if ( filename ) {
-      fuse_emulation_pause();
-      utils_open_file( filename, settings_current.auto_load, NULL );
-      free( filename );
-      display_refresh_all();
-      fuse_emulation_unpause();
+      g_strfreev( uris );
     }
-
-    g_free( selection_filename );
   }
-  gtk_drag_finish( drag_context, FALSE, FALSE, timestamp );
+
+  gtk_drag_finish( drag_context, success, FALSE, timestamp );
 }
 
 int
@@ -175,6 +186,8 @@ ui_init( int *argc, char ***argv )
   gtk_widget_add_events( gtkui_window, GDK_KEY_RELEASE_MASK );
   g_signal_connect(G_OBJECT(gtkui_window), "key-release-event",
 		   G_CALLBACK(gtkkeyboard_keyrelease), NULL);
+  g_signal_connect(G_OBJECT(gtkui_window), "window-state-event",
+		   G_CALLBACK(gtkui_window_state), NULL);
 
   /* If we lose the focus, disable all keys */
   g_signal_connect( G_OBJECT( gtkui_window ), "focus-out-event",
@@ -226,6 +239,14 @@ ui_init( int *argc, char ***argv )
 
   gtk_widget_show_all( gtkui_window );
   gtkstatusbar_set_visibility( settings_current.statusbar );
+
+  /* Wait until the window gets its final size before going fullscreen,
+     so it can later restore its expected windowed size correctly. */
+  fullscreen_ready = !settings_current.full_screen;
+  if( settings_current.full_screen ) {
+    g_signal_connect( G_OBJECT( gtkui_window ), "configure-event",
+                      G_CALLBACK( gtkui_window_configure ), NULL );
+  }
 
   ui_mouse_present = 1;
 
@@ -366,6 +387,66 @@ gtkui_gain_focus( GtkWidget *widget GCC_UNUSED,
 {
   ui_mouse_resume();
   return TRUE;
+}
+
+void
+gtkui_fullscreen_apply( void )
+{
+  GdkWindow *window = gtk_widget_get_window( gtkui_window );
+  int state;
+
+  /* Don't touch the window until it has reached its final size at startup */
+  if( !fullscreen_ready || !window ) return;
+
+  /* Nothing to do if the window is already in the requested state */
+  state = gdk_window_get_state( window ) & GDK_WINDOW_STATE_FULLSCREEN;
+  if( !!state == !!settings_current.full_screen )
+    return;
+
+  if( settings_current.full_screen ) {
+    gtk_window_fullscreen( GTK_WINDOW( gtkui_window ) );
+  } else {
+    gtk_window_unfullscreen( GTK_WINDOW( gtkui_window ) );
+  }
+}
+
+static gboolean
+gtkui_window_state ( GtkWidget *widget, GdkEventWindowState *event,
+                     gpointer data GCC_UNUSED )
+{
+  if( event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN )
+    settings_current.full_screen =
+      !!( event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN );
+
+  return FALSE;
+}
+
+/* Go fullscreen at startup once the window has reached its final size.
+   This is necessary so, when we leave fullscreen, the window is restored
+   to the expected size according to the selected scaler, and not to
+   the initial size before the scaler was applied. */
+static gboolean
+gtkui_window_configure( GtkWidget *widget, GdkEventConfigure *event,
+			gpointer data GCC_UNUSED )
+{
+  int width, height;
+
+  /* Fuse resizes the window a few times during startup so we receive
+     several configure events. Wait until one where the window is as big
+     as it's supposed to according to the selected scaler. */
+  gtkdisplay_get_window_size( &width, &height );
+  if( event->width < width || event->height < height )
+    return FALSE;
+
+  /* Once the window has the final size we can stop listening to these
+   * events. */
+  g_signal_handlers_disconnect_by_func(
+    widget, G_CALLBACK( gtkui_window_configure ), NULL );
+
+  fullscreen_ready = 1;
+  gtkui_fullscreen_apply();
+
+  return FALSE;
 }
 
 /* Called by the main window on a "delete-event" */
@@ -980,4 +1061,12 @@ gtkui_menubar_get_height( void )
   gtk_widget_get_allocation( menu_bar, &alloc );
 
   return alloc.height;
+}
+
+void
+gtkui_set_bars_visible( int visible )
+{
+  gtk_widget_set_visible( menu_bar, visible );
+  /* The status bar is only shown if the user has it enabled */
+  gtkstatusbar_set_visibility( visible ? settings_current.statusbar : 0 );
 }

@@ -62,7 +62,8 @@ debugger_event_register( const char *type, const char *detail )
 }
 
 static int
-event_matches( debugger_event_t *event, const char *type, const char *detail )
+event_matches( const debugger_event_t *event, const char *type,
+               const char *detail )
 {
   if( strcasecmp( type, event->type ) ) return 0;
   if( strcmp( detail, "*" ) == 0 ) return 1;
@@ -76,10 +77,10 @@ debugger_event_is_registered( const char *type, const char *detail )
   size_t i;
 
   for( i = 0; i < registered_events->len; i++ ) {
-    debugger_event_t event =
-      g_array_index( registered_events, debugger_event_t, i );
+    const debugger_event_t *event =
+      &g_array_index( registered_events, debugger_event_t, i );
 
-    if( event_matches( &event, type, detail ) ) return 1;
+    if( event_matches( event, type, detail ) ) return 1;
   }
 
   return 0;
@@ -88,7 +89,7 @@ debugger_event_is_registered( const char *type, const char *detail )
 void
 debugger_event( int event_code )
 {
-  debugger_event_t event;
+  const debugger_event_t *event;
   debugger_breakpoint *bp;
   GSList *ptr, *ptr_next;
 
@@ -100,7 +101,7 @@ debugger_event( int event_code )
     fuse_abort();
   }
 
-  event = g_array_index( registered_events, debugger_event_t, event_code );
+  event = &g_array_index( registered_events, debugger_event_t, event_code );
 
   for( ptr = debugger_breakpoints; ptr; ptr = ptr_next ) {
 
@@ -109,7 +110,7 @@ debugger_event( int event_code )
 
     if( bp->type != DEBUGGER_BREAKPOINT_TYPE_EVENT ) continue;
 
-    if( event_matches( &bp->value.event, event.type, event.detail ) &&
+    if( event_matches( &bp->value.event, event->type, event->detail ) &&
         debugger_breakpoint_trigger( bp ) ) {
       debugger_mode = DEBUGGER_MODE_HALTED;
       debugger_command_evaluate( bp->commands );

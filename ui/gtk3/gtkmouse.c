@@ -28,6 +28,7 @@
 #include <gdk/gdk.h>
 
 #include "gtkinternals.h"
+#include "settings.h"
 #include "ui/ui.h"
 
 #ifdef GDK_WINDOWING_WAYLAND
@@ -41,6 +42,15 @@
 #endif
 
 static GdkCursor *nullpointer = NULL;
+
+/* Auto-hide the mouse pointer (and, in fullscreen, the menu and status bars)
+   after this many seconds of inactivity over the drawing area */
+#define POINTER_HIDE_TIMEOUT 2
+static guint pointer_timeout_id = 0;
+static gint64 pointer_last_activity = 0;
+static gboolean pointer_hidden = FALSE;
+static gboolean bars_hidden = FALSE;
+static gboolean pointer_over_drawing_area = FALSE;
 
 /* The widget we base our events, grabs, warping etc on */
 static GtkWidget *mouse_widget = NULL;
@@ -151,17 +161,122 @@ gtkmouse_reset_pointer( void )
 
 }
 
+/* Show the mouse pointer (and the bars) again if we hid them */
+static void
+show_pointer_and_bars( void )
+{
+  GdkWindow *window = gtk_widget_get_window( gtkui_drawing_area );
+
+  if( pointer_hidden && window ) {
+    gdk_window_set_cursor( window, NULL );
+    pointer_hidden = FALSE;
+  }
+
+  if( bars_hidden ) {
+    gtkui_set_bars_visible( 1 );
+    bars_hidden = FALSE;
+  }
+}
+
+/* Inactivity timer: hide the pointer once it has been idle long enough */
+static gboolean
+hide_pointer( gpointer data GCC_UNUSED )
+{
+  GdkWindow *window;
+  gint64 timeout = (gint64)POINTER_HIDE_TIMEOUT * G_USEC_PER_SEC;
+  gint64 idle = g_get_monotonic_time() - pointer_last_activity;
+
+  /* Rearm the timer if the pointer hasn't been idle long enough */
+  if( idle < timeout ) {
+    pointer_timeout_id = g_timeout_add( ( timeout - idle ) / 1000,
+                                        hide_pointer, NULL );
+    return G_SOURCE_REMOVE;
+  }
+
+  pointer_timeout_id = 0;
+
+  /* If the pointer is idle, hide it */
+  window = gtk_widget_get_window( gtkui_drawing_area );
+  if( window ) {
+    if( !nullpointer )
+      nullpointer = gdk_cursor_new_for_display( gdk_window_get_display( window ),
+                                                GDK_BLANK_CURSOR );
+    gdk_window_set_cursor( window, nullpointer );
+    pointer_hidden = TRUE;
+  }
+
+  /* In fullscreen also hide the menu and status bars */
+  if( settings_current.full_screen ) {
+    gtkui_set_bars_visible( 0 );
+    bars_hidden = TRUE;
+  }
+
+  return G_SOURCE_REMOVE;
+}
+
+/* Pointer over the drawing area: track its idle status */
+static void
+pointer_activity( void )
+{
+  pointer_last_activity = g_get_monotonic_time();
+
+  if( !pointer_timeout_id )
+    pointer_timeout_id =
+      g_timeout_add( POINTER_HIDE_TIMEOUT * 1000, hide_pointer, NULL );
+
+  show_pointer_and_bars();
+}
+
+/* Pointer left the drawing area: stop tracking its idle status */
+static void
+pointer_reset( void )
+{
+  if( pointer_timeout_id ) {
+    g_source_remove( pointer_timeout_id );
+    pointer_timeout_id = 0;
+  }
+
+  show_pointer_and_bars();
+}
+
 static gboolean
 motion_event( GtkWidget *widget GCC_UNUSED, GdkEventMotion *event,
               gpointer data GCC_UNUSED )
 {
   int rel_x, rel_y;
 
-  if( !ui_mouse_grabbed ) return FALSE;
+  /* When the mouse isn't grabbed, keep the pointer visible and track its
+     inactivity */
+  if( !ui_mouse_grabbed ) {
+    if( pointer_over_drawing_area ) pointer_activity();
+    return FALSE;
+  }
 
   /* Get relative movement from last position */
   (*mouse_motion_fn)( event->x, event->y, &rel_x, &rel_y );
   ui_mouse_motion( rel_x, rel_y );
+
+  return FALSE;
+}
+
+/* The pointer entered the drawing area: start tracking inactivity */
+static gboolean
+enter_event( GtkWidget *widget GCC_UNUSED, GdkEventCrossing *event GCC_UNUSED,
+             gpointer data GCC_UNUSED )
+{
+  pointer_over_drawing_area = TRUE;
+  if( !ui_mouse_grabbed ) pointer_activity();
+
+  return FALSE;
+}
+
+/* The pointer left the drawing area: make it visible */
+static gboolean
+leave_event( GtkWidget *widget GCC_UNUSED, GdkEventCrossing *event GCC_UNUSED,
+             gpointer data GCC_UNUSED )
+{
+  pointer_over_drawing_area = FALSE;
+  pointer_reset();
 
   return FALSE;
 }
@@ -193,6 +308,14 @@ gtkmouse_init( void )
 		    G_CALLBACK( button_event ), NULL );
   g_signal_connect( G_OBJECT( mouse_widget ), "button-release-event",
 		    G_CALLBACK( button_event ), NULL );
+
+  /* Track when the pointer is over the drawing area so we can hide it */
+  gtk_widget_add_events( gtkui_drawing_area,
+                         GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK );
+  g_signal_connect( G_OBJECT( gtkui_drawing_area ), "enter-notify-event",
+		    G_CALLBACK( enter_event ), NULL );
+  g_signal_connect( G_OBJECT( gtkui_drawing_area ), "leave-notify-event",
+		    G_CALLBACK( leave_event ), NULL );
 }
 
 void
@@ -238,6 +361,8 @@ ui_mouse_grab( int startup )
                           FALSE, nullpointer, NULL, NULL, NULL );
 
   if( status == GDK_GRAB_SUCCESS ) {
+    /* The grab hides the pointer, so stop tracking its activity */
+    pointer_reset();
     gtkmouse_reset_pointer();
     ui_statusbar_update( UI_STATUSBAR_ITEM_MOUSE, UI_STATUSBAR_STATE_ACTIVE );
     return 1;
@@ -256,6 +381,9 @@ ui_mouse_release( int suspend GCC_UNUSED )
   display = gtk_widget_get_display( mouse_widget );
   seat = gdk_display_get_default_seat( display );
   gdk_seat_ungrab( seat );
+
+  /* The grab finished, show the pointer again */
+  pointer_reset();
 
   ui_statusbar_update( UI_STATUSBAR_ITEM_MOUSE, UI_STATUSBAR_STATE_INACTIVE );
   return 0;

@@ -146,7 +146,6 @@ EXTRA_DIST = AUTHORS \
 	     THANKS \
 	     keysyms.dat \
 	     keysyms.pl \
-	     m4/ax_create_stdint_h.m4 \
 	     m4/ax_pthread.m4 \
 	     m4/ax_string_strcasecmp.m4 \
 	     m4/pkg.m4 \
@@ -216,7 +215,7 @@ include ui/xlib/Makefile.am
 include unittests/Makefile.am
 include z80/Makefile.am
 
-check-local: fuse unittests/displaytest unittests/sdl2displaytest unittests/sdl2scalerstatetest unittests/sdl2joysticktest unittests/sdl2mousetest
+check-local: fuse unittests/displaytest unittests/sdl2displaytest unittests/sdl2scalerstatetest unittests/sdl2joysticktest unittests/sdl2mousetest unittests/palcompositetest unittests/scalerexpandtest z80/coretest
 	@test -e $(top_builddir)/roms || ln -sf "$(abs_top_srcdir)/roms" $(top_builddir)/roms
 	$(top_builddir)/fuse --unittests
 	$(top_builddir)/unittests/displaytest
@@ -224,3 +223,7 @@ check-local: fuse unittests/displaytest unittests/sdl2displaytest unittests/sdl2
 	$(top_builddir)/unittests/sdl2scalerstatetest
 	$(top_builddir)/unittests/sdl2joysticktest
 	$(top_builddir)/unittests/sdl2mousetest
+	$(top_builddir)/unittests/palcompositetest
+	$(top_builddir)/unittests/scalerexpandtest
+	$(top_builddir)/z80/coretest $(srcdir)/z80/tests/tests.in > $(top_builddir)/z80/tests.actual
+	cmp $(top_builddir)/z80/tests.actual $(srcdir)/z80/tests/tests.expected

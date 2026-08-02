@@ -189,7 +189,7 @@ ula_read( libspectrum_word port, libspectrum_byte *attached )
   r &= phantom_typist_ula_read( port );
 
   r &= keyboard_read( port >> 8 );
-  if( tape_microphone ) r ^= 0x40;
+  if( tape_microphone ) r ^= ULA_PORT_EAR_IN_BIT;
 
   return r;
 }
@@ -200,9 +200,9 @@ ula_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
 {
   last_byte = b;
 
-  display_set_lores_border( b & 0x07 );
+  display_set_lores_border( b & ULA_PORT_BORDER_BITS );
   sound_beeper( tstates,
-                (!!(b & 0x10) << 1) + ( (!(b & 0x8)) | tape_microphone ) );
+                (!!(b & ULA_PORT_EAR_BIT) << 1) + ( (!(b & ULA_PORT_MIC_BIT)) | tape_microphone ) );
 
   /* FIXME: shouldn't really be using the memory capabilities here */
 
@@ -217,12 +217,12 @@ ula_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
   } else if( machine_current->capabilities & LIBSPECTRUM_MACHINE_CAPABILITY_128_MEMORY || !settings_current.issue2 ) {
 
     /* 128K always acts like an Issue 3 */
-    ula_default_value = b & 0x10 ? 0xff : 0xbf;
+    ula_default_value = b & ULA_PORT_EAR_BIT ? 0xff : 0xbf;
 
   } else {
 
     /* Issue 2 */
-    ula_default_value = b & 0x18 ? 0xff : 0xbf;
+    ula_default_value = b & ( ULA_PORT_EAR_BIT | ULA_PORT_MIC_BIT ) ? 0xff : 0xbf;
 
   }
 
@@ -237,7 +237,7 @@ ula_last_byte( void )
 libspectrum_byte
 ula_tape_level( void )
 {
-  return last_byte & 0x8;
+  return last_byte & ULA_PORT_MIC_BIT;
 }
 
 static void

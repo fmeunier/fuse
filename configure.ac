@@ -19,12 +19,12 @@ dnl
 dnl E-mail: philip-fuse@shadowmagic.org.uk
 
 dnl Package version
-m4_define([fuse_version], [1.9.0])
+m4_define([fuse_version], [1.9.1])
 
 dnl Product full version
 m4_define([fuse_major_version], [1])
 m4_define([fuse_minor_version], [9])
-m4_define([fuse_micro_version], [0])
+m4_define([fuse_micro_version], [1])
 m4_define([fuse_nano_version],  [0])
 m4_define([fuse_full_version], [fuse_major_version.fuse_minor_version.fuse_micro_version.fuse_nano_version])
 m4_define([fuse_rc_version], [fuse_major_version,fuse_minor_version,fuse_micro_version,fuse_nano_version])
@@ -111,10 +111,6 @@ AC_CHECK_HEADERS(
   sys/audioio.h
 )
 
-dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_C_INLINE
-
 dnl Checks for library functions.
 AC_CHECK_FUNCS(dirname geteuid getopt_long fsync)
 AC_CHECK_LIB([m],[cos])
@@ -133,7 +129,7 @@ if test "$prefix" != "NONE"; then
 fi)
 
 dnl Check that libspectrum is available and that it is new enough
-PKG_CHECK_MODULES([LIBSPECTRUM], [libspectrum >= 1.6.0])
+PKG_CHECK_MODULES([LIBSPECTRUM], [libspectrum >= 1.6.3])
 
 dnl Check if supplied libspectrum has its own internal GLib replacement
 AC_MSG_CHECKING(whether libspectrum has its own internal GLib replacement)
