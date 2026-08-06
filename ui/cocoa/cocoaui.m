@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 
+#import "EmulationSessionController.h"
 #import "FuseController.h"
 #import "Emulator.h"
 
@@ -66,9 +67,9 @@ ui_end( void )
 int
 ui_statusbar_update_speed( float speed )
 {
-  [[FuseController singleton] performSelectorOnMainThread:@selector(setTitle:)
-              withObject:[NSString stringWithFormat:@"Fuse - %3.0f%%", speed]
-              waitUntilDone:NO];
+  emulation_session_perform_on_main_thread(
+    [FuseController singleton], @selector(setTitle:),
+    [NSString stringWithFormat:@"Fuse - %3.0f%%", speed], NO );
 
   return 0;
 }
@@ -81,10 +82,8 @@ ui_mouse_grab( int startup )
   /* Lock the mouse pointer at its current position */
   CGAssociateMouseAndMouseCursorPosition(false);
 
-  dispatch_async( dispatch_get_main_queue(), ^{
-    [NSCursor hide];
-    [[FuseController singleton] setAcceptsMouseMovedEvents:YES];
-  } );
+  emulation_session_perform_on_main_thread(
+    [FuseController singleton], @selector(setMouseGrabbed:), @YES, NO );
 
   return 1;
 }
@@ -92,10 +91,8 @@ ui_mouse_grab( int startup )
 int
 ui_mouse_release( int suspend GCC_UNUSED )
 {
-  dispatch_async( dispatch_get_main_queue(), ^{
-    [[FuseController singleton] setAcceptsMouseMovedEvents:NO];
-    [NSCursor unhide];
-  } );
+  emulation_session_perform_on_main_thread(
+    [FuseController singleton], @selector(setMouseGrabbed:), @NO, NO );
 
   /* Unlock the mouse pointer */
   CGAssociateMouseAndMouseCursorPosition(true);
@@ -153,9 +150,8 @@ ui_pokemem_selector( const char *filename )
 {
   pokemem_read_from_file( filename );
   
-  [[FuseController singleton] performSelectorOnMainThread:@selector(showPokeMemoryPane:)
-                                               withObject:nil
-                                            waitUntilDone:NO];
+  emulation_session_perform_on_main_thread(
+    [FuseController singleton], @selector(showPokeMemoryPane:), nil, NO );
 }
 
 int

@@ -215,10 +215,10 @@ cocoadisplay_load_gfx_mode( void )
                            screen->width, 1.0f, 0 );
   if( error ) return error;
 
-  [[EmulationSessionController instance]
-    performSelectorOnMainThread:@selector(applyFramebufferWithValue:)
-                     withObject:[NSValue valueWithPointer:&buffered_screen]
-                  waitUntilDone:YES];
+  emulation_session_perform_on_main_thread(
+    [EmulationSessionController instance],
+    @selector(applyFramebufferWithValue:),
+    [NSValue valueWithPointer:&buffered_screen], YES );
 
   for( error = 0; error < DISPLAY_FRAMEBUFFER_SLOT_COUNT; error++ ) {
     PIG_rect area = { 0, 0, screen->width, screen->height };
@@ -513,10 +513,9 @@ int
 uidisplay_end( void )
 {
   if( screen && screen->backing_storage ) {
-    [[EmulationSessionController instance]
-      performSelectorOnMainThread:@selector(removeFramebuffer)
-                       withObject:nil
-                    waitUntilDone:YES];
+    emulation_session_perform_on_main_thread(
+      [EmulationSessionController instance], @selector(removeFramebuffer),
+      nil, YES );
   }
 
   free_screen( &unscaled_screen );

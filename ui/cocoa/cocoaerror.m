@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#import "EmulationSessionController.h"
 #import "FuseController.h"
 
 #include "fuse.h"
@@ -46,17 +47,15 @@ aqua_verror( ui_error_level severity, const char *message )
 
   switch( severity ) {
   case UI_ERROR_INFO:
-    [[FuseController singleton]
-              performSelectorOnMainThread:@selector(showAlertPanel:)
-              withObject:alertString
-              waitUntilDone:NO];
+    emulation_session_perform_on_main_thread(
+      [FuseController singleton], @selector(showAlertPanel:), alertString,
+      NO );
     break;
   case UI_ERROR_ERROR:   
   default:
-    [[FuseController singleton]
-              performSelectorOnMainThread:@selector(showCriticalAlertPanel:)
-              withObject:alertString
-              waitUntilDone:NO];
+    emulation_session_perform_on_main_thread(
+      [FuseController singleton], @selector(showCriticalAlertPanel:),
+      alertString, NO );
     break;
   }
 

@@ -79,6 +79,7 @@ print << 'CODE';
 #import <Foundation/NSString.h>
 #import <Foundation/NSUserDefaults.h>
 
+#import "EmulationSessionController.h"
 #import "FuseController.h"
 #import "CAMachines.h"
 
@@ -261,8 +262,9 @@ CODE
     id recentFile;
             
     while ( (recentFile = [enumerator nextObject]) ) {
-      [[FuseController singleton] performSelectorOnMainThread:\@selector(addRecentSnapshotWithString:)
-                                  withObject:recentFile waitUntilDone:NO];
+      emulation_session_perform_on_main_thread(
+        [FuseController singleton], \@selector(addRecentSnapshotWithString:),
+        recentFile, NO );
     }
   }
 CODE

@@ -36,11 +36,9 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
   switch( item ) {
 
   case UI_STATUSBAR_ITEM_DISK:
-    [[EmulationSessionController instance]
-          performSelectorOnMainThread:@selector(setDiskState:)
-          withObject:[NSNumber numberWithUnsignedChar:state]
-          waitUntilDone:NO
-    ];
+    emulation_session_perform_on_main_thread(
+      [EmulationSessionController instance], @selector(setDiskState:),
+      [NSNumber numberWithUnsignedChar:state], NO );
     return 0;
 
   case UI_STATUSBAR_ITEM_PAUSED:
@@ -48,19 +46,15 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
     return 0;
 
   case UI_STATUSBAR_ITEM_TAPE:
-    [[EmulationSessionController instance]
-          performSelectorOnMainThread:@selector(setTapeState:)
-          withObject:[NSNumber numberWithUnsignedChar:state]
-          waitUntilDone:NO
-    ];
+    emulation_session_perform_on_main_thread(
+      [EmulationSessionController instance], @selector(setTapeState:),
+      [NSNumber numberWithUnsignedChar:state], NO );
     return 0;
 
   case UI_STATUSBAR_ITEM_MICRODRIVE:
-    [[EmulationSessionController instance]
-          performSelectorOnMainThread:@selector(setMdrState:)
-          withObject:[NSNumber numberWithUnsignedChar:state]
-          waitUntilDone:NO
-    ];
+    emulation_session_perform_on_main_thread(
+      [EmulationSessionController instance], @selector(setMdrState:),
+      [NSNumber numberWithUnsignedChar:state], NO );
     return 0;
 
   case UI_STATUSBAR_ITEM_MOUSE:
