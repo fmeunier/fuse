@@ -62,6 +62,7 @@ ui_media_drive_end( void )
 }
 
 struct find_info {
+  int controller;
   int drive;
 };
 
@@ -71,14 +72,15 @@ find_drive( gconstpointer data, gconstpointer user_data )
   const ui_media_drive_info_t *drive = data;
   const struct find_info *info = user_data;
 
-  return !( drive->is_available && drive->is_available()
-            && drive->drive_index == info->drive );
+  return !( drive->controller_index == info->controller &&
+            drive->drive_index == info->drive );
 }
 
 ui_media_drive_info_t *
-ui_media_drive_find( int drive )
+ui_media_drive_find( int controller, int drive )
 {
   struct find_info info = {
+    /* .controller = */ controller,
     /* .drive = */ drive,
   };
   GSList *item;
@@ -146,11 +148,11 @@ ui_media_drive_update_menus( const ui_media_drive_info_t *drive,
 }
 
 int
-ui_media_drive_flip( int which, int flip )
+ui_media_drive_flip( int controller, int which, int flip )
 {
   ui_media_drive_info_t *drive;
 
-  drive = ui_media_drive_find( which );
+  drive = ui_media_drive_find( controller, which );
   if( !drive )
     return -1;
   if( !drive->fdd->loaded )
@@ -162,11 +164,11 @@ ui_media_drive_flip( int which, int flip )
 }
 
 int
-ui_media_drive_writeprotect( int which, int wrprot )
+ui_media_drive_writeprotect( int controller, int which, int wrprot )
 {
   ui_media_drive_info_t *drive;
 
-  drive = ui_media_drive_find( which );
+  drive = ui_media_drive_find( controller, which );
   if( !drive )
     return -1;
   if( !drive->fdd->loaded )
@@ -242,9 +244,14 @@ ui_media_drive_save_with_filename( const ui_media_drive_info_t *drive,
 }
 
 int
-ui_media_drive_save( int which, int saveas )
+ui_media_drive_save( int controller, int which, int saveas )
 {
-  return ui_disk_write( which, saveas );
+  ui_media_drive_info_t *drive;
+
+  drive = ui_media_drive_find( controller, which );
+  if( !drive )
+    return -1;
+  return ui_disk_write( drive->drive_index, saveas );
 }
 
 static int
@@ -264,7 +271,7 @@ drive_eject( const ui_media_drive_info_t *drive )
     switch( confirm ) {
 
     case UI_CONFIRM_SAVE_SAVE:
-      if( ui_disk_write( drive, 0 ) )
+      if( ui_disk_write( drive->drive_index, 0 ) )
         return 1;   /* first save it...*/
       break;
 
@@ -281,11 +288,11 @@ drive_eject( const ui_media_drive_info_t *drive )
 }
 
 int
-ui_media_drive_eject( int which )
+ui_media_drive_eject( int controller, int which )
 {
   ui_media_drive_info_t *drive;
 
-  drive = ui_media_drive_find( which );
+  drive = ui_media_drive_find( controller, which );
   if( !drive )
     return -1;
   return drive_eject( drive );
@@ -312,8 +319,25 @@ int
 ui_media_drive_insert( const ui_media_drive_info_t *drive,
                        const char *filename, int autoload )
 {
+  utils_file file;
+  int error;
+
+  if( !filename ) return ui_media_drive_insert_file( drive, NULL, autoload );
+
+  utils_file_init( &file, filename );
+  if( utils_file_read( &file ) ) return 1;
+  error = ui_media_drive_insert_file( drive, &file, autoload );
+  utils_file_free( &file );
+  return error;
+}
+
+int
+ui_media_drive_insert_file( const ui_media_drive_info_t *drive,
+                            const utils_file *file, int autoload )
+{
   int error;
   const fdd_params_t *dt;
+  const char *filename = file ? file->filename : NULL;
 
   /* Eject any disk already in the drive */
   if( drive->fdd->loaded ) {
@@ -323,8 +347,8 @@ ui_media_drive_insert( const ui_media_drive_info_t *drive,
   }
 
   if( filename ) {
-    error = disk_open( &drive->fdd->disk, filename, 0,
-                       DISK_TRY_MERGE( drive->fdd->fdd_heads ) );
+    error = disk_open_loaded( &drive->fdd->disk, file, 0,
+                              DISK_TRY_MERGE( drive->fdd->fdd_heads ) );
     if( error != DISK_OK ) {
       ui_error( UI_ERROR_ERROR, "Failed to open disk image: %s",
                 disk_strerror( error ) );
