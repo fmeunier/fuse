@@ -57,7 +57,7 @@ typedef struct ui_media_drive_info_t
 
 int ui_media_drive_register( ui_media_drive_info_t *drive );
 void ui_media_drive_end( void );
-ui_media_drive_info_t *ui_media_drive_find( int drive );
+ui_media_drive_info_t *ui_media_drive_find( int controller, int drive );
 
 #define UI_MEDIA_DRIVE_UPDATE_ALL	(~0)
 #define UI_MEDIA_DRIVE_UPDATE_TOP	(1 << 0)

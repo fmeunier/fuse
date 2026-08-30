@@ -1367,7 +1367,7 @@ if1_unittest( void )
   static char rom_filename[] = "roms/if1-1.rom";
   libspectrum_snap *snap;
   libspectrum_byte *rom;
-  char *saved_rom = settings_current.rom_interface_1;
+  char *saved_rom = settings_current.rom_interface1;
   int r = 0;
 
   if1_page();
@@ -1380,11 +1380,11 @@ if1_unittest( void )
 
   if1_unpage();
 
-  settings_current.rom_interface_1 = rom_filename;
+  settings_current.rom_interface1 = rom_filename;
 
   snap = libspectrum_snap_alloc();
   if( !snap ) {
-    settings_current.rom_interface_1 = saved_rom;
+    settings_current.rom_interface1 = saved_rom;
     return r + 1;
   }
 
@@ -1401,7 +1401,7 @@ if1_unittest( void )
 
   if( libspectrum_snap_free( snap ) ) r++;
 
-  settings_current.rom_interface_1 = saved_rom;
+  settings_current.rom_interface1 = saved_rom;
 
   r += unittests_paging_test_48( 2 );
 

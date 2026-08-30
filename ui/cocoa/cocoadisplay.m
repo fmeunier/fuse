@@ -43,6 +43,7 @@
 #include "screenshot.h"
 #include "settings.h"
 #include "ui/ui.h"
+#include "ui/display_timing.h"
 #include "ui/scaler/scaler.h"
 #include "ui/uidisplay.h"
 #include "utils.h"
@@ -255,6 +256,7 @@ cocoadisplay_allocate_colours( void )
 int
 uidisplay_init( int width, int height )
 {
+  display_timing_init( "cocoa" );
   cocoadisplay_allocate_colours();
 
   image_width = width;
@@ -465,14 +467,18 @@ uidisplay_frame_end( void )
         copy_area( presentation_framebuffer, screen,
                    presentation_framebuffer->dirty_regions->rects + i );
       presentation_framebuffer->dirty_regions->count = 0;
+      display_timing_presentation_begin();
       [[EmulationSessionController instance]
         publishFramebufferWithValue:[NSValue valueWithPointer:presentation_framebuffer]];
+      display_timing_presentation_end();
     }
 
     display_updated = 0;
     unscaled_screen.dirty_regions->count = 0;
     if( current_scaler != SCALER_NORMAL ) scaled_screen.dirty_regions->count = 0;
   }
+
+  display_timing_frame_end();
 }
 
 void
@@ -480,6 +486,7 @@ uidisplay_area( int x, int y, int width, int height )
 {
   PIG_rect r = { x, y, width, height };
 
+  display_timing_area( width, height );
   display_updated = 1;
 
   if( current_scaler == SCALER_NORMAL ) {
@@ -499,6 +506,7 @@ uidisplay_area( int x, int y, int width, int height )
   pig_dirty_add( scaled_screen.dirty_regions, &r );
 
   /* Create scaled image */
+  display_timing_scaler_begin();
   scaler_proc16( unscaled_screen.backing_storage + ( y + unscaled_screen.y_offset ) *
                    unscaled_screen.stride + sizeof(uint16_t) *
                    ( x + unscaled_screen.x_offset ),
@@ -507,6 +515,7 @@ uidisplay_area( int x, int y, int width, int height )
                    scaled_screen.stride + sizeof(uint16_t) *
                    ( r.x + scaled_screen.x_offset ),
                  scaled_screen.stride, width, height );
+  display_timing_scaler_end();
 }
 
 int

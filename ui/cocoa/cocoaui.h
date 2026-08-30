@@ -23,4 +23,12 @@
 
 */
 
+#ifndef FUSE_COCOA_COCOAUI_H
+#define FUSE_COCOA_COCOAUI_H
+
+#include "ui/uimedia.h"
+
 int cocoaui_confirm( const char *message );
+ui_media_drive_info_t *cocoaui_find_disk_drive( int which );
+
+#endif /* #ifndef FUSE_COCOA_COCOAUI_H */

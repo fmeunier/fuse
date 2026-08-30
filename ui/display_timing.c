@@ -25,6 +25,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#elif defined __APPLE__
+#include <time.h>
 #else
 #include <glib.h>
 #endif
@@ -63,6 +65,11 @@ now_us( void )
   QueryPerformanceCounter( &now );
 
   return (long long)( (double)now.QuadPart * 1000000 / frequency.QuadPart );
+#elif defined __APPLE__
+  struct timespec now;
+
+  clock_gettime( CLOCK_MONOTONIC, &now );
+  return (long long)now.tv_sec * 1000000 + now.tv_nsec / 1000;
 #else
   return g_get_monotonic_time();
 #endif

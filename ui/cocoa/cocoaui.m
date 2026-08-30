@@ -44,6 +44,20 @@
 
 #define MESSAGE_MAX_LENGTH 256
 
+ui_media_drive_info_t *
+cocoaui_find_disk_drive( int which )
+{
+  int controller;
+
+  for( controller = UI_MEDIA_CONTROLLER_PLUS3;
+       controller <= UI_MEDIA_CONTROLLER_DIDAKTIK; controller++ ) {
+    ui_media_drive_info_t *drive = ui_media_drive_find( controller, which );
+    if( drive ) return drive;
+  }
+
+  return NULL;
+}
+
 int 
 ui_init( int *argc, char ***argv )
 {
