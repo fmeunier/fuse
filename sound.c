@@ -253,6 +253,10 @@ sound_init( const char *device )
     return;
   if( !sound_init_buffer( &ula_buf ) ) return;
 
+  /* ULA output is a level signal, so remove its DC component independently
+     of the AY and other sources mixed through the main buffers. */
+  blip_buffer_set_bass_freq( ula_buf, 16 );
+
   ula_synth = sound_init_synth( ula_buf, settings_current.volume_beeper );
 
   ay_a_synth = new_Blip_Synth();
