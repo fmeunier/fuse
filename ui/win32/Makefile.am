@@ -44,6 +44,7 @@ ui_win32_files = \
                  ui/win32/debugger.c \
                  ui/win32/debugger.h \
                  ui/win32/fileselector.c \
+                 ui/display_timing.c \
                  ui/win32/hyperlinks.c \
                  ui/win32/hyperlinks.h \
                  ui/win32/keysyms.c \
