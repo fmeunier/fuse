@@ -1,5 +1,8 @@
 SETUP_CHECK( profile, profile_active )
 SETUP_CHECK( rzx, rzx_playback )
+#ifdef ENABLE_AUTOMATION
+SETUP_CHECK( automation, automation_active() )
+#endif
 SETUP_CHECK( debugger, debugger_mode != DEBUGGER_MODE_INACTIVE )
 SETUP_CHECK( beta, beta_available )
 SETUP_CHECK( plusd, plusd_available )

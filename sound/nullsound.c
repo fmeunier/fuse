@@ -18,27 +18,38 @@
 */
 
 #include "config.h"
+#include "sound.h"
 
-/* Dummy functions for when we don't have a sound device; should never be
-   called, so just abort if they are */
+#ifdef ENABLE_AUTOMATION
+#include "automation/artifacts.h"
+#include "automation/automation.h"
+#endif
 
-#include "fuse.h"
+static int sample_rate, channels;
 
 int
 sound_lowlevel_init( const char *device, int *freqptr, int *stereoptr )
 {
-  /* Audio driver not initialised */
+#ifdef ENABLE_AUTOMATION
+  if( automation_capture_audio_enabled() ) {
+    sample_rate = *freqptr;
+    channels = *stereoptr == SOUND_STEREO_AY_NONE ? 1 : 2;
+    automation_artifacts_audio_initialized( sample_rate, channels );
+    return 0;
+  }
+#endif
   return 1;
 }
 
 void
 sound_lowlevel_end( void )
 {
-  fuse_abort();
 }
 
 void
-sound_lowlevel_frame( unsigned char *data, int len )
+sound_lowlevel_frame( libspectrum_signed_word *data, int len )
 {
-  fuse_abort();
+#ifdef ENABLE_AUTOMATION
+  automation_capture_pcm( data, len, sample_rate, channels );
+#endif
 }

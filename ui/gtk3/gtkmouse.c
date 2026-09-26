@@ -240,6 +240,20 @@ pointer_reset( void )
 }
 
 static gboolean
+gtkmouse_window_state ( GtkWidget *widget, GdkEventWindowState *event,
+                        gpointer data GCC_UNUSED )
+{
+  /* Show the pointer and the bars and restart the inactivity timer
+     after switching fullscreen mode */
+  if( event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN ) {
+    if( !ui_mouse_grabbed && pointer_over_drawing_area )
+      pointer_activity();
+  }
+
+  return FALSE;
+}
+
+static gboolean
 motion_event( GtkWidget *widget GCC_UNUSED, GdkEventMotion *event,
               gpointer data GCC_UNUSED )
 {
@@ -316,6 +330,10 @@ gtkmouse_init( void )
 		    G_CALLBACK( enter_event ), NULL );
   g_signal_connect( G_OBJECT( gtkui_drawing_area ), "leave-notify-event",
 		    G_CALLBACK( leave_event ), NULL );
+
+  /* Restart the mouse inactivity timer after switching fullscreen mode */
+  g_signal_connect( G_OBJECT( gtkui_window ), "window-state-event",
+		    G_CALLBACK( gtkmouse_window_state ), NULL );
 }
 
 void

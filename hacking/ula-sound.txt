@@ -48,26 +48,51 @@ is retained only while a tape is playing (and is disabled for Timex).  When
 loading sound is disabled, the old policy of suppressing the MIC
 contribution during playback is also retained.
 
-AY, SpecDrum, Covox and SP0256 continue to render into the existing main
-left/right buffers. Only the currently selected ULA path is submitted to a
-Blip synth, rendered, read, and processed each frame; the inactive path does
-no PCM or filter work. The selected ULA signal is mixed identically into both
-final channels after the main buffers are rendered, preserving mono ULA
-routing without duplicate stereo synthesis or new inter-channel timing
-differences. The rendered ULA PCM is available through
-sound_ula_mic_output() and sound_ula_beeper_output(), with their corresponding
-count accessors, until the next sound_frame().
+The main left/right buffers contain SpecDrum, Covox and sources which bypass
+the selected speaker response. A separate left/right TV bus receives built-in
+AY and SP0256 when TV output is selected. The selected mono ULA path retains
+its own buffer: its electrical response is applied first, then it is added
+equally to the TV bus before the shared speaker response. External AY
+interfaces remain in the main mix because their analogue output connection is
+interface-specific. The machine AY capability distinguishes built-in from
+external AY.
+
+Only the currently selected ULA logical path is submitted to its Blip synth;
+the inactive path does no PCM or filter work. In Beeper and Unfiltered modes
+the selected ULA signal is mixed identically into both final channels. In TV
+mode it joins each TV channel before filtering. The rendered source-local ULA
+PCM remains available through sound_ula_mic_output() and
+sound_ula_beeper_output(), with their corresponding count accessors, until the
+next sound_frame().
 
 The Speaker type setting selects the final ULA contribution:
 
   Automatic   Beeper for machines with the libspectrum beeper capability;
-              TV speaker otherwise
-  TV speaker  MIC path -> electrical pole
-  Beeper      internal-speaker path -> electrical pole -> built-in speaker model
-  Unfiltered  MIC path, with neither filter
+              TV speaker otherwise. Enabling Currah uSpeech selects TV output
+              because the original interface feeds speech and the Spectrum
+              MIC lead into the television signal.
+  TV speaker  (MIC path -> electrical pole) + built-in AY + uSpeech
+              -> shared TV speaker response
+  Beeper      internal-speaker path -> electrical pole -> built-in speaker
+              model; AY, uSpeech and other sources remain in the main mix
+  Unfiltered  MIC path -> 16 Hz DC blocker; AY and other sources remain
+              unchanged in the main mix
 
-The three explicit output types are universal overrides. Automatic follows the
-physical output provided by the emulated machine.
+The three explicit output types are universal ULA-output overrides, not master
+EQ over unrelated peripherals. Covox, SpecDrum and external AY always bypass
+the speaker response and remain in the main mix. Automatic follows the
+physical output provided by the emulated machine, except that a connected
+Currah establishes a TV path on a built-in-beeper machine too.
+
+The ULA Blip buffer has no built-in DC cancellation. In Unfiltered mode only,
+the selected ULA MIC path passes through a first-order 16 Hz DC blocker. Its
+recurrence is `y = a * ( y + x - x_previous )`, where
+`a = exp( -2*pi*16/Fs )` at the runtime sample rate. The first target
+establishes its steady input level without a route-selection transient. State
+persists across frame boundaries and resets on sound initialization,
+sample-rate reconfiguration and selection of the Unfiltered route. AY and the
+other sources in the main mix bypass this blocker. The TV and Beeper paths use
+the DC rejection already provided by their respective response models.
 
 The electrical pole is the frozen asymmetric first-order candidate from a
 listening experiment which had respondants comparing recordings of real
@@ -76,10 +101,12 @@ approximation, not a claim that the physical ULA circuit is one pole and not a
 model of the internal speaker. It operates on the generated post-Blip PCM, so
 Blip ringing deliberately participates in the choice of rise or fall
 coefficient. Its one state belongs to the selected ULA path. A new sound
-generator, explicit reset, or speaker-type selection initializes it from the
-first PCM target; state never resets at a frame boundary. This is the same
-convention used to generate the listening-test material, and avoids an
-artificial transition at the beginning of a stream.
+generator or speaker-type selection initializes it from the first PCM target;
+state never resets at a frame boundary. An explicit machine reset atomically
+clears the rendered ULA buffer and reader state, resets the pole, and makes the
+current logical ULA level the Blip synth's silent baseline. This prevents the
+first post-reset sound frame and ULA write from observing different old state,
+and avoids manufacturing an artificial transition at reset.
 
 The frozen time constants are 36.53558495933805 us rising and
 68.86073172982108 us falling. At the real output sample rate Fs their
@@ -87,8 +114,9 @@ coefficients are `-expm1( -1 / ( Fs * tau ) )`. For each input target x and
 persistent output y, the rise coefficient is used exactly when `x > y`; the
 fall coefficient is used otherwise, then `y += alpha * ( x - y )`. There is no
 additional gain, offset, clipping, resonator, or frequency-dependent tuning.
-It is applied before final ULA mixing, so AY, SpecDrum, Covox and SP0256 remain
-uncoloured.
+It is applied before the ULA enters either final mixing or the TV bus. It never
+colours AY, SpecDrum, Covox or SP0256; built-in AY and SP0256 receive only the
+later shared TV response when routed to that bus.
 
 The built-in speaker model is a single second-order resonant high-pass.
 Research on original 16/48K speakers is incomplete and production variation is
@@ -103,9 +131,27 @@ transition, rather than a conventional narrow band-pass speaker.
   H(s) = s^2 / (s^2 + (w0 / Q)s + w0^2)
 
 It uses a conventional RBJ/bilinear digital biquad at the runtime host sample
-rate. The nominal experimental parameters, defined in sound/speaker_filter.h,
+rate. The nominal experimental parameters, defined in sound/speaker_filter.c,
 are f0 = 750 Hz and Q = 1/sqrt(2). The filter is applied only in the Beeper
 case, immediately before final PCM mixing; it never changes raw ULA PCM. Its
 state is reset on audio/AY reset and when switching between filtered and
-unfiltered routes. This is a deliberately minimal acoustic model: it adds no
-high-frequency low-pass, EQ peaks, enclosure response or distortion.
+unfiltered routes. After reset, its first target establishes the steady level
+without creating a route-selection transient. This is a deliberately minimal
+acoustic model: it adds no high-frequency low-pass, EQ peaks, enclosure
+response or distortion.
+
+The TV speaker response is a first-order 100 Hz high-pass followed by a
+first-order 10 kHz low-pass. Both use matched exponential coefficients at the
+runtime sample rate. The high-pass recurrence is
+`h = a * (h + x - x_previous)`, where `a = exp(-2*pi*100/Fs)`. The low-pass is
+`y += b * (h - y)`, where `b = -expm1(-2*pi*10000/Fs)`. It uses the same
+first-target initialization policy as the built-in speaker. State persists
+across frame boundaries and resets on sound initialization,
+sample-rate reconfiguration and route changes.
+
+The response follows the analogue sum, not each source independently. Stereo
+output therefore has independent left and right filter state: separated
+built-in AY channels retain their placement, while mono ULA and uSpeech feed
+both channels. The main mix and filtered bus are combined and clipped once at
+final PCM output. Switching routes rebinds eligible synths; old TV filter state
+is never inherited by a newly selected stream.

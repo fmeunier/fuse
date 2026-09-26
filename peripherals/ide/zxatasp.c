@@ -38,7 +38,7 @@
 #include "periph.h"
 #include "settings.h"
 #include "ui/ui.h"
-#include "unittests/unittests.h"
+#include "unittests/helpers.h"
 #include "zxatasp.h"
 
 /* A 16KB memory chunk accessible by the Z80 when /ROMCS is low */

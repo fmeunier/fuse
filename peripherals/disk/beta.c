@@ -49,7 +49,7 @@
 #include "settings.h"
 #include "ui/ui.h"
 #include "ui/uimedia.h"
-#include "unittests/unittests.h"
+#include "unittests/helpers.h"
 #include "utils.h"
 #include "wd_fdc.h"
 #include "z80/z80.h"

@@ -319,35 +319,53 @@ machine_load_rom_bank_from_buffer( memory_page* bank_map, int page_num,
   return 0;
 }
 
+typedef struct rom_size_spec {
+  const size_t *allowed_lengths;
+  size_t allowed_length_count;
+} rom_size_spec;
+
+typedef enum rom_load_result {
+  ROM_LOAD_OK,
+  ROM_LOAD_NOT_FOUND,
+  ROM_LOAD_BAD_SIZE,
+  ROM_LOAD_ERROR,
+} rom_load_result;
+
 static int
-machine_load_rom_bank_from_file( memory_page* bank_map, int page_num,
-  const char *filename, size_t expected_length, int custom )
+rom_length_allowed( size_t length, const rom_size_spec *sizes )
+{
+  size_t i;
+
+  for( i = 0; i < sizes->allowed_length_count; i++ )
+    if( length == sizes->allowed_lengths[i] ) return 1;
+
+  return 0;
+}
+
+static rom_load_result
+machine_load_rom_bank_from_file( memory_page *bank_map, int page_num,
+  const char *filename, const rom_size_spec *sizes, int custom,
+  size_t *loaded_length )
 {
   int error;
   utils_file rom;
 
   error = utils_read_auxiliary_file( filename, &rom, UTILS_AUXILIARY_ROM );
-  if( error == -1 ) {
-    ui_error( UI_ERROR_ERROR, "couldn't find ROM '%s'", filename );
-    return 1;
-  }
-  if( error ) return error;
-  
-  if( rom.length != expected_length ) {
-    ui_error( UI_ERROR_ERROR,
-	      "ROM '%s' is %ld bytes long; expected %ld bytes",
-	      filename, (unsigned long)rom.length,
-	      (unsigned long)expected_length );
+  if( error == -1 ) return ROM_LOAD_NOT_FOUND;
+  if( error ) return ROM_LOAD_ERROR;
+
+  if( !rom_length_allowed( rom.length, sizes ) ) {
+    if( loaded_length ) *loaded_length = rom.length;
     utils_close_file( &rom );
-    return 1;
+    return ROM_LOAD_BAD_SIZE;
   }
 
   error = machine_load_rom_bank_from_buffer( bank_map, page_num, rom.buffer,
-    rom.length, custom );
-
+                                             rom.length, custom );
+  if( !error && loaded_length ) *loaded_length = rom.length;
   utils_close_file( &rom );
 
-  return error;
+  return error ? ROM_LOAD_ERROR : ROM_LOAD_OK;
 }
 
 void
@@ -407,28 +425,85 @@ machine_load_rom_bank_from_snapshot( memory_page *bank_map, int page_num,
   return 0;
 }
 
-int
-machine_load_rom_bank( memory_page* bank_map, int page_num,
-  const char *filename, const char *fallback, size_t expected_length )
+static int
+machine_load_rom_bank_internal( memory_page *bank_map, int page_num,
+  const char *filename, const char *fallback, const rom_size_spec *sizes,
+  size_t *loaded_length )
 {
   snapshot_rom_bank *snapshot_bank;
-  int custom = 0;
-  int retval;
+  rom_load_result result;
+  const char *name = filename;
+  size_t actual_length = 0;
+  int custom;
+
+  if( loaded_length ) *loaded_length = 0;
+  if( !sizes->allowed_lengths || !sizes->allowed_length_count ) return 1;
 
   snapshot_bank = snapshot_rom_bank_find( bank_map, page_num );
   if( snapshot_bank ) {
+    if( !rom_length_allowed( snapshot_bank->bank.length, sizes ) ) {
+      ui_error( UI_ERROR_ERROR,
+                "snapshot ROM is %ld bytes long; unsupported size",
+                (unsigned long)snapshot_bank->bank.length );
+      return 1;
+    }
+
     memory_rom_bank_map( &snapshot_bank->bank, bank_map, page_num );
+    if( loaded_length ) *loaded_length = snapshot_bank->bank.length;
     return 0;
   }
 
-  if( fallback ) custom = !!strcmp( filename, fallback );
+  custom = fallback && strcmp( filename, fallback );
+  result = machine_load_rom_bank_from_file( bank_map, page_num, name, sizes,
+                                            custom, &actual_length );
 
-  retval = machine_load_rom_bank_from_file( bank_map, page_num, filename,
-    expected_length, custom );
-  if( retval && fallback && custom )
-    retval = machine_load_rom_bank_from_file( bank_map, page_num, fallback,
-      expected_length, 0 );
-  return retval;
+  if( result != ROM_LOAD_OK && fallback && custom ) {
+    name = fallback;
+    result = machine_load_rom_bank_from_file( bank_map, page_num, name, sizes,
+                                              0, &actual_length );
+  }
+
+  if( result == ROM_LOAD_OK ) {
+    if( loaded_length ) *loaded_length = actual_length;
+    return 0;
+  }
+
+  if( result == ROM_LOAD_NOT_FOUND ) {
+    ui_error( UI_ERROR_ERROR, "couldn't find ROM '%s'", name );
+  } else if( result == ROM_LOAD_BAD_SIZE ) {
+    if( sizes->allowed_length_count == 1 )
+      ui_error( UI_ERROR_ERROR,
+                "ROM '%s' is %ld bytes long; expected %ld bytes", name,
+                (unsigned long)actual_length,
+                (unsigned long)sizes->allowed_lengths[0] );
+    else
+      ui_error( UI_ERROR_ERROR,
+                "ROM '%s' is %ld bytes long; unsupported size", name,
+                (unsigned long)actual_length );
+  }
+
+  return 1;
+}
+
+int
+machine_load_rom_bank( memory_page *bank_map, int page_num,
+  const char *filename, const char *fallback, size_t expected_length )
+{
+  const rom_size_spec sizes = { &expected_length, 1 };
+
+  return machine_load_rom_bank_internal( bank_map, page_num, filename,
+                                         fallback, &sizes, NULL );
+}
+
+int
+machine_load_rom_bank_with_sizes( memory_page *bank_map, int page_num,
+  const char *filename, const char *fallback, const size_t *allowed_lengths,
+  size_t allowed_length_count, size_t *loaded_length )
+{
+  const rom_size_spec sizes = { allowed_lengths, allowed_length_count };
+
+  return machine_load_rom_bank_internal( bank_map, page_num, filename,
+                                         fallback, &sizes, loaded_length );
 }
 
 int

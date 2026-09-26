@@ -4,6 +4,12 @@ Implementation notes for some of Fuse's systems
 Contents:
 
 1. The main emulation loop
+1.1. RZX playback compatibility
+1.1.1. Spectaculator CPU models
+1.1.2. Interrupt boundaries
+1.1.3. SPIN 0.5 tape-save input
+1.1.4. SPIN 0.5 frame-boundary input
+1.1.5. Spectaculator +D snapshot interrupt entry
 2. The display code
 2.1. Building an image of the Spectrum's screen
 
@@ -39,6 +45,188 @@ after how many tstates the interrupt will occur. In this case, the
 interrupt is forced when it is due to occur by scheduling an event
 from the main Z80 emulation loop (z80/z80_ops.c:z80_do_opcodes) and
 then breaking out of the loop.
+
+1.1. RZX playback compatibility
+--------------------------------
+
+RZX records the number of Z80 instruction fetches and the values
+returned by port reads in each frame. This makes recordings independent
+of instruction timing and memory contention, but not of CPU semantics.
+A difference in documented or undocumented Z80 behaviour can change a
+branch and eventually make playback consume a different number of port
+reads. The resulting `wrong number of INs' error normally detects an
+earlier divergence rather than an error in the frame where it is
+reported.
+
+The RZX format does not record the CPU manufacturer or variation used
+by the recording emulator. Neither the Z80 nor SZX snapshot format has
+a standard field for this information. An RZX creator block identifies
+the program and version which wrote the file, and may contain custom
+data, but creator custom data is empty in the Spectaculator recordings
+examined so far. Creator information is also only a hint: processing a
+file with a utility such as rzxtool may replace it.
+
+1.1.1. Spectaculator CPU models
+................................
+
+Spectaculator introduced a selectable CPU model in version 6.25. Its
+release announcement says the default was NEC 780-C/SCS. Recordings
+made before 6.25 therefore used a single, simpler Z80 model; recordings
+made by later versions may depend on a user-selected model which is not
+identified in the RZX file. Spectaculator also changed undocumented Z80
+behaviour over time. For example, version 9.0.2 added the NMOS-specific
+P/V flag correction when an interrupt follows LD A,I or LD A,R.
+
+Fuse's `cmos-z80' setting is a useful compatibility model for old
+recordings, but is not an exact description of the hardware on which
+they were recorded. It changes a group of behaviours, including
+SCF/CCF undocumented flags, OUT (C),0, and the interrupted LD A,I/R
+quirk. Consequently it is unsafe to assume that every old
+Spectaculator version should use this setting. Corpus testing found
+that CMOS mode fixes recordings from Spectaculator 5.2.371, including
+Valethor and Spectrum Chess 2, while forcing it for Spectaculator 7.0
+regresses Impact levels 71-80 and Running Man.
+
+During RZX playback, Fuse therefore enables the CMOS model
+automatically only for Spectaculator versions before 6.25. In the RZX
+creator encoding, Spectaculator stores the release digits in the major
+word and the build in the minor word. The corpus contains 6.20 as major
+62, build 540, and 6.25 as major 62, builds 550 and 552; build 550 is
+therefore used as the compatibility boundary. rzx.c derives the
+override from creator metadata exposed by libspectrum_rzx_creator().
+The override lasts only for playback and rzx_stop_playback() restores
+the user's CPU setting. UI machine selection and reset actions stop RZX
+playback first, so they also restore the setting.
+
+Later Spectaculator recordings cannot be classified reliably from
+creator metadata alone. Compatibility for those recordings should be
+established by testing or by a future RZX extension which explicitly
+records the CPU model. Do not broaden the automatic version range
+without running the full RZX regression corpus: testing such a broad
+pre-9.0.2 rule produced known regressions even though it fixed other
+recordings.
+
+1.1.2. Interrupt boundaries
+...........................
+
+RZX interrupt boundaries need similar care. A short frame can represent
+an interrupt retrigger; the RZX specification recommends treating a
+frame with four fetches or fewer as a retrigger. Fuse uses a dedicated
+EI-delayed interrupt event for these frames, while retaining historical
+forced-interrupt behaviour for longer playback frames. This distinction
+is needed to support both old recordings which accepted an interrupt
+immediately after EI and recordings which include the EI-inhibited
+instruction in a short retrigger frame.
+
+SPIN 0.5 did not implement retriggered interrupts according to the RZX
+specification. It can produce anomalous short frames with more than the
+recommended four fetches, but treating every such frame as a retrigger
+is not a safe workaround. The frame length alone does not distinguish a
+bad SPIN frame from a normal frame, and increasing Fuse's threshold to
+nine did not repair the SPIN 0.5 tape-save failures described below.
+Keep the specification's four-fetch boundary unless broader corpus
+testing establishes a different rule without regressions.
+
+1.1.3. SPIN 0.5 tape-save input
+...............................
+
+An RZX frame is written when a maskable interrupt occurs, or when it
+would occur if interrupts were disabled. Its IN count is the number of
+I/O port reads actually performed by the CPU in that frame. Input bytes
+are local to that frame and must not be carried into a later frame. An
+IN count of 65535 means that the exact port-read sequence from the last
+frame is repeated; it does not mean that the keyboard state is merely
+unchanged.
+
+Some SPIN 0.5 recordings violate these rules while the 48K ROM SAVE
+routine is running. The first bad frame reaches the SAVE MIC output loop
+at 0x04d8 or 0x04de after the normal interrupt handler has performed its
+eight keyboard reads, but contains nine or ten input bytes. Later frames
+continue to contain explicit eight-byte keyboard scans even though SAVE
+has disabled interrupts and the CPU performs no port reads. These are
+not RZX repeat-frame records: SPIN wrote an IN count of eight and eight
+values into each affected frame.
+
+Fuse handles this defect only when all of the following evidence is
+present:
+
+* the creator program is SPIN 0.5 and its version words are 0 and 5;
+* the selected machine is the 48K Spectrum;
+* a frame has unread input bytes when its fetch count is exhausted; and
+* playback is in the 48K ROM SAVE range 0x04c2 to 0x053f, or recovery
+  was armed there and is draining the final transition frame.
+
+SPIN space-pads its 20-byte creator program even though the RZX field is
+specified as ASCIIZ. creator_is_spin_05() consequently accepts the exact
+`SPIN 0.5' prefix followed only by spaces, as well as a normally
+terminated string, and also checks the creator version words.
+
+When the first matching frame is found, rzx.c enters a tape-save
+compatibility state and reports one warning. At each affected frame
+boundary it uses libspectrum_rzx_playback_inputs_remaining() to detect
+the malformed tail and libspectrum_rzx_playback_discard_inputs() to move
+the current frame's input cursor to its end. The latter does not advance
+the RZX frame or alter its fetch count. Fuse leaves compatibility mode
+after draining a boundary outside the ROM SAVE range, which covers the
+last stale transition frame without making later playback permissive.
+The state and warning flag are reset when playback starts or stops.
+
+The policy belongs in Fuse because libspectrum has no knowledge of the
+emulated PC, ROM or machine. libspectrum exposes only the neutral input
+cursor operations and remains strict by default. Do not turn this into
+a general `ignore wrong number of INs' path: such an error normally
+identifies a real CPU or peripheral divergence. Testing all 1160 SPIN
+0.5 files in the RZX corpus activated this workaround for exactly the
+five known tape-save recordings and no others.
+
+1.1.4. SPIN 0.5 frame-boundary input
+....................................
+
+SPIN 0.5 can also assign one input byte to the frame before the CPU
+executes the corresponding port-read instruction. In affected frames the
+recorded fetch count is exhausted with one unread input byte, while the
+next frame begins at or shortly before the instruction which consumes it.
+Discarding the byte is incorrect: it must be returned by the first port
+read in the next frame without advancing that frame's input cursor.
+
+Fuse applies this compatibility only to SPIN 0.5 recordings when exactly
+one input remains at a frame boundary, maskable interrupts are enabled,
+and the ROM tape-save workaround is not active. rzx_playback_byte()
+returns the carried byte before asking libspectrum for input from the new
+frame. The state is reset when playback starts or stops, and Fuse reports
+one warning per playback when it is used.
+
+This repairs Cauldron 2 and Revenge of the C5. In Cauldron 2 frame 65951
+ends at PC 0xcde9 immediately before ED 78 (IN A,(C)); a later occurrence
+ends at 0xcde6 shortly before the same input loop. In Revenge of the C5
+frame 12944 ends at PC 0x1f54 before LD A,0x7f; IN A,(0xfe). Carrying the
+byte allows both recordings to finish, and the full 3189-file regression
+corpus has no regressions.
+
+Continental Circus is a different failure despite also leaving one input
+at its first bad boundary. Frame 42370 ends at PC 0x11dc in a memory-write
+loop with interrupts disabled, and subsequent frames continue to record
+inputs which Fuse does not execute. Carrying or discarding that byte only
+moves the later mismatch; it does not repair playback. Treat it as an
+execution divergence, not as evidence for broadening this workaround.
+
+1.1.5. Spectaculator +D snapshot interrupt entry
+.................................................
+
+Some Spectaculator RZX files begin with a Z80 snapshot at PC 0x0038 with
+interrupts disabled and an attached, but unpaged, +D. Fuse normally pages
+the +D ROM when execution reaches 0x003a. These recordings instead continue
+through the Spectrum ROM interrupt handler and record its keyboard reads.
+Paging the +D ROM therefore makes frame zero finish with all its recorded
+inputs unread.
+
+During playback of such a snapshot, Fuse suppresses only the automatic +D
+page at 0x003a. The compatibility mode requires a Spectaculator creator, an
+initial snapshot at PC 0x0038, and snapshot state saying that +D is attached
+but not paged. The +D entry points at 0x0008 and 0x0066 retain their normal
+behaviour. This repairs Crystal Frog, Star Crash and Thief Night. It also
+allows five other recordings with the same frame-zero mismatch to proceed
+to later, unrelated execution divergences.
 
 2. The display code
 ===================

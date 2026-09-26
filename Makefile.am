@@ -27,11 +27,18 @@ bin_PROGRAMS = fuse
 noinst_PROGRAMS =
 
 fuse_SOURCES = display.c \
+	display_border.c \
+	display_dirty.c \
+	display_internal.h \
+	display_render.c \
 	event.c \
 	fuse.c \
 	input.c \
 	keyboard.c \
 	loader.c \
+	loader_detector.c \
+	loader_internals.h \
+	unittests/loader.c \
 	machine.c \
 	memory_pages.c \
 	mempool.c \
@@ -44,6 +51,8 @@ fuse_SOURCES = display.c \
 	psg.c \
 	rectangle.c \
 	rzx.c \
+	rzx_recording.c \
+	rzx_internal.h \
 	screenshot.c \
 	settings.c \
 	slt.c \
@@ -52,6 +61,11 @@ fuse_SOURCES = display.c \
 	spectrum.c \
 	svg.c \
 	tape.c \
+	tape_block.c \
+	tape_internals.h \
+	tape_record.c \
+	tape_traps.c \
+	unittests/tape.c \
 	ui.c \
 	uidisplay.c \
 	uimedia.c \
@@ -135,6 +149,7 @@ noinst_HEADERS = bitmap.h \
 	spectrum.h \
 	svg.h \
 	tape.h \
+	tape_internals.h \
 	utils.h \
 	options.h \
 	profile.h
@@ -156,6 +171,8 @@ EXTRA_DIST = AUTHORS \
 	     settings.pl \
 	     settings-header.pl \
 	     update-release.py \
+	     tools/metrics \
+	     tools/test_metrics.py \
 	     .agents/skills/README.md \
 	     .agents/skills/update-changelog/SKILL.md
 
@@ -167,10 +184,23 @@ DISTCLEANFILES =
 
 pkgdata_DATA =
 
+if UI_NULL
 test: z80/coretest unittests/displaytest
 	z80/coretest $(srcdir)/z80/tests/tests.in > z80/tests.actual
 	cmp z80/tests.actual $(srcdir)/z80/tests/tests.expected
 	./unittests/displaytest
+else
+test:
+	@echo "SKIP: internal unit tests require a null-UI build"
+endif
+
+metrics:
+	@if test -n "$(FILE)"; then $(srcdir)/tools/metrics "$(FILE)"; else $(srcdir)/tools/metrics; fi
+
+check-metrics:
+	python3 $(srcdir)/tools/test_metrics.py
+
+.PHONY: metrics check-metrics
 
 
 ## Resources for Windows executables
@@ -187,6 +217,7 @@ windres.o: windres.rc data/win32/winfuse.ico data/win32/fuse.manifest $(ui_win32
 endif
 
 
+include automation/Makefile.am
 include compat/Makefile.am
 include data/Makefile.am
 include debugger/Makefile.am
@@ -215,9 +246,10 @@ include ui/xlib/Makefile.am
 include unittests/Makefile.am
 include z80/Makefile.am
 
+if UI_NULL
 check-local: fuse unittests/displaytest unittests/sdl2displaytest unittests/sdl2scalerstatetest unittests/sdl2joysticktest unittests/sdl2mousetest unittests/palcompositetest unittests/scalerexpandtest z80/coretest
 	@test -e $(top_builddir)/roms || ln -sf "$(abs_top_srcdir)/roms" $(top_builddir)/roms
-	$(top_builddir)/fuse --unittests
+	FUSE_TEST_SRCDIR="$(abs_top_srcdir)" $(top_builddir)/fuse --unittests
 	$(top_builddir)/unittests/displaytest
 	$(top_builddir)/unittests/sdl2displaytest
 	$(top_builddir)/unittests/sdl2scalerstatetest
@@ -225,5 +257,12 @@ check-local: fuse unittests/displaytest unittests/sdl2displaytest unittests/sdl2
 	$(top_builddir)/unittests/sdl2mousetest
 	$(top_builddir)/unittests/palcompositetest
 	$(top_builddir)/unittests/scalerexpandtest
+if ENABLE_AUTOMATION
+	$(top_builddir)/unittests/automation_json_test
+endif
 	$(top_builddir)/z80/coretest $(srcdir)/z80/tests/tests.in > $(top_builddir)/z80/tests.actual
 	cmp $(top_builddir)/z80/tests.actual $(srcdir)/z80/tests/tests.expected
+else
+check-local:
+	@echo "SKIP: internal unit tests require a null-UI build"
+endif

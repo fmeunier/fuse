@@ -43,7 +43,7 @@
 #include "settings.h"
 #include "utils.h"
 #include "ui/ui.h"
-#include "unittests/unittests.h"
+#include "unittests/helpers.h"
 
 #undef IF1_DEBUG_MDR
 #undef IF1_DEBUG_NET
@@ -155,11 +155,17 @@ RS232:
     every other 0x00 + 0x## are discarded
 */
 
-/* 8KB ROM */
-#define ROM_SIZE 0x2000
+/* The original ROM is 8KB, mirrored across the 16KB /ROMCS window. Some
+   replacement ROMs decode A13 and use the full 16KB window. */
+#define IF1_ROM_SIZE_8K  0x2000
+#define IF1_ROM_SIZE_16K 0x4000
 
-/* One 8KB memory chunk accessible by the Z80 when /ROMCS is low */
-static memory_page if1_memory_map_romcs[MEMORY_PAGES_IN_8K];
+static const size_t if1_rom_sizes[] = {
+  IF1_ROM_SIZE_8K, IF1_ROM_SIZE_16K
+};
+
+static memory_page if1_memory_map_romcs[MEMORY_PAGES_IN_16K];
+static size_t if1_rom_size = IF1_ROM_SIZE_8K;
 
 /* IF1 paged out ROM activated? */
 int if1_active = 0;
@@ -344,7 +350,7 @@ if1_init( void *context )
   module_register( &if1_module_info );
 
   if1_memory_source = memory_source_register( "If1" );
-  for( i = 0; i < MEMORY_PAGES_IN_8K; i++ )
+  for( i = 0; i < MEMORY_PAGES_IN_16K; i++ )
     if1_memory_map_romcs[i].source = if1_memory_source;
 
   periph_register( PERIPH_TYPE_INTERFACE1, &if1_periph );
@@ -399,10 +405,10 @@ if1_reset( int hard_reset GCC_UNUSED )
   }
 
   /* Check for an Interface 1 ROM */
-  if( machine_load_rom_bank( if1_memory_map_romcs, 0,
-			     settings_current.rom_interface1,
-			     settings_default.rom_interface1,
-			     ROM_SIZE ) ) {
+  if( machine_load_rom_bank_with_sizes(
+        if1_memory_map_romcs, 0, settings_current.rom_interface1,
+        settings_default.rom_interface1, if1_rom_sizes,
+        ARRAY_SIZE( if1_rom_sizes ), &if1_rom_size ) ) {
     settings_current.interface1 = 0;
     periph_activate_type( PERIPH_TYPE_INTERFACE1, 0 );
 
@@ -456,8 +462,12 @@ if1_memory_map( void )
 {
   if( !if1_active ) return;
 
-  memory_map_romcs_8k( 0x0000, if1_memory_map_romcs );
-  memory_map_romcs_8k( 0x2000, if1_memory_map_romcs );
+  if( if1_rom_size == IF1_ROM_SIZE_16K ) {
+    memory_map_romcs_full( if1_memory_map_romcs );
+  } else {
+    memory_map_romcs_8k( 0x0000, if1_memory_map_romcs );
+    memory_map_romcs_8k( 0x2000, if1_memory_map_romcs );
+  }
 }
 
 static void
@@ -472,13 +482,18 @@ if1_from_snapshot( libspectrum_snap *snap )
   if( !libspectrum_snap_interface1_active( snap ) ) return;
 
   if( libspectrum_snap_interface1_custom_rom( snap ) &&
-      libspectrum_snap_interface1_rom( snap, 0 ) &&
-      libspectrum_snap_interface1_rom_length( snap, 0 ) >= ROM_SIZE &&
-      machine_load_rom_bank_from_snapshot(
-                             if1_memory_map_romcs, 0,
-                             libspectrum_snap_interface1_rom( snap, 0 ),
-                             ROM_SIZE, 1 ) )
-    return;
+      libspectrum_snap_interface1_rom( snap, 0 ) ) {
+    size_t length = libspectrum_snap_interface1_rom_length( snap, 0 );
+
+    if( length != IF1_ROM_SIZE_8K && length != IF1_ROM_SIZE_16K ) return;
+
+    if( machine_load_rom_bank_from_snapshot(
+          if1_memory_map_romcs, 0,
+          libspectrum_snap_interface1_rom( snap, 0 ), length, 1 ) )
+      return;
+
+    if1_rom_size = length;
+  }
 
   if( libspectrum_snap_interface1_paged( snap ) ) {
     if1_page();
@@ -501,11 +516,11 @@ if1_to_snapshot( libspectrum_snap *snap )
 
   if( if1_memory_map_romcs[0].save_to_snapshot ) {
     libspectrum_snap_set_interface1_custom_rom( snap, 1 );
-    libspectrum_snap_set_interface1_rom_length( snap, 0, ROM_SIZE );
+    libspectrum_snap_set_interface1_rom_length( snap, 0, if1_rom_size );
 
-    buffer = libspectrum_new( libspectrum_byte, ROM_SIZE );
+    buffer = libspectrum_new( libspectrum_byte, if1_rom_size );
 
-    for( i = 0; i < MEMORY_PAGES_IN_8K; i++ )
+    for( i = 0; i < if1_rom_size / MEMORY_PAGE_SIZE; i++ )
       memcpy( buffer + i * MEMORY_PAGE_SIZE,
               if1_memory_map_romcs[ i ].page, MEMORY_PAGE_SIZE );
 
@@ -1388,16 +1403,48 @@ if1_unittest( void )
     return r + 1;
   }
 
-  rom = libspectrum_new( libspectrum_byte, ROM_SIZE );
-  memset( rom, 0xa5, ROM_SIZE );
+  rom = libspectrum_new( libspectrum_byte, IF1_ROM_SIZE_8K );
+  memset( rom, 0xa5, IF1_ROM_SIZE_8K );
   libspectrum_snap_set_interface1_active( snap, 1 );
   libspectrum_snap_set_interface1_custom_rom( snap, 1 );
-  libspectrum_snap_set_interface1_rom_length( snap, 0, ROM_SIZE );
+  libspectrum_snap_set_interface1_rom_length( snap, 0, IF1_ROM_SIZE_8K );
   libspectrum_snap_set_interface1_rom( snap, 0, rom );
   if1_from_snapshot( snap );
 
   if( machine_reset( 0 ) || if1_memory_map_romcs[ 0 ].page[ 0 ] != 0xa5 )
     r++;
+
+  if1_page();
+  if( readbyte_internal( 0x0000 ) != 0xa5 ||
+      readbyte_internal( 0x2000 ) != 0xa5 )
+    r++;
+  if1_unpage();
+
+  if( libspectrum_snap_free( snap ) ) r++;
+
+  snap = libspectrum_snap_alloc();
+  if( !snap ) {
+    settings_current.rom_interface1 = saved_rom;
+    return r + 1;
+  }
+
+  rom = libspectrum_new( libspectrum_byte, IF1_ROM_SIZE_16K );
+  memset( rom, 0xa5, IF1_ROM_SIZE_8K );
+  memset( rom + IF1_ROM_SIZE_8K, 0x5a, IF1_ROM_SIZE_8K );
+  libspectrum_snap_set_interface1_active( snap, 1 );
+  libspectrum_snap_set_interface1_custom_rom( snap, 1 );
+  libspectrum_snap_set_interface1_rom_length( snap, 0, IF1_ROM_SIZE_16K );
+  libspectrum_snap_set_interface1_rom( snap, 0, rom );
+  if1_from_snapshot( snap );
+
+  if( machine_reset( 0 ) ) r++;
+
+  if1_page();
+  r += unittests_assert_16k_page( 0x0000, if1_memory_source, 0 );
+  if( readbyte_internal( 0x0000 ) != 0xa5 ||
+      readbyte_internal( 0x2000 ) != 0x5a )
+    r++;
+  if1_unpage();
 
   if( libspectrum_snap_free( snap ) ) r++;
 

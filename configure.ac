@@ -19,12 +19,12 @@ dnl
 dnl E-mail: philip-fuse@shadowmagic.org.uk
 
 dnl Package version
-m4_define([fuse_version], [1.9.2])
+m4_define([fuse_version], [1.10.0])
 
 dnl Product full version
 m4_define([fuse_major_version], [1])
-m4_define([fuse_minor_version], [9])
-m4_define([fuse_micro_version], [2])
+m4_define([fuse_minor_version], [10])
+m4_define([fuse_micro_version], [0])
 m4_define([fuse_nano_version],  [0])
 m4_define([fuse_full_version], [fuse_major_version.fuse_minor_version.fuse_micro_version.fuse_nano_version])
 m4_define([fuse_rc_version], [fuse_major_version,fuse_minor_version,fuse_micro_version,fuse_nano_version])
@@ -76,6 +76,17 @@ fi
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_MSG_CHECKING([whether $CC supports C11])
+AC_COMPILE_IFELSE(
+  [AC_LANG_SOURCE([[
+#if !defined __STDC_VERSION__ || __STDC_VERSION__ < 201112L
+#error "C11 support is required"
+#endif
+int main(void) { return 0; }
+  ]])],
+  [AC_MSG_RESULT([yes])],
+  [AC_MSG_FAILURE([a compiler with support for C11 is required])]
+)
 AC_PATH_PROG(PERL, perl)
 AC_SUBST(PERL)
 AC_PROG_LEX([noyywrap])
@@ -129,7 +140,7 @@ if test "$prefix" != "NONE"; then
 fi)
 
 dnl Check that libspectrum is available and that it is new enough
-PKG_CHECK_MODULES([LIBSPECTRUM], [libspectrum >= 1.6.4])
+PKG_CHECK_MODULES([LIBSPECTRUM], [libspectrum >= 1.7.0])
 
 dnl Check if supplied libspectrum has its own internal GLib replacement
 AC_MSG_CHECKING(whether libspectrum has its own internal GLib replacement)
@@ -757,9 +768,26 @@ fi
 AC_SUBST(XML_CFLAGS)
 AC_SUBST(XML_LIBS)
 
+dnl Development-only one-shot automation interface
+AC_ARG_ENABLE([automation],
+  AS_HELP_STRING([--enable-automation],
+                 [enable development automation interface]),
+  [automation=$enableval], [automation=no])
+if test "$automation" = yes; then
+  if test "$zlib" != yes; then
+    AC_MSG_ERROR([development automation requires zlib])
+  fi
+  AC_DEFINE([ENABLE_AUTOMATION], 1,
+            [Defined if development automation is enabled])
+fi
+AM_CONDITIONAL([ENABLE_AUTOMATION], [test "$automation" = yes])
+
 dnl Work out which timer routines to use
 AC_MSG_CHECKING(which timer routines to use)
-if test "$UI" = sdl; then
+if test "$automation" = yes; then
+  TIMER_LIBADD='timer/null.$(OBJEXT)'
+  AC_MSG_RESULT(conditional virtual timer)
+elif test "$UI" = sdl; then
   TIMER_LIBADD='timer/sdl.$(OBJEXT)'
   AC_MSG_RESULT(SDL)
 elif test "$UI" = sdl2; then

@@ -38,6 +38,9 @@
 
 #include "libspectrum.h"
 
+#ifdef ENABLE_AUTOMATION
+#include "automation/automation.h"
+#endif
 #include "fuse.h"
 #include "machines/specplus3.h"
 #include "memory_pages.h"
@@ -61,13 +64,38 @@
 
 static void init_path_context( path_context *ctx, utils_aux_type type );
 
+#define UTILS_IDENTIFY_LENGTH 64
+
 static int networking_init_count = 0;
+
+#ifdef ENABLE_AUTOMATION
+static const char *
+automation_disk_controller_name( ui_media_controller controller )
+{
+  switch( controller ) {
+  case UI_MEDIA_CONTROLLER_PLUS3: return "plus3";
+  case UI_MEDIA_CONTROLLER_BETA: return "beta";
+  case UI_MEDIA_CONTROLLER_PLUSD: return "plusd";
+  case UI_MEDIA_CONTROLLER_OPUS: return "opus";
+  case UI_MEDIA_CONTROLLER_DISCIPLE: return "disciple";
+  case UI_MEDIA_CONTROLLER_DIDAKTIK: return "didaktik";
+  default: return "unknown";
+  }
+}
+#endif
 
 static int
 utils_insert_disk( ui_media_controller controller, utils_file *file,
                    int autoload )
 {
   ui_media_drive_info_t *drive = ui_media_drive_find( controller, 0 );
+#ifdef ENABLE_AUTOMATION
+  /* Disk insertion may normalise the loaded image in place, so retain the
+     source identity before handing the buffer to the drive. */
+  if( drive && automation_active() )
+    automation_record_disk( file,
+                            automation_disk_controller_name( controller ), 0 );
+#endif
   return drive ? ui_media_drive_insert_file( drive, file, autoload ) : 1;
 }
 
@@ -98,13 +126,22 @@ utils_open_loaded_file( utils_file *file, int autoload,
   if( error ) return error;
 
   if( utils_file_identify( file ) ) return 1;
+#ifdef ENABLE_AUTOMATION
+  if( automation_active() ) {
+    automation_record_tape( file );
+    if( libspectrum_file_class( file ) == LIBSPECTRUM_CLASS_RECORDING )
+      automation_record_rzx( file );
+    else if( libspectrum_file_class( file ) == LIBSPECTRUM_CLASS_SNAPSHOT )
+      automation_record_external_snapshot( file );
+  }
+#endif
 
   /* Keep the existing dispatch readable while the loaded file owns the data. */
   {
     const char *filename = file->filename;
     libspectrum_id_t type = file->type;
 
-  switch( file->class ) {
+  switch( file->file_class ) {
     
   case LIBSPECTRUM_CLASS_UNKNOWN:
     ui_error( UI_ERROR_ERROR, "utils_open_file: couldn't identify `%s'",
@@ -345,11 +382,31 @@ init_path_context( path_context *ctx, utils_aux_type type )
 void
 utils_file_init( utils_file *file, const char *filename )
 {
-  file->filename = filename;
+  libspectrum_file_init( file );
+  if( filename ) file->filename = utils_safe_strdup( filename );
+}
+
+static int
+utils_file_resolve( utils_file *file )
+{
+  libspectrum_file resolved;
+  libspectrum_byte *buffer = file->buffer;
+  size_t length = file->length;
+  libspectrum_error error;
+
+  libspectrum_file_init( &resolved );
   file->buffer = NULL;
   file->length = 0;
-  file->type = LIBSPECTRUM_ID_UNKNOWN;
-  file->class = LIBSPECTRUM_CLASS_UNKNOWN;
+  error = libspectrum_file_take_data( &resolved, file->filename, buffer,
+                                      length );
+  if( error ) {
+    utils_file_free( file );
+    return error;
+  }
+
+  utils_file_free( file );
+  *file = resolved;
+  return 0;
 }
 
 void
@@ -380,14 +437,95 @@ utils_file_read( utils_file *file )
 int
 utils_file_identify( utils_file *file )
 {
-  if( utils_file_read( file ) ) return 1;
+  utils_file header, remainder;
+  compat_fd fd;
+  off_t length;
+  libspectrum_id_t filename_type;
+  libspectrum_class_t filename_class;
+  int error;
 
   if( file->type != LIBSPECTRUM_ID_UNKNOWN ||
-      file->class != LIBSPECTRUM_CLASS_UNKNOWN ) return 0;
+      file->file_class != LIBSPECTRUM_CLASS_UNKNOWN ) return 0;
 
-  return libspectrum_identify_file_with_class( &file->type, &file->class,
-                                                file->filename, file->buffer,
-                                                file->length );
+  if( file->buffer ) return utils_file_resolve( file );
+
+  fd = compat_file_open( file->filename, 0 );
+  if( fd == COMPAT_FILE_OPEN_FAILED ) {
+    ui_error( UI_ERROR_ERROR, "couldn't open '%s': %s", file->filename,
+              strerror( errno ) );
+    return 1;
+  }
+
+  length = compat_file_get_length( fd );
+  if( length == -1 ) {
+    compat_file_close( fd );
+    return 1;
+  }
+
+  utils_file_init( &header, file->filename );
+  header.length = length < UTILS_IDENTIFY_LENGTH ?
+                  length : UTILS_IDENTIFY_LENGTH;
+  header.buffer = libspectrum_new( unsigned char, header.length );
+  if( compat_file_read( fd, &header ) ) {
+    utils_file_free( &header );
+    compat_file_close( fd );
+    return 1;
+  }
+
+  /* Identify HDF images from their signature so they need not be read in
+     full. Passing no filename prevents an .hdf extension from masking an
+     invalid header. */
+  error = libspectrum_identify_file_raw( &file->type, NULL, header.buffer,
+                                        header.length );
+  if( !error )
+    error = libspectrum_identify_class( &file->file_class, file->type );
+  if( error || file->file_class == LIBSPECTRUM_CLASS_HARDDISK ) {
+    if( file->file_class == LIBSPECTRUM_CLASS_HARDDISK )
+      file->storage = LIBSPECTRUM_FILE_STORAGE_PATH;
+    utils_file_free( &header );
+    if( compat_file_close( fd ) ) return 1;
+    return error;
+  }
+
+  error = libspectrum_identify_file_raw( &filename_type, file->filename,
+                                        NULL, 0 );
+  if( !error )
+    error = libspectrum_identify_class( &filename_class, filename_type );
+  if( error || filename_class == LIBSPECTRUM_CLASS_HARDDISK ) {
+    utils_file_free( &header );
+    if( compat_file_close( fd ) ) return 1;
+    file->type = LIBSPECTRUM_ID_UNKNOWN;
+    file->file_class = LIBSPECTRUM_CLASS_UNKNOWN;
+    return error;
+  }
+
+  file->type = LIBSPECTRUM_ID_UNKNOWN;
+  file->file_class = LIBSPECTRUM_CLASS_UNKNOWN;
+
+  file->length = length;
+  file->buffer = libspectrum_new( unsigned char, file->length );
+  memcpy( file->buffer, header.buffer, header.length );
+
+  utils_file_init( &remainder, NULL );
+  remainder.buffer = file->buffer + header.length;
+  remainder.length = file->length - header.length;
+  utils_file_free( &header );
+
+  if( remainder.length && compat_file_read( fd, &remainder ) ) {
+    libspectrum_free( file->buffer );
+    file->buffer = NULL;
+    file->length = 0;
+    compat_file_close( fd );
+    return 1;
+  }
+  if( compat_file_close( fd ) ) {
+    libspectrum_free( file->buffer );
+    file->buffer = NULL;
+    file->length = 0;
+    return 1;
+  }
+
+  return utils_file_resolve( file );
 }
 
 int
@@ -420,18 +558,13 @@ utils_read_fd( compat_fd fd, const char *filename, utils_file *file )
     return 1;
   }
 
-  return 0;
+  return utils_file_resolve( file );
 }
 
 void
 utils_file_free( utils_file *file )
 {
-  libspectrum_free( file->buffer );
-  file->filename = NULL;
-  file->buffer = NULL;
-  file->length = 0;
-  file->type = LIBSPECTRUM_ID_UNKNOWN;
-  file->class = LIBSPECTRUM_CLASS_UNKNOWN;
+  libspectrum_file_clear( file );
 }
 
 void

@@ -240,4 +240,8 @@ typedef struct input_event_t {
 
 int input_event( const input_event_t *event );
 
+/* Reset the shifted-arrow-key tracking state (called when all keys are
+   released, e.g. on focus loss or emulation pause). */
+void input_reset_shifted_arrows( void );
+
 #endif			/* #ifndef FUSE_INPUT_H */

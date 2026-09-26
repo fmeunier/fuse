@@ -23,10 +23,31 @@
 
 #include "config.h"
 
+#ifdef ENABLE_AUTOMATION
+#include "automation/automation.h"
+#endif
+#include <string.h>
+
+#include "display.h"
 #include "keyboard.h"
+#include "machine.h"
+#include "spectrum.h"
+#include "utils.h"
+#include "ui/scaler/scaler.h"
 #include "ui/ui.h"
+#include "ui/ui_internals.h"
 
 #include "../uijoystick.c"
+
+static libspectrum_byte *framebuffer;
+static int framebuffer_width, framebuffer_height;
+
+static void
+set_pixel( int x, int y, libspectrum_byte colour )
+{
+  if( framebuffer && x >= 0 && y >= 0 && x < framebuffer_width &&
+      y < framebuffer_height ) framebuffer[y * framebuffer_width + x] = colour;
+}
 
 keysyms_map_t keysyms_map[] = {
   { 0, 0 } /* End marker */
@@ -41,7 +62,7 @@ menu_get_scaler( scaler_available_fn selector )
 
 int
 menu_select_roms_with_title( const char *title, size_t start, size_t count,
-    int is_peripheral )
+                             int is_peripheral )
 {
   /* No error */
   return 0;
@@ -103,7 +124,9 @@ ui_end( void )
 int
 ui_error_specific( ui_error_level severity, const char *message )
 {
-  /* No error */
+#ifdef ENABLE_AUTOMATION
+  automation_diagnostic( severity, message );
+#endif
   return 0;
 }
 
@@ -114,7 +137,7 @@ ui_event( void )
   return 0;
 }
 
-char*
+char *
 ui_get_open_filename( const char *title )
 {
   /* No filename */
@@ -128,7 +151,7 @@ ui_get_rollback_point( GSList *points )
   return -1;
 }
 
-char*
+char *
 ui_get_save_filename( const char *title )
 {
   /* No filename */
@@ -170,7 +193,7 @@ ui_pokemem_selector( const char *filename )
 }
 
 int
-ui_query( const char *message )
+ui_query_message( const char *message )
 {
   /* Query confirmed */
   return 1;
@@ -179,6 +202,13 @@ ui_query( const char *message )
 int
 ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
 {
+#ifdef ENABLE_AUTOMATION
+  if( automation_active() && item == UI_STATUSBAR_ITEM_DISK &&
+      ( state == UI_STATUSBAR_STATE_ACTIVE ||
+        state == UI_STATUSBAR_STATE_INACTIVE ) )
+    automation_disk_motor_changed( state == UI_STATUSBAR_STATE_ACTIVE,
+                                   spectrum_get_frame_count() );
+#endif
   /* No error */
   return 0;
 }
@@ -192,7 +222,7 @@ ui_statusbar_update_speed( float speed )
 
 int
 ui_tape_browser_update( ui_tape_browser_update_type change,
-    libspectrum_tape_block *block )
+                        libspectrum_tape_block *block )
 {
   /* No error */
   return 0;
@@ -214,14 +244,19 @@ uidisplay_area( int x, int y, int w, int h )
 int
 uidisplay_end( void )
 {
-  /* No error */
+  libspectrum_free( framebuffer );
+  framebuffer = NULL;
   return 0;
 }
 
 void
 uidisplay_frame_end( void )
 {
-  /* Do nothing */
+#ifdef ENABLE_AUTOMATION
+  if( automation_capture_screen_enabled() )
+    automation_capture_screen( framebuffer, framebuffer_width,
+                               framebuffer_height );
+#endif
 }
 
 int
@@ -234,26 +269,50 @@ uidisplay_hotswap_gfx_mode( void )
 int
 uidisplay_init( int width, int height )
 {
-  /* No error */
+#ifdef ENABLE_AUTOMATION
+  if( automation_capture_screen_enabled() ) {
+    for( scaler_type scaler = 0; scaler < SCALER_NUM; scaler++ )
+      scaler_register( scaler );
+    framebuffer_width = width;
+    framebuffer_height = height;
+    framebuffer = libspectrum_new( libspectrum_byte, (size_t)width * height );
+    memset( framebuffer, 0, (size_t)width * height );
+  }
+#endif
   return 0;
 }
 
 void
 uidisplay_plot16( int x, int y, libspectrum_word data,
-    libspectrum_byte ink, libspectrum_byte paper )
+                  libspectrum_byte ink, libspectrum_byte paper )
 {
-  /* Do nothing */
+  int i, j;
+  x <<= 4;
+  y <<= 1;
+  for( j = 0; j < 2; j++ ) for( i = 0; i < 16; i++ )
+      set_pixel( x + i, y + j, data & ( 0x8000 >> i ) ? ink : paper );
 }
 
 void
 uidisplay_plot8( int x, int y, libspectrum_byte data,
-    libspectrum_byte ink, libspectrum_byte paper )
+                 libspectrum_byte ink, libspectrum_byte paper )
 {
-  /* Do nothing */
+  int i, j, scale = machine_current->timex ? 2 : 1;
+  x *= 8 * scale;
+  y *= scale;
+  for( j = 0; j < scale; j++ ) for( i = 0; i < 8; i++ ) {
+      libspectrum_byte colour = data & ( 0x80 >> i ) ? ink : paper;
+      for( int k = 0; k < scale;
+           k++ ) set_pixel( x + i * scale + k, y + j, colour );
+    }
 }
 
 void
 uidisplay_putpixel( int x, int y, int colour )
 {
-  /* Do nothing */
+  int i, j, scale = machine_current->timex ? 2 : 1;
+  x *= scale;
+  y *= scale;
+  for( j = 0; j < scale; j++ ) for( i = 0; i < scale; i++ )
+      set_pixel( x + i, y + j, colour );
 }

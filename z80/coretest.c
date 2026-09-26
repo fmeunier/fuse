@@ -402,6 +402,7 @@ scld scld_last_dec;
 
 size_t rzx_instruction_count;
 int rzx_playback;
+int rzx_spectaculator_plusd_compat;
 int rzx_instructions_offset;
 
 enum debugger_mode_t debugger_mode;
@@ -425,6 +426,20 @@ debugger_check( debugger_breakpoint_type type GCC_UNUSED, libspectrum_dword valu
 {
   abort();
 }
+
+#ifdef ENABLE_AUTOMATION
+int
+automation_active( void )
+{
+  return 0;
+}
+
+int
+automation_check_pc( libspectrum_word pc GCC_UNUSED )
+{
+  return 0;
+}
+#endif
 
 void debugger_system_variable_register(
   const char *type, const char *detail,
@@ -498,6 +513,12 @@ int disciple_active = 0;
 
 void
 disciple_page( void )
+{
+  abort();
+}
+
+void
+disciple_nmi_page( void )
 {
   abort();
 }
@@ -617,6 +638,12 @@ svg_capture( void )
 
 int
 rzx_frame( void )
+{
+  abort();
+}
+
+int
+rzx_frame_interrupt_complete( void )
 {
   abort();
 }

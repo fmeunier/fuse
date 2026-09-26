@@ -22,6 +22,7 @@
 
 noinst_HEADERS += \
                   ui/ui.h \
+                  ui/ui_internals.h \
                   ui/display_timing.h \
                   ui/uidisplay.h \
                   ui/uijoystick.h \

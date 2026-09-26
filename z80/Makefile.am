@@ -85,7 +85,7 @@ z80_coretest_CPPFLAGS = $(GLIB_CFLAGS) $(LIBSPECTRUM_CFLAGS) -DCORETEST
 z80/coretest.o: $(srcdir)/z80/coretest.c
 	$(AM_V_CC)$(COMPILE) -DCORETEST -c $(srcdir)/z80/coretest.c -o $@
 
-z80/z80_coretest.o: z80/z80_ops.c
+z80/z80_coretest.o: z80/z80_ops.c $(top_builddir)/config.h
 	$(AM_V_CC)$(COMPILE) -DCORETEST -c $(srcdir)/z80/z80_ops.c -o $@
 
 CLEANFILES += \

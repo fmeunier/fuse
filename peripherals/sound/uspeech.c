@@ -38,7 +38,7 @@
 #include "settings.h"
 #include "sp0256.h"
 #include "ui/ui.h"
-#include "unittests/unittests.h"
+#include "unittests/helpers.h"
 #include "uspeech.h"
 #include "utils.h"
 

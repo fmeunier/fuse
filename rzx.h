@@ -44,6 +44,9 @@ extern int rzx_recording;
 /* Are we currently playing back a .rzx file? */
 extern int rzx_playback;
 
+/* Suppress +D automatic paging omitted by affected Spectaculator RZXes. */
+extern int rzx_spectaculator_plusd_compat;
+
 /* Is the .rzx file being recorded in competition mode? */
 extern int rzx_competition_mode;
 
@@ -68,8 +71,13 @@ rzx_start_playback_from_buffer_with_snapshot_check(
   const unsigned char *buffer, size_t length, int check_snapshot );
 
 int rzx_stop_playback( int add_interrupt );
+void rzx_spectaculator_cpu_hint( void );
+
+/* Read the next playback input, including creator-specific compatibility. */
+libspectrum_error rzx_playback_byte( libspectrum_byte *value );
 
 int rzx_frame( void );
+int rzx_frame_interrupt_complete( void );
 
 int rzx_store_byte( libspectrum_byte value );
 

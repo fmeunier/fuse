@@ -42,7 +42,10 @@ extern int disciple_active;     /* DISCiPLE enabled? */
 void disciple_register_startup( void );
 
 void disciple_page( void );
+void disciple_nmi_page( void );
+void disciple_snapshot_nmi( void );
 void disciple_unpage( void );
+void disciple_inhibit_update( void );
 
 int disciple_disk_insert( disciple_drive_number which, const char *filename,
                           int autoload );

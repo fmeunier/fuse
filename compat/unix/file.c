@@ -43,10 +43,12 @@ static int default_file_write( compat_fd fd, const unsigned char *buffer,
                                size_t length );
 static int default_file_close( compat_fd fd );
 static int default_file_exists( const char *path );
+static int default_file_unlink( const char *path );
 
 static compat_file_vtable_t file_vtable = {
   default_file_open, default_file_get_length, default_file_read,
-  default_file_write, default_file_close, default_file_exists
+  default_file_write, default_file_close, default_file_exists,
+  default_file_unlink
 };
 
 void
@@ -134,6 +136,12 @@ default_file_exists( const char *path )
   return ( access( path, R_OK ) != -1 );
 }
 
+static int
+default_file_unlink( const char *path )
+{
+  return unlink( path );
+}
+
 compat_fd
 compat_file_open( const char *path, int write )
 {
@@ -168,4 +176,10 @@ int
 compat_file_exists( const char *path )
 {
   return file_vtable.exists( path );
+}
+
+int
+compat_file_unlink( const char *path )
+{
+  return file_vtable.unlink( path );
 }

@@ -2062,6 +2062,11 @@ composite_scaler_blit( const composite_scaler_config *config,
   static uint8_t buffer[4 * SNES_NTSC_OUT_WIDTH( DISPLAY_SCREEN_WIDTH ) + 8];
   static libspectrum_signed_dword previous_u[4][ DISPLAY_SCREEN_WIDTH * 4 ];
   static libspectrum_signed_dword previous_v[4][ DISPLAY_SCREEN_WIDTH * 4 ];
+  int sample_index[ DISPLAY_SCREEN_WIDTH * 4 ];
+  double sample_fraction[ DISPLAY_SCREEN_WIDTH * 4 ];
+  double sample_position = 0;
+  int output_width = width * config->scale;
+  int sample;
   composite_scaler_cache *cache =
     config->scale == 2 ? &cache_2x :
     config->scale == 3 ? &cache_3x : &cache_4x;
@@ -2070,6 +2075,13 @@ composite_scaler_blit( const composite_scaler_config *config,
 
   composite_scaler_init( config, cache );
   memset( buffer, 0, sizeof( buffer ) );
+
+  /* Horizontal sampling is the same for every output row. */
+  for( sample = 0; sample < output_width; sample++ ) {
+    sample_index[sample] = (int)floor( sample_position );
+    sample_fraction[sample] = sample_position - floor( sample_position );
+    sample_position += config->dsxd;
+  }
 
   burst_phase = config->cycle_phase ?
                 ( cache->burst_phase + 1 ) % snes_ntsc_burst_count :
@@ -2082,14 +2094,13 @@ composite_scaler_blit( const composite_scaler_config *config,
 
     for( n = 0; n < config->scale; n++ ) {
       uint32_t x;
-      double dsx = 0;
 
       snes_ntsc_blit( &cache->ntsc[n], input, width, burst_phase, width, 1,
                       buffer, 4 * SNES_NTSC_OUT_WIDTH( width ) );
 
       for( x = 0; x < width * config->scale; x++ ) {
-        uint32_t isx = (int)floor( dsx );
-        double fsx = dsx - floor( dsx );
+        uint32_t isx = sample_index[x];
+        double fsx = sample_fraction[x];
         uint8_t rgb[4];
 
         rgb[0] = ( ( 1 - fsx ) * buffer[ isx * 4 + 0 ] ) +
@@ -2100,7 +2111,6 @@ composite_scaler_blit( const composite_scaler_config *config,
                  ( fsx * buffer[ isx * 4 + 6 ] );
         previous_u[n][x] = RGB_TO_U( rgb[0], rgb[1], rgb[2] );
         previous_v[n][x] = RGB_TO_V( rgb[0], rgb[1], rgb[2] );
-        dsx += config->dsxd;
       }
     }
 
@@ -2117,13 +2127,11 @@ composite_scaler_blit( const composite_scaler_config *config,
     for( n = 0; n < config->scale; n++ ) {
       scaler_data_type *out = (scaler_data_type*)( dstPtr + dstPitch * n );
       uint32_t x;
-      double dsx;
 
       snes_ntsc_blit( &cache->ntsc[n], input, width, line_phase, width, 1,
                       buffer, 4 * SNES_NTSC_OUT_WIDTH( width ) );
 
-      dsx = 0;
-      for( x = 0; x < width * config->scale; x++ ) {
+      for( x = 0; x < output_width; x++ ) {
         uint32_t isx;
         double fsx;
         uint8_t rgb[4];
@@ -2131,8 +2139,8 @@ composite_scaler_blit( const composite_scaler_config *config,
         libspectrum_signed_dword u;
         libspectrum_signed_dword v;
 
-        isx = (int)floor( dsx );
-        fsx = dsx - floor( dsx );
+        isx = sample_index[x];
+        fsx = sample_fraction[x];
         rgb[0] = ( ( 1 - fsx ) * buffer[ isx * 4 + 0 ] ) +
                  ( fsx * buffer[ isx * 4 + 4 ] );
         rgb[1] = ( ( 1 - fsx ) * buffer[ isx * 4 + 1 ] ) +
@@ -2155,7 +2163,6 @@ composite_scaler_blit( const composite_scaler_config *config,
 
         out[0] = blargg_ntsc_rgb_to_pixel( rgb );
         out++;
-        dsx += config->dsxd;
       }
     }
 

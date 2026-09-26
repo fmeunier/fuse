@@ -73,6 +73,7 @@ movie_stop_after_rzx, boolean, 1
 plusd, boolean, 0
 didaktik80, boolean, 0
 disciple, boolean, 0
+disciple_inhibit, boolean, 0
 beta128, boolean, 0
 beta128_48boot, boolean, 1
 z80_is_cmos, boolean, 0,, cmos-z80

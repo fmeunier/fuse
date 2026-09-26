@@ -51,6 +51,12 @@ blip_synth_set_output( Blip_Synth * synth, Blip_Buffer * b )
 }
 
 void
+blip_synth_set_level( Blip_Synth * synth, int amplitude )
+{
+  synth->impl.last_amp = amplitude;
+}
+
+void
 blip_synth_set_volume( Blip_Synth * synth, double v )
 {
   _blip_synth_volume_unit( &synth->impl,

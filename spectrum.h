@@ -80,6 +80,7 @@ libspectrum_byte spectrum_unattached_port_none( void );
 extern int spectrum_frame_event;
 
 void spectrum_register_startup( void );
+libspectrum_dword spectrum_get_frame_count( void );
 int spectrum_frame( void );
 
 /* Do a single frame */

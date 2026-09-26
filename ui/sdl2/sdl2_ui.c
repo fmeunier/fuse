@@ -88,6 +88,9 @@ ui_init( int *argc, char ***argv )
 
   if( ui_widget_init() ) return 1;
 
+  SDL_setenv( "SDL_VIDEO_X11_WMCLASS", FUSE_APP_ID, 1 );
+  SDL_setenv( "SDL_VIDEO_WAYLAND_WMCLASS", FUSE_APP_ID, 1 );
+
   error = SDL_Init( SDL_INIT_VIDEO );
   if( error ) {
     ui_widget_end();

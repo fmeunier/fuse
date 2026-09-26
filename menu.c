@@ -363,6 +363,12 @@ MENU_CALLBACK( menu_machine_nmi )
   event_add( 0, z80_nmi_event );
 }
 
+MENU_CALLBACK( menu_machine_disciplemagicbutton )
+{
+  ui_widget_finish();
+  disciple_snapshot_nmi();
+}
+
 MENU_CALLBACK( menu_machine_multifaceredbutton )
 {
   ui_widget_finish();

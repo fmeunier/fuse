@@ -28,6 +28,7 @@ EXTRA_DIST += \
               hacking/cvs-tags \
               hacking/implementation_notes.txt \
               hacking/input.txt \
+              hacking/metrics.txt \
               hacking/peripheral_tests.txt \
               hacking/releasing.md \
               hacking/sound.txt \

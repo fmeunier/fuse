@@ -33,16 +33,19 @@
 #include "compat.h"
 #include "debugger/debugger.h"
 #include "disciple.h"
+#include "event.h"
 #include "infrastructure/startup_manager.h"
+#include "keyboard.h"
 #include "machine.h"
 #include "module.h"
 #include "peripherals/printer.h"
 #include "settings.h"
 #include "ui/ui.h"
 #include "ui/uimedia.h"
-#include "unittests/unittests.h"
+#include "unittests/helpers.h"
 #include "utils.h"
 #include "wd_fdc.h"
+#include "z80/z80.h"
 #include "options.h"	/* needed for get combo options */
 
 /* Two 8 KiB memory chunks accessible by the Z80 when /ROMCS is low */
@@ -60,7 +63,9 @@ static int disciple_memory_source_ram;
 int disciple_memswap = 0;        /* Are the ROM and RAM pages swapped? */
 /* TODO: add support for 16 KiB ROM images. */
 /* int disciple_rombank = 0; */
-int disciple_inhibited;
+static int disciple_inhibit_button;
+static int disciple_reset_guard;
+static int disciple_snapshot_nmi_pending;
 
 int disciple_available = 0;
 int disciple_active = 0;
@@ -78,6 +83,11 @@ static void disciple_activate( void );
 static void disciple_enabled_snapshot( libspectrum_snap *snap );
 static void disciple_from_snapshot( libspectrum_snap *snap );
 static void disciple_to_snapshot( libspectrum_snap *snap );
+static void disciple_reset_guard_event( libspectrum_dword tstates, int type,
+                                        void *user_data );
+static int disciple_try_page( void );
+static void disciple_snapshot_menu_activate( int active );
+static void disciple_snapshot_nmi_clear( void );
 
 /* WD1770 registers */
 static libspectrum_byte disciple_sr_read( libspectrum_word port, libspectrum_byte *attached );
@@ -115,12 +125,20 @@ static module_info_t disciple_module_info = {
 
 /* Debugger events */
 static const char * const event_type_string = "disciple";
-static int page_event, unpage_event;
+static int page_event, unpage_event, reset_guard_event;
 
 static libspectrum_byte disciple_control_register;
 
-void
-disciple_page( void )
+static int
+disciple_paging_enabled( void )
+{
+  /* The inhibit button and control bit are separate PAL inputs.  A released
+     button always permits paging; when pressed, control bit 4 overrides it. */
+  return !disciple_inhibit_button || ( disciple_control_register & 0x10 );
+}
+
+static void
+disciple_page_unconditionally( void )
 {
   disciple_active = 1;
   machine_current->ram.romcs = 1;
@@ -128,9 +146,67 @@ disciple_page( void )
   debugger_event( page_event );
 }
 
+static int
+disciple_try_page( void )
+{
+  if( disciple_reset_guard || !disciple_paging_enabled() ) return 0;
+
+  disciple_active = 1;
+  machine_current->ram.romcs = 1;
+  machine_current->memory_map();
+  debugger_event( page_event );
+
+  return 1;
+}
+
+void
+disciple_page( void )
+{
+  disciple_try_page();
+}
+
+void
+disciple_nmi_page( void )
+{
+  int paged = disciple_try_page();
+
+  if( !disciple_snapshot_nmi_pending ) return;
+
+  disciple_snapshot_nmi_pending = 0;
+  if( paged )
+    keyboard_synthetic_press( KEYBOARD_SYNTHETIC_DISCIPLE, KEYBOARD_Caps );
+  else
+    keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_DISCIPLE );
+}
+
+void
+disciple_snapshot_nmi( void )
+{
+  if( !disciple_available ) return;
+
+  disciple_snapshot_nmi_pending = 1;
+  event_add( 0, z80_nmi_event );
+}
+
+static void
+disciple_snapshot_menu_activate( int active GCC_UNUSED )
+{
+#ifdef USE_WIDGET
+  ui_menu_activate( UI_MENU_ITEM_MACHINE_DISCIPLE_MAGIC_BUTTON, active );
+#endif
+}
+
+static void
+disciple_snapshot_nmi_clear( void )
+{
+  disciple_snapshot_nmi_pending = 0;
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_DISCIPLE );
+}
+
 void
 disciple_unpage( void )
 {
+  disciple_snapshot_nmi_clear();
   disciple_active = 0;
   machine_current->ram.romcs = 0;
   machine_current->memory_map();
@@ -238,6 +314,8 @@ disciple_init( void *context )
 
   periph_register_paging_events( event_type_string, &page_event,
                                  &unpage_event );
+  reset_guard_event = event_register( disciple_reset_guard_event,
+                                      "DISCiPLE reset guard" );
 
   return 0;
 }
@@ -245,7 +323,9 @@ disciple_init( void *context )
 static void
 disciple_end( void )
 {
+  disciple_snapshot_nmi_clear();
   disciple_available = 0;
+  disciple_snapshot_menu_activate( 0 );
   libspectrum_free( disciple_fdc );
 }
 
@@ -267,9 +347,12 @@ disciple_reset( int hard_reset )
 {
   int i;
 
+  disciple_snapshot_nmi_clear();
   disciple_active = 0;
   disciple_available = 0;
+  disciple_snapshot_menu_activate( 0 );
 
+  disciple_inhibit_button = settings_current.disciple_inhibit;
   if( !periph_is_active( PERIPH_TYPE_DISCIPLE ) ) {
     return;
   }
@@ -289,15 +372,23 @@ disciple_reset( int hard_reset )
     page->offset = i * MEMORY_PAGE_SIZE;
   }
 
-  machine_current->ram.romcs = 1;
+  machine_current->ram.romcs = 0;
 
   for( i = 0; i < MEMORY_PAGES_IN_8K; i++ )
     disciple_memory_map_romcs_ram[ i ].writable = 1;
 
   disciple_available = 1;
-  disciple_active = 1;
+  disciple_active = 0;
+  disciple_snapshot_menu_activate( 1 );
 
   disciple_memswap = 0;
+  disciple_control_register = 0;
+  disciple_reset_guard = 1;
+  event_remove_type( reset_guard_event );
+  /* Hardware is confirmed to suppress the reset-time fetch at 0x0001.  The
+     10 us guard duration follows MAME and is only a pragmatic approximation. */
+  event_add( tstates + machine_current->timings.processor_speed / 100000,
+             reset_guard_event );
   /* TODO: add support for 16 KiB ROM images. */
   /* disciple_rombank = 0; */
 
@@ -318,10 +409,17 @@ disciple_reset( int hard_reset )
 }
 
 static void
-disciple_inhibit( void )
+disciple_reset_guard_event( libspectrum_dword event_tstates GCC_UNUSED,
+                            int type GCC_UNUSED, void *user_data GCC_UNUSED )
 {
-  /* TODO: check how this affects the hardware */
-  disciple_inhibited = 1;
+  disciple_reset_guard = 0;
+}
+
+void
+disciple_inhibit_update( void )
+{
+  disciple_inhibit_button = settings_current.disciple_inhibit;
+  if( disciple_inhibit_button && disciple_active ) disciple_unpage();
 }
 
 static libspectrum_byte
@@ -418,8 +516,6 @@ disciple_cn_write( libspectrum_word port GCC_UNUSED, libspectrum_byte b )
   /* We only support the use of an 8 KiB ROM. */
   /* disciple_rombank = ( b & 0x08 ) ? 1 : 0; */
   machine_current->memory_map();
-  if( b & 0x10 )
-    disciple_inhibit();
 }
 
 static void
@@ -502,6 +598,8 @@ disciple_unittest( void )
   libspectrum_byte *test_rom;
   libspectrum_snap *snap = NULL;
   char *saved_rom = settings_current.rom_disciple;
+  int saved_enabled = settings_current.disciple;
+  int saved_inhibit = settings_current.disciple_inhibit;
   int r = 0;
   int was_active = periph_is_active( PERIPH_TYPE_DISCIPLE );
   /* We only support the use of an 8 KiB ROM.  Change this to 1 if adding
@@ -516,6 +614,7 @@ disciple_unittest( void )
   libspectrum_free( test_rom );
 
   settings_current.rom_disciple = (char *)rom_filename;
+  settings_current.disciple = 1;
   if( !was_active )
     periph_activate_type( PERIPH_TYPE_DISCIPLE, 1 );
 
@@ -525,6 +624,66 @@ disciple_unittest( void )
     r++;
     goto cleanup;
   }
+
+  if( disciple_active || machine_current->ram.romcs ) {
+    fprintf( stderr, "DISCiPLE was paged after reset\n" );
+    r++;
+  }
+  disciple_page();
+  if( disciple_active ) {
+    fprintf( stderr, "DISCiPLE paged during reset guard\n" );
+    r++;
+  }
+  disciple_reset_guard_event( 0, reset_guard_event, NULL );
+  disciple_page();
+  if( !disciple_active ) {
+    fprintf( stderr, "DISCiPLE did not page after reset guard\n" );
+    r++;
+  }
+  disciple_unpage();
+
+  keyboard_release_all();
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST );
+  disciple_snapshot_nmi_pending = 1;
+  disciple_nmi_page();
+  if( keyboard_read( 0xfe ) != 0xfe ) {
+    fprintf( stderr, "DISCiPLE snapshot NMI did not press Caps Shift\n" );
+    r++;
+  }
+  keyboard_press( KEYBOARD_Caps );
+  disciple_unpage();
+  if( keyboard_read( 0xfe ) != 0xfe ) {
+    fprintf( stderr, "DISCiPLE unpage released physical Caps Shift\n" );
+    r++;
+  }
+  keyboard_release( KEYBOARD_Caps );
+
+  keyboard_synthetic_press( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST,
+                            KEYBOARD_Caps );
+  disciple_snapshot_nmi_pending = 1;
+  disciple_nmi_page();
+  disciple_unpage();
+  if( keyboard_read( 0xfe ) != 0xfe ) {
+    fprintf( stderr, "DISCiPLE unpage released phantom typist Caps Shift\n" );
+    r++;
+  }
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST );
+
+  disciple_reset_guard = 1;
+  disciple_snapshot_nmi_pending = 1;
+  disciple_nmi_page();
+  if( disciple_active || disciple_snapshot_nmi_pending ||
+      keyboard_read( 0xfe ) != 0xff ) {
+    fprintf( stderr, "DISCiPLE reset guard retained snapshot NMI request\n" );
+    r++;
+  }
+  disciple_reset_guard = 0;
+  disciple_nmi_page();
+  if( !disciple_active || keyboard_read( 0xfe ) != 0xff ) {
+    fprintf( stderr, "Generic DISCiPLE NMI synthesized Caps Shift\n" );
+    r++;
+  }
+  disciple_unpage();
 
   snap = libspectrum_snap_alloc();
   if( !snap ) {
@@ -547,6 +706,56 @@ disciple_unittest( void )
     r++;
   }
 
+  disciple_reset_guard_event( 0, reset_guard_event, NULL );
+  disciple_inhibit_button = 0;
+  disciple_cn_write( 0x001f, 0x00 );
+  disciple_page();
+  if( !disciple_active ) { fprintf( stderr, "Released inhibit blocked bit 4=0\n" ); r++; }
+  disciple_unpage();
+  disciple_cn_write( 0x001f, 0x10 );
+  disciple_page();
+  if( !disciple_active ) { fprintf( stderr, "Released inhibit blocked bit 4=1\n" ); r++; }
+
+  settings_current.disciple_inhibit = 1;
+  disciple_inhibit_update();
+  if( disciple_active ) { fprintf( stderr, "Inhibit did not immediately unpage\n" ); r++; }
+  disciple_cn_write( 0x001f, 0x00 );
+  disciple_page();
+  if( disciple_active ) { fprintf( stderr, "Pressed inhibit allowed bit 4=0\n" ); r++; }
+  disciple_snapshot_nmi_pending = 1;
+  disciple_nmi_page();
+  if( disciple_snapshot_nmi_pending || keyboard_read( 0xfe ) != 0xff ) {
+    fprintf( stderr, "DISCiPLE inhibit retained snapshot NMI request\n" );
+    r++;
+  }
+  disciple_cn_write( 0x001f, 0x10 );
+  disciple_page();
+  if( !disciple_active ) { fprintf( stderr, "Pressed inhibit blocked bit 4=1\n" ); r++; }
+
+  disciple_to_snapshot( snap );
+  if( !libspectrum_snap_disciple_inhibit_button( snap ) ||
+      !libspectrum_snap_disciple_paged( snap ) ) {
+    fprintf( stderr, "DISCiPLE snapshot did not preserve inhibit/paging\n" );
+    r++;
+  }
+  disciple_inhibit_button = 0;
+  disciple_unpage();
+  disciple_from_snapshot( snap );
+  if( !disciple_inhibit_button || !disciple_active ) {
+    fprintf( stderr, "DISCiPLE snapshot inhibit/paging round trip failed\n" );
+    r++;
+  }
+  settings_current.disciple_inhibit = 0;
+  disciple_inhibit_update();
+
+  disciple_snapshot_nmi_pending = 1;
+  disciple_nmi_page();
+  disciple_reset( 0 );
+  if( disciple_snapshot_nmi_pending || keyboard_read( 0xfe ) != 0xff ) {
+    fprintf( stderr, "DISCiPLE reset retained snapshot keyboard state\n" );
+    r++;
+  }
+  disciple_reset_guard_event( 0, reset_guard_event, NULL );
   disciple_page();
 
   r += unittests_assert_8k_page( 0x0000, disciple_memory_source_rom, 0 );
@@ -597,6 +806,8 @@ cleanup:
   if( !was_active )
     periph_activate_type( PERIPH_TYPE_DISCIPLE, 0 );
   settings_current.rom_disciple = saved_rom;
+  settings_current.disciple = saved_enabled;
+  settings_current.disciple_inhibit = saved_inhibit;
   if( remove( rom_filename ) ) {
     fprintf( stderr, "Couldn't remove DISCiPLE unit test ROM\n" );
     r++;
@@ -685,10 +896,9 @@ disciple_from_snapshot( libspectrum_snap *snap )
   libspectrum_snap_disciple_drive_count( snap )
    */
 
-  /* FIXME: As disciple_inhibited can flip on and off the hardware inhibit
-     button is effectively always pressed
-  libspectrum_snap_disciple_inhibit_button( snap );
-   */
+  settings_current.disciple_inhibit =
+    libspectrum_snap_disciple_inhibit_button( snap );
+  disciple_inhibit_update();
 
   disciple_fdc->direction = libspectrum_snap_plusd_direction( snap );
 
@@ -697,11 +907,11 @@ disciple_from_snapshot( libspectrum_snap *snap )
   disciple_sec_write( 0x009b, libspectrum_snap_disciple_sector ( snap ) );
   disciple_dr_write ( 0x00db, libspectrum_snap_disciple_data   ( snap ) );
   disciple_cn_write ( 0x001f, libspectrum_snap_disciple_control( snap ) );
-  /* FIXME: Set disciple_inhibited based on the value in
-     libspectrum_snap_disciple_control() */
 
+  disciple_reset_guard = 0;
+  event_remove_type( reset_guard_event );
   if( libspectrum_snap_disciple_paged( snap ) ) {
-    disciple_page();
+    disciple_page_unconditionally();
   } else {
     disciple_unpage();
   }
@@ -743,9 +953,8 @@ disciple_to_snapshot( libspectrum_snap *snap )
   libspectrum_snap_set_disciple_drive_count( snap, drive_count );
 
   libspectrum_snap_set_disciple_paged ( snap, disciple_active );
-  /* FIXME: As disciple_inhibited can flip on and off the hardware inhibit
-     button is effectively always pressed but should be emulated */
-  libspectrum_snap_set_disciple_inhibit_button( snap, 1 );
+  libspectrum_snap_set_disciple_inhibit_button( snap,
+                                                disciple_inhibit_button );
   libspectrum_snap_set_disciple_direction( snap, disciple_fdc->direction );
   libspectrum_snap_set_disciple_status( snap, disciple_fdc->status_register );
   libspectrum_snap_set_disciple_track ( snap, disciple_fdc->track_register );

@@ -1,0 +1,55 @@
+C source metrics
+================
+
+Fuse provides a small wrapper around codemetrics for checking the complexity
+and size of an individual C source file.  Install codemetrics separately; the
+wrapper never installs it automatically.  One suitable installation method is:
+
+  pipx install codemetrics
+
+Run the check from the top-level build directory with:
+
+  make metrics FILE=path/to/file.c
+
+It can also be run directly from the source tree:
+
+  ./tools/metrics path/to/file.c
+
+The report lists each function's name, cyclomatic complexity, cognitive
+complexity, and inclusive source span.  It then reports the maximum complexity
+values and whole-file source LOC.
+
+The enforced limits are strict:
+
+  Cyclomatic complexity  < 22
+  Cognitive complexity   < 22
+  File LOC                < 500
+
+Consequently, a value of 21 passes and a value of 22 fails.  Functions which
+reach either complexity limit are identified in the report.
+
+Complexity data comes from the machine-readable output of:
+
+  codemetrics --format json path/to/file.c
+
+The wrapper uses the `function', `cyclomatic', `cognitive', `start_line', and
+`end_line' fields.  Function lines are the inclusive span from `start_line' to
+`end_line'; this span can include blank and comment-only lines.
+
+The current codemetrics JSON output does not provide a suitable whole-file LOC
+value.  File LOC is therefore calculated by the wrapper.  It counts physical
+lines containing C source tokens after C comments are removed.  Blank lines and
+lines containing only // or /* ... */ comments are excluded.  Preprocessor
+lines, declarations, statements, and lines containing braces are counted.
+
+Exit status is 0 when every metric passes, 1 when one or more limits fail, and
+2 for an execution or configuration error.  Configuration errors include a
+missing input file, a non-C input, unavailable or failing codemetrics, and JSON
+which does not match the expected schema.  Note that make may translate a
+failed recipe into its own non-zero exit status; run `tools/metrics' directly
+when a caller needs to distinguish statuses 1 and 2.
+
+The wrapper's lightweight tests do not require codemetrics to be installed and
+can be run with:
+
+  make check-metrics

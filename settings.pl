@@ -92,6 +92,14 @@ print << 'CODE';
 #include "compat.h"		/* If not, use ours */
 #endif				/* #ifdef HAVE_GETOPT_LONG */
 
+#ifdef HAVE_LIB_XML2
+#include <libxml/xmlmemory.h>
+#include <libxml/parser.h>
+#endif				/* #ifdef HAVE_LIB_XML2 */
+
+#ifdef ENABLE_AUTOMATION
+#include "automation/automation.h"
+#endif
 #include "fuse.h"
 #include "infrastructure/startup_manager.h"
 #include "machine.h"
@@ -136,11 +144,23 @@ settings_init( int *first_arg, int argc, char **argv )
 {
   int error;
 
-  error = read_config_file( &settings_current );
-  if( error ) return error;
+  settings_defaults( &settings_current );
+
+#ifdef ENABLE_AUTOMATION
+  if( !automation_options_present( argc, argv ) )
+#endif
+  {
+    error = read_config_file( &settings_current );
+    if( error ) return error;
+  }
 
   error = settings_command_line( &settings_current, first_arg, argc, argv );
   if( error ) return error;
+
+#ifdef ENABLE_AUTOMATION
+  if( automation_validate_scenario() ) return 1;
+  if( automation_capture_audio_enabled() ) settings_current.sound = 1;
+#endif
 
   return 0;
 }
@@ -341,6 +361,10 @@ static int
 settings_command_line( settings_info *settings, int *first_arg,
                        int argc, char **argv )
 {
+#ifdef ENABLE_AUTOMATION
+  int automation_requested = automation_options_present( argc, argv );
+#endif
+
 #ifdef GEKKO
   /* No argv on the Wii. Just return */
   return 0;
@@ -384,6 +408,19 @@ CODE
 
 print << 'CODE';
 
+#ifdef ENABLE_AUTOMATION
+    { "automation-output", 1, NULL, 1000 },
+    { "automation-frames", 1, NULL, 1001 },
+    { "automation-max-frames", 1, NULL, 1002 },
+    { "automation-success-pc", 1, NULL, 1003 },
+    { "automation-failure-pc", 1, NULL, 1004 },
+    { "automation-failure-pc-ignore", 1, NULL, 1005 },
+    { "automation-until-rzx-end", 0, NULL, 1006 },
+    { "automation-capture-screen", 0, NULL, 1007 },
+    { "automation-capture-audio", 0, NULL, 1008 },
+    { "automation-until-disk-idle", 0, NULL, 1009 },
+    { "automation-disk-idle-frames", 1, NULL, 1010 },
+#endif
     { "help", 0, NULL, 'h' },
     { "version", 0, NULL, 'V' },
 
@@ -438,11 +475,47 @@ foreach my $name ( sort keys %options ) {
 
 print << 'CODE';
 
+#ifdef ENABLE_AUTOMATION
+    case 1000:
+      if( automation_set_output_directory( optarg ) ) return 1;
+      break;
+    case 1001:
+    case 1002:
+      if( automation_set_frame_limit( optarg ) ) return 1;
+      break;
+    case 1003:
+      if( automation_set_success_pc( optarg ) ) return 1;
+      break;
+    case 1004:
+      if( automation_set_failure_pc( optarg ) ) return 1;
+      break;
+    case 1005:
+      if( automation_set_failure_pc_ignore( optarg ) ) return 1;
+      break;
+    case 1006:
+      automation_set_until_rzx_end();
+      break;
+    case 1007:
+      automation_set_capture_screen();
+      break;
+    case 1008:
+      automation_set_capture_audio();
+      break;
+    case 1009:
+      automation_set_until_disk_idle();
+      break;
+    case 1010:
+      if( automation_set_disk_idle_frames( optarg ) ) return 1;
+      break;
+#endif
     case 'h': settings->show_help = 1; break;
     case 'V': settings->show_version = 1; break;
 
     case ':':
     case '?':
+#ifdef ENABLE_AUTOMATION
+      if( automation_requested ) return 1;
+#endif
       break;
 
     default:

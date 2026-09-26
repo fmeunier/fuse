@@ -29,6 +29,7 @@
 #include "win32internals.h"
 #include "settings.h"
 #include "ui/ui.h"
+#include "ui/ui_internals.h"
 
 int
 win32ui_confirm( const char *string )
@@ -83,7 +84,7 @@ ui_confirm_save_specific( const char *message )
 }
 
 int
-ui_query( const char *message )
+ui_query_message( const char *message )
 {
   return win32ui_confirm( message );
 }
