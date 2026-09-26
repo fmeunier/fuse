@@ -1,0 +1,157 @@
+#!/usr/bin/env python3
+"""Report codemetrics complexity and source LOC for one C source file.
+
+File LOC counts physical lines containing C source tokens; blank lines and lines
+containing only // or /* ... */ comments are excluded.  Preprocessor lines and
+lines containing braces are source lines.
+"""
+
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+
+LIMIT = 22
+LOC_LIMIT = 500
+
+
+class MetricsError(Exception):
+    pass
+
+
+def parse_codemetrics(text):
+    """Translate codemetrics 0.12 JSON into schema-independent records."""
+    try:
+        data = json.loads(text)
+    except (json.JSONDecodeError, TypeError) as error:
+        raise MetricsError(f"cannot parse codemetrics JSON: {error}") from error
+    if not isinstance(data, list):
+        raise MetricsError("unexpected codemetrics JSON: expected a list")
+
+    records = []
+    for item in data:
+        required = ("function", "cyclomatic", "cognitive", "start_line", "end_line")
+        if not isinstance(item, dict) or any(key not in item for key in required):
+            raise MetricsError("unexpected codemetrics JSON: incomplete function record")
+        name = item["function"]
+        values = [item[key] for key in required[1:]]
+        if not isinstance(name, str) or any(type(value) is not int for value in values):
+            raise MetricsError("unexpected codemetrics JSON: invalid function record")
+        cyclomatic, cognitive, start, end = values
+        if min(cyclomatic, cognitive, start) < 0 or end < start:
+            raise MetricsError("unexpected codemetrics JSON: invalid metric value")
+        records.append((name, cyclomatic, cognitive, end - start + 1))
+    return records
+
+
+def source_loc(text):
+    """Count physical lines having tokens after C comments are removed."""
+    count = 0
+    in_block = False
+    for line in text.splitlines():
+        output = []
+        index = 0
+        quote = None
+        while index < len(line):
+            if in_block:
+                end = line.find("*/", index)
+                if end < 0:
+                    index = len(line)
+                else:
+                    in_block = False
+                    index = end + 2
+            elif quote:
+                char = line[index]
+                output.append(char)
+                if char == "\\" and index + 1 < len(line):
+                    index += 1
+                    output.append(line[index])
+                elif char == quote:
+                    quote = None
+                index += 1
+            elif line.startswith("/*", index):
+                in_block = True
+                index += 2
+            elif line.startswith("//", index):
+                break
+            else:
+                char = line[index]
+                output.append(char)
+                if char in "\"'":
+                    quote = char
+                index += 1
+        if "".join(output).strip():
+            count += 1
+    return count
+
+
+def report(path, records, loc):
+    print(f"Metrics: {path}")
+    name_width = max([32, *(len(row[0]) for row in records)])
+    print(f"{'Function':<{name_width}} {'Cyclomatic':>11} {'Cognitive':>11} {'Lines':>7}  Status")
+    print("-" * (name_width + 47))
+    for name, cyclomatic, cognitive, lines in records:
+        failures = []
+        if cyclomatic >= LIMIT:
+            failures.append("cyclomatic")
+        if cognitive >= LIMIT:
+            failures.append("cognitive")
+        status = "FAIL (" + ", ".join(failures) + ")" if failures else ""
+        print(f"{name:<{name_width}} {cyclomatic:>11} {cognitive:>11} {lines:>7}  {status}")
+
+    max_cyclomatic = max((row[1] for row in records), default=0)
+    max_cognitive = max((row[2] for row in records), default=0)
+    results = (
+        ("Maximum cyclomatic", max_cyclomatic, LIMIT),
+        ("Maximum cognitive", max_cognitive, LIMIT),
+        ("File LOC", loc, LOC_LIMIT),
+    )
+    print()
+    for label, value, limit in results:
+        status = "PASS" if value < limit else "FAIL"
+        print(f"{label:<32} {value:>11}   {status} (< {limit})")
+    passed = all(value < limit for _, value, limit in results)
+    print(f"Overall: {'PASS' if passed else 'FAIL'}")
+    return 0 if passed else 1
+
+
+def main(argv):
+    if len(argv) != 2:
+        raise MetricsError("usage: tools/metrics path/to/file.c")
+    path = Path(argv[1])
+    if not path.is_file():
+        raise MetricsError(f"input file does not exist: {path}")
+    if path.suffix.lower() != ".c":
+        raise MetricsError(f"input is not a C source file: {path}")
+
+    executable = os.environ.get("CODEMETRICS", "codemetrics")
+    if shutil.which(executable) is None:
+        raise MetricsError(
+            "codemetrics is not installed; install it with: pipx install codemetrics"
+        )
+    try:
+        process = subprocess.run(
+            [executable, "--format", "json", str(path)],
+            text=True, capture_output=True, check=False,
+        )
+    except OSError as error:
+        raise MetricsError(f"could not run codemetrics: {error}") from error
+    if process.returncode:
+        detail = process.stderr.strip() or f"exit status {process.returncode}"
+        raise MetricsError(f"codemetrics failed: {detail}")
+    records = parse_codemetrics(process.stdout)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as error:
+        raise MetricsError(f"cannot read input file: {error}") from error
+    return report(path, records, source_loc(text))
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv))
+    except MetricsError as error:
+        print(f"metrics: error: {error}", file=sys.stderr)
+        sys.exit(2)

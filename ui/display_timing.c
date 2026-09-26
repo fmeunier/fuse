@@ -23,14 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#elif defined __APPLE__
-#include <time.h>
-#else
-#include <glib.h>
-#endif
-
+#include "compat.h"
 #include "display_timing.h"
 
 struct display_timing {
@@ -54,27 +47,6 @@ struct display_timing {
 
 static struct display_timing timing;
 
-static long long
-now_us( void )
-{
-#ifdef _WIN32
-  static LARGE_INTEGER frequency;
-  LARGE_INTEGER now;
-
-  if( !frequency.QuadPart ) QueryPerformanceFrequency( &frequency );
-  QueryPerformanceCounter( &now );
-
-  return (long long)( (double)now.QuadPart * 1000000 / frequency.QuadPart );
-#elif defined __APPLE__
-  struct timespec now;
-
-  clock_gettime( CLOCK_MONOTONIC, &now );
-  return (long long)now.tv_sec * 1000000 + now.tv_nsec / 1000;
-#else
-  return g_get_monotonic_time();
-#endif
-}
-
 void
 display_timing_init( const char *backend )
 {
@@ -91,13 +63,14 @@ display_timing_init( const char *backend )
 void
 display_timing_input_begin( void )
 {
-  if( timing.enabled ) timing.input_start = now_us();
+  if( timing.enabled ) timing.input_start = compat_monotonic_time_us();
 }
 
 void
 display_timing_input_end( void )
 {
-  if( timing.enabled ) timing.input_us += now_us() - timing.input_start;
+  if( timing.enabled )
+    timing.input_us += compat_monotonic_time_us() - timing.input_start;
 }
 
 void
@@ -105,7 +78,7 @@ display_timing_area( int width, int height )
 {
   if( !timing.enabled ) return;
 
-  if( !timing.frame_start ) timing.frame_start = now_us();
+  if( !timing.frame_start ) timing.frame_start = compat_monotonic_time_us();
   timing.source_regions++;
   timing.source_pixels += width * height;
 }
@@ -113,26 +86,29 @@ display_timing_area( int width, int height )
 void
 display_timing_scaler_begin( void )
 {
-  if( timing.enabled ) timing.scaler_start = now_us();
+  if( timing.enabled ) timing.scaler_start = compat_monotonic_time_us();
 }
 
 void
 display_timing_scaler_end( void )
 {
-  if( timing.enabled ) timing.scaler_us += now_us() - timing.scaler_start;
+  if( timing.enabled )
+    timing.scaler_us += compat_monotonic_time_us() - timing.scaler_start;
 }
 
 void
 display_timing_presentation_begin( void )
 {
-  if( timing.enabled ) timing.presentation_start = now_us();
+  if( timing.enabled )
+    timing.presentation_start = compat_monotonic_time_us();
 }
 
 void
 display_timing_presentation_end( void )
 {
   if( timing.enabled ) {
-    timing.presentation_us += now_us() - timing.presentation_start;
+    timing.presentation_us +=
+      compat_monotonic_time_us() - timing.presentation_start;
     timing.presentation_count++;
   }
 }
@@ -140,14 +116,14 @@ display_timing_presentation_end( void )
 void
 display_timing_paint_begin( void )
 {
-  if( timing.enabled ) timing.paint_start = now_us();
+  if( timing.enabled ) timing.paint_start = compat_monotonic_time_us();
 }
 
 void
 display_timing_paint_end( void )
 {
   if( timing.enabled ) {
-    timing.paint_us += now_us() - timing.paint_start;
+    timing.paint_us += compat_monotonic_time_us() - timing.paint_start;
     timing.paint_count++;
   }
 }
@@ -159,7 +135,8 @@ display_timing_frame_end( void )
 
   if( !timing.enabled ) return;
 
-  frame_us = timing.frame_start ? now_us() - timing.frame_start : 0;
+  frame_us = timing.frame_start ?
+               compat_monotonic_time_us() - timing.frame_start : 0;
   fprintf( stderr,
            "display-timing backend=%s frame=%lu input_us=%lld "
            "source_regions=%lu source_pixels=%lu scaler_us=%lld "

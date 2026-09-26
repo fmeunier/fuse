@@ -41,6 +41,7 @@
 #include "display.h"
 #include "machine.h"
 #include "ui/uidisplay.h"
+#include "ui/ui_internals.h"
 #include "keyboard.h"
 #include "menu.h"
 #include "periph.h"
@@ -735,7 +736,7 @@ ui_confirm_save_specific( const char *message )
 }
 
 int
-ui_query( const char *message )
+ui_query_message( const char *message )
 {
   widget_do_query( message );
   return widget_query.save;

@@ -1,3 +1,100 @@
+2026-09-24  Fredrick Meunier  <fredm@spamcop.net>
+
+        * Fuse 1.10.0 released.
+
+        * Emulation core improvements:
+          * Expand automatic tape-loader detection and acceleration for
+            Microprose, Software Projects, Gremlin 2 and Movieload loaders
+            (fixes bugs #396, #429 and #430) (thanks, Philip Kendall)
+            (Fredrick Meunier).
+          * Improve automatic tape playback for custom loaders, allowing Basil
+            the Great Mouse Detective, Viz: The Computer Game, Moonlighter and
+            Trzy Wymiary to load without manual tape control (fixes bug #433
+            and part of bug #218) (Fredrick Meunier).
+          * Preserve the complete tape signal state when switching from ROM
+            traps to custom loaders, allowing Bomb Jack and similar loaders to
+            continue correctly (fixes bug #333 and part of bug #310)
+            (Fredrick Meunier).
+          * Avoid accelerating the Technician Ted loader (fixes bug #55)
+            (Fredrick Meunier).
+          * Do not automatically restart rewound tapes at end of tape, making
+            it easier to change sides in multi-side games such as Echelon
+            (part of bug #218) (Fredrick Meunier).
+          * Handle bare tape flag blocks explicitly, improving compatibility
+            with unusual tape images (Fredrick Meunier).
+          * Correct tape-loading sound through the beeper so loading audio is
+            reproduced accurately (thanks, Kuba Adamowicz) (Fredrick
+            Meunier).
+          * Refuse to save classic DSK images with unformatted tracks, avoiding
+            invalid disk images (fixes bug #415, patch #459) (thanks, Sergio
+            Baldoví) (Fredrick Meunier).
+
+        * Machine specific improvements:
+          * Support both 8K and 16K Interface 1 ROM images and preserve their
+            size in snapshots (fixes bug #152) (thanks, Andy Potter) (Fredrick
+            Meunier).
+          * Enable DISCiPLE on 128K machines, add inhibit behaviour and expose
+            its magic button in widget UIs (fixes bugs #271 and #273) (thanks,
+            Stuart Brady, Alan Pearson and Gergely Szasz) (Sergio Baldoví and
+            Fredrick Meunier).
+          * Correct +D address decoding for more accurate peripheral behaviour
+            and software compatibility (Fredrick Meunier).
+
+        * UI improvements:
+          * GTK3: restart the autohide timeout when switching fullscreen mode
+            so the menu and status bars appear or disappear immediately
+            (Alberto Garcia).
+          * GTK3 and SDL2: set the correct application identity so Linux
+            desktop environments display the proper Fuse icon (Alberto Garcia).
+          * Correct CAPS SHIFT handling when multiple host cursor keys are
+            held (fixes bug #470, patch #448) (thanks, lvd) (Fredrick Meunier).
+          * Show pulse counts for RLE Pulse blocks in the tape browser
+            (patch #457) (Fredrick Meunier).
+          * Add the FMF extension automatically when recording movies (fixes
+            bug #469) (Gergely Szasz and Fredrick Meunier).
+
+        * Scaler improvements:
+          * Improved composite scaler performance (Fredrick Meunier).
+          * Extend composite scaler colours correctly to the screen edges,
+            (thanks, Sergio Baldoví) (Fredrick Meunier).
+
+        * RZX improvements:
+          * Correct EI-delayed interrupt handling during playback, allowing
+            affected recordings to replay without desynchronising (fixes bugs
+            #508, #67 and part of bug #336) (thanks, Alexey Kuznetsov and AJ
+            B) (Fredrick Meunier).
+          * Reproduce legacy Spectaculator CPU behaviour and +D snapshot
+            paging, allowing more Spectaculator recordings to play correctly
+            (part of bug #336) (Fredrick Meunier).
+          * Handle SPIN 0.5 frame-boundary and tape-save input quirks, allowing
+            affected recordings to continue without input-count errors
+            (Fredrick Meunier).
+          * Restore the R register correctly in recordings made by Fuse
+            versions before 0.7, improving playback of old recordings
+            (Fredrick Meunier).
+          * Place autosave snapshots after interrupt processing so unfinalised
+            recordings can restart correctly in other RZX players (fixes bug
+            #304) (thanks, Sergio Baldoví) (Fredrick Meunier).
+          * Report missing snapshots and compatibility warnings more clearly,
+            making playback failures easier to diagnose (Fredrick Meunier).
+          * Fix the --playback command-line option so RZX playback can again
+            be started from the command line (Fredrick Meunier).
+
+        * Miscellaneous improvements:
+          * Avoid reading entire HDF images while identifying file types (part
+            of bug #168) (thanks, Gergely Szasz) (Fredrick Meunier).
+          * Require C11 compiler support (Fredrick Meunier).
+
+        * Testing improvements:
+          * Improve internal unit-test configuration, including out-of-tree
+            builds and null-UI test runs (Fredrick Meunier).
+          * Improve development regression test harness (Fredrick Meunier).
+          * Expand tape-loader, tape-trap and ROM-loading regression coverage
+            to reduce the risk of compatibility bugs (Fredrick
+            Meunier).
+
+        * Various other minor bugfixes.
+
 2026-08-26  Fredrick Meunier  <fredm@spamcop.net>
 
         * Fuse 1.9.2 released.

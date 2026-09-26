@@ -159,6 +159,7 @@ static phantom_typist_state_t next_command_or_end( void );
 
 /* Reset function */
 static void phantom_typist_reset( int hard_reset );
+static void phantom_typist_update_keyboard( void );
 
 /* Definitions for the phantom typist's state machine */
 static struct state_info_t state_info[] = {
@@ -237,6 +238,24 @@ phantom_typist_reset( int hard_reset )
 {
   phantom_typist_state = PHANTOM_TYPIST_STATE_INACTIVE;
   next_phantom_typist_state = PHANTOM_TYPIST_STATE_INACTIVE;
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST );
+}
+
+static void
+phantom_typist_update_keyboard( void )
+{
+  struct state_info_t *state;
+
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST );
+
+  if( delay || phantom_typist_state == PHANTOM_TYPIST_STATE_INACTIVE ||
+      phantom_typist_state == PHANTOM_TYPIST_STATE_WAITING ) return;
+
+  state = &state_info[phantom_typist_state];
+  keyboard_synthetic_press( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST,
+                            state->keys_to_press[0] );
+  keyboard_synthetic_press( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST,
+                            state->keys_to_press[1] );
 }
 
 static phantom_typist_highlevel_mode_t
@@ -288,6 +307,7 @@ set_state_waiting( void )
   command_count = 0;
   phantom_typist_state = PHANTOM_TYPIST_STATE_WAITING;
   next_phantom_typist_state = PHANTOM_TYPIST_STATE_WAITING;
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST );
 
   timer_start_fastloading();
 }
@@ -366,6 +386,7 @@ phantom_typist_deactivate( void )
   if( phantom_typist_is_active() ) {
     phantom_typist_state = PHANTOM_TYPIST_STATE_WAITING;
     next_phantom_typist_state = PHANTOM_TYPIST_STATE_INACTIVE;
+    keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST );
   }
 }
 
@@ -481,19 +502,14 @@ next_command_or_end( void )
   return next_state;
 }
 
-static libspectrum_byte
-process_state( libspectrum_byte high_byte )
+static void
+process_state( void )
 {
-  libspectrum_byte r = 0xff;
   struct state_info_t *this_state = &state_info[phantom_typist_state];
 
-  r &= keyboard_simulate_keypress( high_byte, this_state->keys_to_press[0] );
-  r &= keyboard_simulate_keypress( high_byte, this_state->keys_to_press[1] );
   next_phantom_typist_state = this_state->next_state_fn ?
     this_state->next_state_fn() :
     this_state->next_state;
-
-  return r;
 }
 
 libspectrum_byte
@@ -515,8 +531,8 @@ phantom_typist_ula_read( libspectrum_word port )
       process_waiting_state( high_byte );
       break;
 
-     default: 
-      r &= process_state( high_byte );
+     default:
+      process_state();
       break;
   }
 
@@ -550,6 +566,8 @@ phantom_typist_frame( void )
   if( delay > 0 ) {
     delay--;
   }
+
+  phantom_typist_update_keyboard();
 }
 
 int

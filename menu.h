@@ -87,6 +87,7 @@ MENU_CALLBACK( menu_options_save );
 MENU_CALLBACK( menu_machine_profiler_start );
 MENU_CALLBACK( menu_machine_profiler_stop );
 MENU_CALLBACK( menu_machine_nmi );
+MENU_CALLBACK( menu_machine_disciplemagicbutton );
 MENU_CALLBACK( menu_machine_multifaceredbutton );
 MENU_CALLBACK( menu_machine_didaktiksnap );
 

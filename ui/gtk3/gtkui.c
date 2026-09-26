@@ -165,6 +165,8 @@ ui_init( int *argc, char ***argv )
   GtkAccelGroup *accel_group;
   GtkSettings *settings;
 
+  g_set_prgname( FUSE_APP_ID );
+
   gtk_init(argc,argv);
 
   g_resources_register( gtkui_get_resource() );
@@ -172,8 +174,7 @@ ui_init( int *argc, char ***argv )
   gtkui_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
 #ifdef FUSE_ICON_AVAILABLE
-  gtk_window_set_icon_name( GTK_WINDOW( gtkui_window ),
-                            "net.sourceforge.fuse_emulator.Fuse" );
+  gtk_window_set_icon_name( GTK_WINDOW( gtkui_window ), FUSE_APP_ID );
 #endif
 
   settings = gtk_widget_get_settings( GTK_WIDGET( gtkui_window ) );
@@ -746,7 +747,7 @@ menu_help_about( GtkAction *gtk_action GCC_UNUSED, gpointer data GCC_UNUSED )
                          "comments", "The Free Unix Spectrum Emulator",
                          "copyright", FUSE_COPYRIGHT,
 #ifdef FUSE_ICON_AVAILABLE
-                         "logo-icon-name", "net.sourceforge.fuse_emulator.Fuse",
+                         "logo-icon-name", FUSE_APP_ID,
 #else
                          "logo-icon-name", NULL,
 #endif

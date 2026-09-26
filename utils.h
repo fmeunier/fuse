@@ -28,15 +28,7 @@
 
 #include "compat.h"
 
-typedef struct utils_file {
-
-  const char *filename;              /* borrowed */
-  unsigned char *buffer;             /* owned when non-NULL */
-  size_t length;
-  libspectrum_id_t type;
-  libspectrum_class_t class;
-
-} utils_file;
+typedef libspectrum_file utils_file;
 
 void utils_file_init( utils_file *file, const char *filename );
 void utils_file_move( utils_file *destination, utils_file *source );

@@ -29,6 +29,7 @@
 
 #include "libspectrum.h"
 
+#include "compat.h"
 #include "display.h"
 #include "infrastructure/startup_manager.h"
 #include "machine.h"
@@ -77,7 +78,7 @@ static libspectrum_byte *png_data = NULL;
 int
 screenshot_write( const char *filename, scaler_type scaler )
 {
-  FILE *f;
+  compat_fd f;
 
   png_structp png_ptr;
   png_infop info_ptr;
@@ -140,8 +141,8 @@ screenshot_write( const char *filename, scaler_type scaler )
   for( y = 0; y < height; y++ )
     row_pointers[y] = &png_data[ y * png_stride ];
 
-  f = fopen( filename, "wb" );
-  if( !f ) {
+  f = compat_file_open( filename, 1 );
+  if( f == COMPAT_FILE_OPEN_FAILED ) {
     ui_error( UI_ERROR_ERROR, "Couldn't open `%s': %s", filename,
 	      strerror( errno ) );
     return 1;
@@ -151,7 +152,7 @@ screenshot_write( const char *filename, scaler_type scaler )
 				     NULL, NULL, NULL );
   if( !png_ptr ) {
     ui_error( UI_ERROR_ERROR, "Couldn't allocate png_ptr" );
-    fclose( f );
+    compat_file_close( f );
     return 1;
   }
 
@@ -159,7 +160,7 @@ screenshot_write( const char *filename, scaler_type scaler )
   if( !info_ptr ) {
     ui_error( UI_ERROR_ERROR, "Couldn't allocate info_ptr" );
     png_destroy_write_struct( &png_ptr, NULL );
-    fclose( f );
+    compat_file_close( f );
     return 1;
   }
 
@@ -168,7 +169,7 @@ screenshot_write( const char *filename, scaler_type scaler )
   if( setjmp( png_jmpbuf( png_ptr ) ) ) {
     ui_error( UI_ERROR_ERROR, "Error from libpng" );
     png_destroy_write_struct( &png_ptr, &info_ptr );
-    fclose( f );
+    compat_file_close( f );
     return 1;
   }
 
@@ -190,7 +191,7 @@ screenshot_write( const char *filename, scaler_type scaler )
 
   png_destroy_write_struct( &png_ptr, &info_ptr );
 
-  if( fclose( f ) ) {
+  if( compat_file_close( f ) ) {
     ui_error( UI_ERROR_ERROR, "Couldn't close `%s': %s", filename,
 	      strerror( errno ) );
     return 1;

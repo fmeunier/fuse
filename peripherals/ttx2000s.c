@@ -30,7 +30,7 @@
 #include "module.h"
 #include "periph.h"
 #include "settings.h"
-#include "unittests/unittests.h"
+#include "unittests/helpers.h"
 #include "ttx2000s.h"
 #include "ui/ui.h"
 #include "z80/z80.h"

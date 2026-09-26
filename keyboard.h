@@ -35,6 +35,15 @@
 extern libspectrum_byte keyboard_default_value;
 extern libspectrum_byte keyboard_return_values[KEYBOARD_HALFROWS];
 
+/* Independent sources of synthetic Spectrum keypresses. */
+typedef enum keyboard_synthetic_source {
+
+  KEYBOARD_SYNTHETIC_PHANTOM_TYPIST = 0,
+  KEYBOARD_SYNTHETIC_DISCIPLE,
+  KEYBOARD_SYNTHETIC_SOURCE_COUNT
+
+} keyboard_synthetic_source;
+
 /* A numeric identifier for each Spectrum key. Chosen to map to ASCII in
    most cases */
 typedef enum keyboard_key_name {
@@ -98,6 +107,9 @@ void keyboard_press(keyboard_key_name key);
 int keyboard_state( keyboard_key_name key );
 void keyboard_release(keyboard_key_name key);
 int keyboard_release_all( void );
+void keyboard_synthetic_press( keyboard_synthetic_source source,
+                               keyboard_key_name key );
+void keyboard_synthetic_release_all( keyboard_synthetic_source source );
 
 /* Which Spectrum keys should be emulated as pressed when each input
    layer key is pressed */

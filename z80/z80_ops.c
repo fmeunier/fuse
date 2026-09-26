@@ -28,6 +28,10 @@
 
 #include <stdio.h>
 
+#ifdef ENABLE_AUTOMATION
+#include "automation/automation.h"
+#endif
+
 #include "debugger/debugger.h"
 #include "event.h"
 #include "machine.h"
@@ -159,6 +163,16 @@ z80_do_opcodes( void )
 
     END_CHECK
 
+    /* Automation conditions share this instruction-boundary observation
+       point without creating debugger state or commands. */
+#ifdef ENABLE_AUTOMATION
+    CHECK( automation, automation_active() )
+
+    if( automation_check_pc( PC ) ) break;
+
+    END_CHECK
+#endif
+
     /* Check if the debugger should become active at this point */
     CHECK( debugger, debugger_mode != DEBUGGER_MODE_INACTIVE )
 
@@ -186,7 +200,10 @@ z80_do_opcodes( void )
 
     CHECK( plusd, plusd_available )
 
-    if( PC == 0x0008 || PC == 0x003a || PC == 0x0066 || PC == 0x028e ) {
+    /* These addresses are decoded by the +D PAL; unlike the DISCiPLE,
+       the +D does not page in at the KEY-SCAN entry point (0x028e). */
+    if( PC == 0x0008 || PC == 0x0066 ||
+        ( PC == 0x003a && !rzx_spectaculator_plusd_compat ) ) {
       plusd_page();
     }
 
@@ -204,7 +221,9 @@ z80_do_opcodes( void )
 
     CHECK( disciple, disciple_available )
 
-    if( PC == 0x0001 || PC == 0x0008 || PC == 0x0066 || PC == 0x028e ) {
+    if( PC == 0x0066 ) {
+      disciple_nmi_page();
+    } else if( PC == 0x0001 || PC == 0x0008 || PC == 0x028e ) {
       disciple_page();
     }
 

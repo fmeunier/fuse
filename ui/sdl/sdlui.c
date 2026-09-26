@@ -59,9 +59,7 @@ ui_init( int *argc, char ***argv )
    mode */
   atexit(atexit_proc);
 
-  /* We seem to have a problem with 10.3.9 ppc platform support and Altivec
-     blitters, disable the blitters till the SDL folks have it in hand */
-  //setenv("SDL_ALTIVEC_BLIT_FEATURES", "0", 1);
+  SDL_putenv( (char *)"SDL_VIDEO_X11_WMCLASS=" FUSE_APP_ID );
 
   error = SDL_Init( SDL_INIT_VIDEO );
   if ( error )

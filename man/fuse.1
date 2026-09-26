@@ -26,7 +26,7 @@
 .\" E-mail: philip-fuse@shadowmagic.org.uk
 .\"
 .\"
-.TH fuse 1 "23rd August, 2026" "1.9.2" "Emulators"
+.TH fuse 1 "24th September, 2026" "1.10.0" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -154,9 +154,8 @@ and select Pentagon mode on startup.
 .B \-\-bw\-tv
 .RS
 Specify whether the display should simulate a colour or black and
-white television. This option is effective under the GTK, Win32, Xlib
-and SDL user interfaces: the others will always simulate a colour TV.
-The same as the General Options dialog's
+white television. This option is effective under every Fuse user
+interface. The same as the General Options dialog's
 .I "Black and white TV"
 option.
 .RE
@@ -2476,8 +2475,7 @@ options.
 .I "Black and white TV"
 .RS
 This option allows you to choose whether to simulate a colour or black
-and white television. This is effective only under the GTK, Win32, Xlib and
-SDL user interfaces: the others will always simulate a colour TV.
+and white television. This is effective under every Fuse user interface.
 .RE
 .PP
 .I "Show statusbar"
@@ -2549,7 +2547,9 @@ If this option is enabled, Fuse will attempt to detect when a loading
 routine is in progress, and then automatically start the virtual tape
 to load the program in. This is done by using a heuristic to identify
 a loading routine, so is by no means infallible, but works in most
-cases.
+cases. After reaching the end of a tape, automatic detection will not
+restart it from the beginning. Insert another tape, select or rewind a
+tape, or start playback manually to allow playback again.
 .RE
 .PP
 .I "Phantom typist mode"
@@ -2685,12 +2685,14 @@ this option unless you have a specific need for it.
 .PP
 .I "Speaker type"
 .RS
-Choose the character of ULA beeper sound. \(lqAutomatic\(rq uses the built-in
-speaker response for machines which have one and the TV speaker response for
-other machines. \(lqTV speaker\(rq is suited to sound heard through a TV or an
-external audio connection from the MIC socket. \(lqBeeper\(rq emulates a
-built-in speaker. \(lqUnfiltered\(rq gives the direct ULA signal without sound
-colouring. The non-automatic choices apply to every machine.
+Choose the character of the emulated sound output. \(lqAutomatic\(rq uses the
+built-in speaker response for machines which have one and the TV speaker
+response for other machines. A Currah \(mcSpeech also selects the TV response.
+\(lqTV speaker\(rq is suited to sound heard through a TV or an external speaker
+connected to the MIC socket. \(lqBeeper\(rq emulates a built-in speaker.
+\(lqUnfiltered\(rq gives the direct sound signal without speaker colouring. The
+non-automatic choices apply to every machine. Speaker colouring does not alter
+unrelated sound interfaces such as Covox or SpecDrum.
 .RE
 .PP
 .I "AY volume"
@@ -3639,16 +3641,23 @@ to help distinguish executed code from unexecuted data.
 Sends a non-maskable interrupt to the emulated Spectrum. Due to a typo
 in the standard 48K ROM, this will cause a reset, but modified ROMs are
 available which make use of this feature. When the +D (or DISCiPLE) is
-emulated, this is used to access the +D (or DISCiPLE)'s screenshot and
+emulated, this can be used to access the +D (or DISCiPLE)'s screenshot and
 snapshot features (see the
 .B "+D EMULATION"
 and
 .B "DISCIPLE EMULATION"
-sections below).  For the DISCiPLE, Caps Shift must be held down whilst
-pressing the NMI button.  For some UIs, this may be tricky, or even
-impossible to do.  Note that GDOS on the DISCiPLE contains a bug which
-causes corruption of saved snapshots, and a failure to return from the
-NMI menu correctly.  This bug is not present in G+DOS on the +D.
+sections below). This item is a literal hardware NMI and does not press any
+Spectrum keys automatically.
+.RE
+.PP
+.I "Machine, DISCiPLE Magic Button"
+.RS
+On widget UIs, presses the DISCiPLE magic (NMI) button with Caps Shift held,
+allowing its snapshot menu to be entered despite menus releasing the emulated
+keyboard state. This item is available only when DISCiPLE hardware is active.
+Note that GDOS contains a bug which causes corruption of saved snapshots and
+a failure to return from the NMI menu correctly. This bug is not present in
+G+DOS on the +D.
 .RE
 .PP
 .I "Machine, Multiface Red Button"
@@ -3703,7 +3712,9 @@ starting the loading process in the emulated machine isn't enough. You
 also have to `press play', so to speak :\-), and this is how you do
 that. You may also need to `press play' like this in certain other
 circumstances, e.g. TZXs containing multi-load games may have a
-stop-the-tape request (which Fuse obeys).
+stop-the-tape request (which Fuse obeys). Manual playback can also restart a
+tape after it has reached the end; automatic loader detection deliberately
+does not restart an automatically rewound tape.
 .RE
 .PP
 .I "Media, Tape, Browse"
@@ -5477,6 +5488,11 @@ sp0256-al2.rom in your ROMs directory and its CRC-32 is b504ac15.
 An alternative authorised ROM is distributed by Joe Zbiciak with
 CRC-32 df8de0b0. In this case, bit ordering in data bytes is reversed
 and need to be adjusted.
+.PP
+The original interface mixed its speech and the Spectrum MIC output into the
+television signal. Fuse therefore uses the TV speaker response for both when
+\(mcSpeech is enabled and \(lqAutomatic\(rq or \(lqTV speaker\(rq is selected.
+Other external sound interfaces are not routed through this response.
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -5552,15 +5568,14 @@ menu option.
 .SH DISCIPLE EMULATION
 .PP
 Fuse supports emulating the DISCiPLE disk and printer interface, although
-it does not currently support emulation of the Sinclair Network, or
-support emulation of a DISCiPLE attached to a 128K machine. See the
+it does not currently support emulation of the Sinclair Network. It can be
+used with 48K, 128K and grey +2 emulation, but not +2A or +3 emulation. See the
 .B "DISK FILE FORMATS"
 section for more details on supported disk file formats, which are the
 same as for +D emulation as described above. The DISCiPLE's
 printer port is emulated. (See the
 .B "PRINTER EMULATION"
-section for more details.) The DISCiPLE may only be
-used with 48K emulation at present.  To access disks, you will first
+section for more details.) To access disks, you will first
 need to load GDOS, by inserting a disk containing the DOS file (SYS) and
 entering \(lqRUN\(rq.  Once DOS is loaded, you can load to/from DISCiPLE disks
 by prefixing filenames with
@@ -5571,6 +5586,14 @@ is the number of the drive in use.  For example,
 .RI ` "LOAD d1\(dqmyfile\(dq" '
 would load the file named `myfile' from the emulated drive\ 1.
 Microdrive syntax may also be used.
+.PP
+The
+.I "DISCiPLE inhibit"
+checkbox in the Disk Peripheral Options dialog controls the physical inhibit
+switch and shows its current state. Enabling it immediately pages the DISCiPLE
+out. With inhibit disabled, automatic paging is enabled regardless of
+control-port bit 4. With the button pressed, bit 4 clear inhibits automatic
+paging and bit 4 set permits subsequent paging triggers.
 .PP
 Snapshots can be saved in a similar manner to that of the +D as described
 above, but note that GDOS on the DISCiPLE contains a bug which causes
@@ -5587,14 +5610,13 @@ been saved/restored.)
 The NMI button works slightly differently on the DISCiPLE than on the +D.
 Caps Shift must be held down whilst pressing the NMI button, and there
 is no `X' option to exit the menu.  Also, printing of screenshots requires
-GDOS to be loaded.  Depending on the UI that you're using, holding down
-Caps Shift whilst choosing the
+GDOS to be loaded. On widget UIs, choose
+.I "Machine, DISCiPLE Magic Button"
+to have Fuse hold Caps Shift while pressing the NMI button. On GTK and Win32,
+hold Shift while selecting
 .I "Machine, NMI"
-menu option may be slightly tricky, or even impossible.  For the GTK UI,
-ensure that the Shift key is held before entering on the
-.I Machine
-menu.  For the widget UI, it does not seem possible to perform this
-action.
+with the mouse. The generic NMI item remains a literal NMI and does not press
+Caps Shift automatically.
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -5701,7 +5723,8 @@ contains three dumps of the loaded disk image at different details.
 Not all image formats can store all disk images.
 You cannot save a disk image with an inappropriate format
 that loses some information (e.g. variable track length or
-sector length).
+sector length). Classic CPCEMU .dsk images cannot store unformatted tracks,
+so a newly inserted blank disk must be saved in another format, such as UDI.
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -5855,7 +5878,7 @@ The comp.sys.sinclair Spectrum FAQ, at
 .SH AUTHOR
 Philip Kendall (philip\-fuse@shadowmagic.org.uk).
 .PP
-Matan Ziv-Av wrote the SVGAlib and framebuffer UIs, the glib
+Matan Ziv-Av wrote the old SVGAlib and the framebuffer UIs, the glib
 replacement code, and did some work on the OSS-specific sound code and
 the original widget UI code.
 .PP

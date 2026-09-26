@@ -190,6 +190,9 @@ void blip_synth_set_treble_eq( Blip_Synth * synth, double treble );
 /*  Get/set Blip_Buffer used for output */
 void blip_synth_set_output( Blip_Synth * synth, Blip_Buffer * b );
 
+/* Set the current waveform level without generating a transition. */
+void blip_synth_set_level( Blip_Synth * synth, int amplitude );
+
 /*  Update amplitude of waveform at given time. Using this requires a separate
 Blip_Synth for each waveform. */
 void blip_synth_update( Blip_Synth * synth, blip_time_t time,

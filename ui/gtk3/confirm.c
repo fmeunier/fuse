@@ -31,6 +31,7 @@
 #include "gtkinternals.h"
 #include "settings.h"
 #include "ui/ui.h"
+#include "ui/ui_internals.h"
 
 static void set_confirmed( GtkButton *button, gpointer user_data );
 static void set_save( GtkButton *button, gpointer user_data );
@@ -116,7 +117,7 @@ ui_confirm_save_specific( const char *message )
 }
 
 int
-ui_query( const char *message )
+ui_query_message( const char *message )
 {
   return gtkui_confirm( message );
 }

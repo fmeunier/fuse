@@ -60,12 +60,13 @@ int ui_end(void);
 /* Error handling routines */
 int ui_error( ui_error_level severity, const char *format, ... )
      GCC_PRINTF( 2, 3 );
+int ui_error_console( ui_error_level severity, const char *format, ... )
+     GCC_PRINTF( 2, 3 );
 libspectrum_error ui_libspectrum_error( libspectrum_error error,
 					const char *format, va_list ap )
      GCC_PRINTF( 2, 0 );
 int ui_verror( ui_error_level severity, const char *format, va_list ap )
      GCC_PRINTF( 2, 0 );
-int ui_error_specific( ui_error_level severity, const char *message );
 void ui_error_frame( void );
 
 /* Callbacks used by the debugger */
@@ -91,7 +92,6 @@ typedef enum ui_confirm_save_t {
 
 ui_confirm_save_t ui_confirm_save( const char *format, ... )
      GCC_PRINTF( 1, 2 );
-ui_confirm_save_t ui_confirm_save_specific( const char *message );
 
 /* Confirm whether we want to change a joystick setting */
 typedef enum ui_confirm_joystick_t {
@@ -135,6 +135,7 @@ typedef enum ui_menu_item {
   UI_MENU_ITEM_FILE_MOVIE_RECORDING,
   UI_MENU_ITEM_FILE_MOVIE_PAUSE,
   UI_MENU_ITEM_MACHINE_PROFILER,
+  UI_MENU_ITEM_MACHINE_DISCIPLE_MAGIC_BUTTON,
   UI_MENU_ITEM_MACHINE_MULTIFACE,
   UI_MENU_ITEM_MACHINE_DIDAKTIK80_SNAP,
   UI_MENU_ITEM_MEDIA_CARTRIDGE,
@@ -292,7 +293,9 @@ int ui_tape_browser_update( ui_tape_browser_update_type change,
 
 char *ui_get_open_filename( const char *title );
 char *ui_get_save_filename( const char *title );
-int ui_query( const char *message );
+
+/* Ask the user an OK/Cancel question. Returns non-zero when confirmed. */
+int ui_query( const char *format, ... ) GCC_PRINTF( 1, 2 );
 
 #ifdef USE_WIDGET
 #include "ui/widget/widget.h"

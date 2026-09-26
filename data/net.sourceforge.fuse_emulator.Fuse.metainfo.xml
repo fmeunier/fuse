@@ -17,6 +17,20 @@
     <category>Emulator</category>
   </categories>
   <releases>
+    <release date="2026-09-24" version="1.10.0">
+      <description>
+        <ul>
+          <li>Expanded tape-loader detection and acceleration, allowing more games to load quickly and without manual tape control</li>
+          <li>Improved tape signal handling and loading audio for greater compatibility and accuracy</li>
+          <li>Improved legacy Spectaculator and SPIN RZX playback and interoperability with other RZX players</li>
+          <li>Added support for 16K Interface 1 ROMs and reliable snapshot restoration</li>
+          <li>Enabled DISCiPLE on 128K machines and improved +D peripheral accuracy</li>
+          <li>Improved GTK3 fullscreen controls and desktop application integration</li>
+          <li>Improved composite scaler performance and tape browser information</li>
+          <li>Various other minor bug fixes and improvements</li>
+        </ul>
+      </description>
+    </release>
     <release date="2026-08-26" version="1.9.2">
       <description>
         <ul>

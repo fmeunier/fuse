@@ -38,7 +38,7 @@
 #include "module.h"
 #include "periph.h"
 #include "settings.h"
-#include "unittests/unittests.h"
+#include "unittests/helpers.h"
 #include "usource.h"
 #include "utils.h"
 

@@ -27,6 +27,23 @@
 
 #include "libspectrum.h"
 
+enum sound_speaker_type {
+  SOUND_SPEAKER_TYPE_AUTOMATIC,
+  SOUND_SPEAKER_TYPE_TV,
+  SOUND_SPEAKER_TYPE_BEEPER,
+  SOUND_SPEAKER_TYPE_UNFILTERED
+};
+
+#define SOUND_ROUTE_ULA_MIC     0x01
+#define SOUND_ROUTE_ULA_BEEPER  0x02
+#define SOUND_ROUTE_BUILTIN_AY  0x04
+#define SOUND_ROUTE_USPEECH     0x08
+
+int sound_resolve_speaker_type( int selected_type, int machine_capabilities,
+                                int uspeech_enabled );
+unsigned int sound_tv_source_routes( int speaker_type,
+                                     int machine_capabilities );
+
 void sound_register_startup( void );
 
 void sound_init( const char *device );

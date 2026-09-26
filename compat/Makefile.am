@@ -37,7 +37,8 @@ fuse_SOURCES += \
                 compat/unix/file.c \
                 compat/amiga/osname.c \
                 compat/amiga/paths.c \
-                compat/unix/timer.c
+                compat/unix/timer.c \
+                compat/unix/monotonic.c
 endif
 
 ## Linux routines
@@ -48,7 +49,8 @@ fuse_SOURCES += \
                 compat/unix/osname.c \
                 compat/linux/relative_paths.c \
                 compat/unix/paths.c \
-                compat/unix/timer.c
+                compat/unix/timer.c \
+                compat/unix/monotonic.c
 
 if HAVE_SOCKETS
 fuse_SOURCES += compat/unix/socket.c
@@ -62,7 +64,8 @@ fuse_SOURCES += \
                 compat/unix/file.c \
                 compat/morphos/osname.c \
                 compat/amiga/paths.c \
-                compat/unix/timer.c
+                compat/unix/timer.c \
+                compat/unix/monotonic.c
 endif
 
 ## Unix routines
@@ -73,7 +76,8 @@ fuse_SOURCES += \
                 compat/unix/osname.c \
                 compat/unix/relative_paths.c \
                 compat/unix/paths.c \
-                compat/unix/timer.c
+                compat/unix/timer.c \
+                compat/unix/monotonic.c
 
 if HAVE_SOCKETS
 fuse_SOURCES += compat/unix/socket.c
@@ -87,7 +91,8 @@ fuse_SOURCES += \
                 compat/unix/file.c \
                 compat/wii/osname.c \
                 compat/wii/paths.c \
-                compat/wii/timer.c
+                compat/wii/timer.c \
+                compat/unix/monotonic.c
 endif
 
 ## Windows routines
@@ -97,7 +102,8 @@ fuse_SOURCES += \
                 compat/unix/file.c \
                 compat/win32/osname.c \
                 compat/win32/paths.c \
-                compat/win32/timer.c
+                compat/win32/timer.c \
+                compat/win32/monotonic.c
 
 if HAVE_SOCKETS
 fuse_SOURCES += compat/win32/socket.c

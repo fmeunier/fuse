@@ -40,7 +40,7 @@
 #include "settings.h"
 #include "ui/ui.h"
 #include "ui/uimedia.h"
-#include "unittests/unittests.h"
+#include "unittests/helpers.h"
 #include "utils.h"
 #include "wd_fdc.h"
 #include "options.h"	/* needed for get combo options */
@@ -132,22 +132,25 @@ plusd_memory_map( void )
   memory_map_romcs_8k( 0x2000, plusd_memory_map_romcs_ram );
 }
 
+/* The +D PAL only decodes address lines A1-A6 for I/O requests; A0 and
+   A7-A15 are ignored. See Alan Pearson, "The MGT Disciple and Plus D PALS,
+   finally unveiled V2" (March 2024), based on the alice.dpl fuse map. */
 static const periph_port_t plusd_ports[] = {
-  /* ---- ---- 1110 0011 */
-  { 0x00ff, 0x00e3, plusd_sr_read, plusd_cr_write },
-  /* ---- ---- 1110 1011 */
-  { 0x00ff, 0x00eb, plusd_tr_read, plusd_tr_write },
-  /* ---- ---- 1111 0011 */
-  { 0x00ff, 0x00f3, plusd_sec_read, plusd_sec_write },
-  /* ---- ---- 1111 1011 */
-  { 0x00ff, 0x00fb, plusd_dr_read, plusd_dr_write },
+  /* ---- ---- -11- --1- */
+  { 0x007e, 0x0062, plusd_sr_read, plusd_cr_write },
+  /* ---- ---- -11- 1-1- */
+  { 0x007e, 0x006a, plusd_tr_read, plusd_tr_write },
+  /* ---- ---- -111 --1- */
+  { 0x007e, 0x0072, plusd_sec_read, plusd_sec_write },
+  /* ---- ---- -111 1-1- */
+  { 0x007e, 0x007a, plusd_dr_read, plusd_dr_write },
 
-  /* ---- ---- 1110 1111 */
-  { 0x00ff, 0x00ef, NULL, plusd_cn_write },
-  /* ---- ---- 1110 0111 */
-  { 0x00ff, 0x00e7, plusd_patch_read, plusd_patch_write },
-  /* 0000 0000 1111 0111 */
-  { 0x00ff, 0x00f7, plusd_printer_read, plusd_printer_write },
+  /* ---- ---- -11- 111- */
+  { 0x007e, 0x006e, NULL, plusd_cn_write },
+  /* ---- ---- -11- -11- */
+  { 0x007e, 0x0066, plusd_patch_read, plusd_patch_write },
+  /* ---- ---- -111 -11- */
+  { 0x007e, 0x0076, plusd_printer_read, plusd_printer_write },
 
   { 0, 0, NULL, NULL }
 };
@@ -501,6 +504,7 @@ plusd_unittest( void )
   libspectrum_snap *snap;
   libspectrum_byte *rom;
   int r = 0;
+  int was_active = periph_is_active( PERIPH_TYPE_PLUSD );
 
   plusd_page();
 
@@ -511,6 +515,17 @@ plusd_unittest( void )
   r += unittests_assert_16k_ram_page( 0xc000, 0 );
 
   plusd_unpage();
+
+  if( !was_active ) periph_activate_type( PERIPH_TYPE_PLUSD, 1 );
+
+  readport_internal( 0x00e6 );
+  r += unittests_assert_8k_page( 0x0000, plusd_memory_source_rom, 0 );
+  r += unittests_assert_8k_page( 0x2000, plusd_memory_source_ram, 0 );
+
+  writeport_internal( 0x8067, 0 );
+  r += unittests_paging_test_48( 2 );
+
+  if( !was_active ) periph_activate_type( PERIPH_TYPE_PLUSD, 0 );
 
   snap = libspectrum_snap_alloc();
   if( !snap ) {

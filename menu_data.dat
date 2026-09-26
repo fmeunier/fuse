@@ -168,6 +168,9 @@ Machine/Profiler/_Start, Item
 Machine/Profiler/_Stop, Item
 
 Machine/_NMI, Item
+#ifdef USE_WIDGET
+Machine/DISCiPLE _Magic Button, Item
+#endif
 Machine/Multiface Red _Button, Item
 Machine/Didaktik SNA_P, Item
 

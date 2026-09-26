@@ -94,7 +94,6 @@ typedef struct display_startup_context {
 
 int display_init( int *argc, char ***argv );
 void display_register_startup( display_startup_context *context );
-void display_line(void);
 
 typedef void (*display_dirty_fn)( libspectrum_word offset );
 /* Function to use to mark as 'dirty' the pixels which have been changed by a
@@ -126,7 +125,6 @@ void display_set_flash_reversed( int reversed );
 
 void display_set_lores_border(int colour);
 void display_set_hires_border(int colour);
-int display_dirty_border(void);
 
 int display_frame(void);
 void display_refresh_main_screen(void);

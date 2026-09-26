@@ -67,10 +67,38 @@ use_shifted_arrow_keys( input_key keysym )
              keysym == INPUT_KEY_Left || keysym == INPUT_KEY_Right ) );
 }
 
+/* Track which shifted-arrow keys are currently held, so that Caps Shift
+   is only released when the last one goes up.  With the previous code,
+   holding two cursor keys and releasing one dropped Caps Shift while the
+   other cursor key was still held, leaving the remaining key producing a
+   digit instead of cursor movement (bug #470).  A bitmask (rather than a
+   count) also keeps repeated keypress events (GTK key repeat) idempotent. */
+static int shifted_arrow_keys_held = 0;
+
+/* One bit per cursor key: Up=1, Down=2, Left=4, Right=8 */
+static int
+shifted_arrow_bit( input_key keysym )
+{
+  switch( keysym ) {
+  case INPUT_KEY_Up:    return 0x01;
+  case INPUT_KEY_Down:  return 0x02;
+  case INPUT_KEY_Left:  return 0x04;
+  case INPUT_KEY_Right: return 0x08;
+  default: return 0;
+  }
+}
+
+void
+input_reset_shifted_arrows( void )
+{
+  shifted_arrow_keys_held = 0;
+}
+
 static void
 send_keyboard_press( input_key keysym )
 {
   const keyboard_spectrum_keys_t *ptr;
+  int bit;
 
   ptr = keyboard_get_spectrum_keys( keysym );
 
@@ -79,7 +107,9 @@ send_keyboard_press( input_key keysym )
     keyboard_press( ptr->key2 );
   }
 
-  if( use_shifted_arrow_keys( keysym ) ) {
+  bit = use_shifted_arrow_keys( keysym ) ? shifted_arrow_bit( keysym ) : 0;
+  if( bit && !( shifted_arrow_keys_held & bit ) ) {
+    shifted_arrow_keys_held |= bit;
     keyboard_press( KEYBOARD_Caps );
   }
 }
@@ -88,6 +118,7 @@ static void
 send_keyboard_release( input_key keysym )
 {
   const keyboard_spectrum_keys_t *ptr;
+  int bit;
 
   ptr = keyboard_get_spectrum_keys( keysym );
 
@@ -96,8 +127,10 @@ send_keyboard_release( input_key keysym )
     keyboard_release( ptr->key2 );
   }
 
-  if( use_shifted_arrow_keys( keysym ) ) {
-    keyboard_release( KEYBOARD_Caps );
+  bit = use_shifted_arrow_keys( keysym ) ? shifted_arrow_bit( keysym ) : 0;
+  if( bit && ( shifted_arrow_keys_held & bit ) ) {
+    shifted_arrow_keys_held &= ~bit;
+    if( shifted_arrow_keys_held == 0 ) keyboard_release( KEYBOARD_Caps );
   }
 }
 

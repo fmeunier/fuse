@@ -51,6 +51,7 @@ int tape_do_play( int autoplay );
 int tape_toggle_play( int autoplay );
 
 void tape_next_edge( libspectrum_dword last_tstates, int from_acceleration );
+int tape_unittest( void );
 
 int tape_stop( void );
 int tape_is_playing( void );

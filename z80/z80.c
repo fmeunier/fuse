@@ -68,6 +68,7 @@ libspectrum_byte sz53p_table[0x100]; /* OR the above two tables together */
 processor z80;
 
 int z80_interrupt_event;
+static int z80_ei_delayed_interrupt_event;
 int z80_nmi_event;
 int z80_nmos_iff2_event;
 
@@ -96,7 +97,22 @@ z80_interrupt_event_fn( libspectrum_dword event_tstates, int type,
 
   /* Otherwise, see if we actually accept an interrupt. If we do and
      we're doing RZX recording, store a frame */
-  if( z80_interrupt() ) rzx_frame();
+  if( z80_interrupt() ) {
+    rzx_frame();
+    rzx_frame_interrupt_complete();
+  }
+}
+
+static void
+z80_ei_delayed_interrupt_event_fn( libspectrum_dword event_tstates, int type,
+                                   void *user_data )
+{
+  /* Unlike retriggered interrupts, an interrupt postponed by EI is still
+     the interrupt generated at the RZX frame boundary. */
+  if( z80_interrupt() && !rzx_playback ) {
+    rzx_frame();
+    rzx_frame_interrupt_complete();
+  }
 }
 
 /* Set up the z80 emulation */
@@ -107,6 +123,9 @@ z80_init( void *context )
 
   z80_interrupt_event = event_register( z80_interrupt_event_fn,
 					"Retriggered interrupt" );
+  z80_ei_delayed_interrupt_event =
+    event_register( z80_ei_delayed_interrupt_event_fn,
+                    "EI-delayed interrupt" );
   z80_nmi_event = event_register( z80_nmi, "Non-maskable interrupt" );
   z80_nmos_iff2_event = event_register( NULL, "IFF2 update dummy event" );
 
@@ -193,9 +212,13 @@ z80_interrupt( void )
     }
 
     /* If interrupts have just been enabled, don't accept the interrupt now,
-       but check after the next instruction has been executed */
-    if( tstates == z80.interrupts_enabled_at ) {
-      event_add( tstates + 1, z80_interrupt_event );
+       but check after the next instruction has been executed. During RZX
+       playback, treat a frame of four fetches or fewer as an INT retrigger,
+       as recommended by the RZX specification; longer frames rely on the
+       historical forced-interrupt behaviour. */
+    if( tstates == z80.interrupts_enabled_at &&
+        ( !rzx_playback || rzx_instruction_count <= 4 ) ) {
+      event_add( tstates + 1, z80_ei_delayed_interrupt_event );
       return 0;
     }
 

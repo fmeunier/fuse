@@ -1,6 +1,9 @@
 Building Fuse
 -------------
 
+A compiler supporting the C11 language standard is required. Fuse targets
+C11 and does not require features introduced in C17 or C23.
+
 To compile Fuse (see below for instructions for other ports):
 
 $ ./configure

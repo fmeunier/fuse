@@ -471,7 +471,7 @@ check_ntsc_regression( void )
                             sizeof( output[0] ), TEST_WIDTH, TEST_HEIGHT );
 
   if( output_checksum( &output[0][0], TEST_WIDTH * 2, TEST_HEIGHT * 2 ) !=
-      0x2b785bb3UL ) {
+      0xbd76b321UL ) {
     fprintf( stderr, "NTSC composite checksum mismatch: got %08x\n",
              output_checksum( &output[0][0], TEST_WIDTH * 2,
                               TEST_HEIGHT * 2 ) );

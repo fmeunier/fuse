@@ -24,6 +24,7 @@ fuse_SOURCES += timer/timer.c
 
 EXTRA_fuse_SOURCES += \
                       timer/native.c \
+                      timer/null.c \
                       timer/sdl.c
 
 fuse_DEPENDENCIES += $(TIMER_LIBADD)

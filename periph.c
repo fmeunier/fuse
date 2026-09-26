@@ -23,6 +23,9 @@
 */
 
 #include "config.h"
+#ifdef ENABLE_AUTOMATION
+#include "automation/automation.h"
+#endif
 
 #include "libspectrum.h"
 
@@ -31,6 +34,7 @@
 #include "fuse.h"
 #include "periph.h"
 #include "peripherals/if1.h"
+#include "peripherals/disk/disciple.h"
 #include "peripherals/multiface.h"
 #include "peripherals/ula.h"
 #include "rzx.h"
@@ -323,8 +327,12 @@ readport_internal( libspectrum_word port )
     libspectrum_error error;
     libspectrum_byte value;
 
-    error = libspectrum_rzx_playback( rzx, &value );
+    error = rzx_playback_byte( &value );
     if( error ) {
+      rzx_spectaculator_cpu_hint();
+#ifdef ENABLE_AUTOMATION
+      automation_rzx_desynchronised();
+#endif
       rzx_stop_playback( 1 );
 
       /* Add a null event to mean we pick up the RZX state change in
@@ -457,6 +465,7 @@ update_peripherals_status( void )
   update_ide_menu();
   if1_update_menu();
   multiface_status_update();
+  disciple_inhibit_update();
   specplus3_765_update_fdd();
 }
 

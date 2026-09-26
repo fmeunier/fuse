@@ -27,6 +27,7 @@
 
 #include <fcntl.h>
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -35,7 +36,9 @@
 #include "debugger/debugger.h"
 #include "display.h"
 #include "fuse.h"
+#include "input.h"
 #include "keyboard.h"
+#include "loader.h"
 #include "machine.h"
 #include "memory_pages.h"
 #include "mempool.h"
@@ -60,19 +63,154 @@
 #include "peripherals/ttx2000s.h"
 #include "peripherals/ula.h"
 #include "peripherals/usource.h"
+#include "psg.h"
 #include "pokefinder/pokefinder.h"
 #include "settings.h"
 #include "sound.h"
+#include "sound/blipbuffer.h"
+#include "sound/dc_filter.h"
+#include "sound/source_synths.h"
 #include "sound/speaker_filter.h"
+#include "sound/tv_filter.h"
 #include "sound/ula_filter.h"
 #include "snapshot.h"
 #include "tape.h"
 #include "bitmap.h"
 #include "rectangle.h"
 #include "compat.h"
+#include "rzx.h"
+#include "spectrum.h"
 #include "ui/scaler/scaler.h"
+#include "helpers.h"
 #include "unittests.h"
 #include "utils.h"
+#include "z80/z80.h"
+#include "z80/z80_macros.h"
+
+static int
+rzx_automatic_snapshot_count( libspectrum_snap **automatic_snap )
+{
+  libspectrum_rzx_iterator it;
+  int count = 0;
+
+  *automatic_snap = NULL;
+  for( it = libspectrum_rzx_iterator_begin( rzx ); it;
+       it = libspectrum_rzx_iterator_next( it ) ) {
+    if( libspectrum_rzx_iterator_get_type( it ) ==
+          LIBSPECTRUM_RZX_SNAPSHOT_BLOCK &&
+        libspectrum_rzx_iterator_snap_is_automatic( it ) ) {
+      libspectrum_rzx_iterator next;
+
+      count++;
+      *automatic_snap = libspectrum_rzx_iterator_get_snap( it );
+      next = libspectrum_rzx_iterator_next( it );
+      if( !next || libspectrum_rzx_iterator_get_type( next ) !=
+                     LIBSPECTRUM_RZX_INPUT_BLOCK )
+        return -1;
+    }
+  }
+
+  return count;
+}
+
+static int
+rzx_post_interrupt_autosave_test( void )
+{
+  const char *filename = "/tmp/fuse-rzx-autosave-test.rzx";
+  libspectrum_snap *snap;
+  libspectrum_dword frame_tstates;
+  int old_autosaves, disabled, error = 0, i;
+
+  old_autosaves = settings_current.rzx_autosaves;
+  settings_current.rzx_autosaves = 1;
+  frame_tstates = machine_current->timings.tstates_per_frame;
+
+  for( disabled = 0; disabled < 2; disabled++ ) {
+    if( rzx_start_recording( filename, 0 ) ) {
+      error++;
+      break;
+    }
+
+    for( i = 0; i < 250; i++ ) rzx_frame();
+    if( rzx_automatic_snapshot_count( &snap ) != 0 ) error++;
+
+    PC = 0x1234; SP = 0x8000; IM = 1;
+    IFF1 = IFF2 = !disabled;
+    tstates = frame_tstates;
+    spectrum_frame();
+    z80_interrupt();
+
+    /* Interrupt acknowledge does not count as an RZX instruction fetch. */
+    if( R + rzx_instructions_offset != 0 ) error++;
+
+    rzx_frame_interrupt_complete();
+    if( rzx_automatic_snapshot_count( &snap ) != 1 || !snap ) {
+      error++;
+    } else if( libspectrum_snap_tstates( snap ) != tstates ) {
+      error++;
+    } else if( disabled ) {
+      if( libspectrum_snap_pc( snap ) != 0x1234 ||
+          libspectrum_snap_iff1( snap ) || libspectrum_snap_iff2( snap ) )
+        error++;
+    } else {
+      if( libspectrum_snap_pc( snap ) != 0x0038 ||
+          libspectrum_snap_iff1( snap ) || libspectrum_snap_iff2( snap ) ||
+          tstates >= frame_tstates )
+        error++;
+    }
+
+    if( rzx_stop_recording() ) error++;
+    unlink( filename );
+  }
+
+  settings_current.rzx_autosaves = old_autosaves;
+  if( error ) printf( "rzx_post_interrupt_autosave_test failed\n" );
+  return error;
+}
+
+static int
+rzx_retrigger_autosave_test( void )
+{
+  const char *filename = "/tmp/fuse-rzx-retrigger-test.rzx";
+  libspectrum_snap *snap;
+  int old_autosaves, delayed, error = 0, i;
+
+  old_autosaves = settings_current.rzx_autosaves;
+  settings_current.rzx_autosaves = 1;
+
+  for( delayed = 0; delayed < 2; delayed++ ) {
+    if( rzx_start_recording( filename, 0 ) ) {
+      error++;
+      break;
+    }
+
+    for( i = 0; i < 250; i++ ) rzx_frame();
+    PC = 0x2345; SP = 0x8000; IM = 1; IFF1 = IFF2 = 1;
+    tstates = delayed ? 0 : 1;
+    z80.interrupts_enabled_at = delayed ? 0 : -1;
+
+    if( delayed ) {
+      if( z80_interrupt() || rzx_frame_interrupt_complete() ||
+          rzx_automatic_snapshot_count( &snap ) != 0 ) error++;
+      tstates++;
+    }
+
+    if( !z80_interrupt() ) error++;
+    rzx_frame();
+    rzx_frame_interrupt_complete();
+    if( rzx_automatic_snapshot_count( &snap ) != 1 || !snap ||
+        libspectrum_snap_pc( snap ) != 0x0038 ||
+        libspectrum_snap_iff1( snap ) || libspectrum_snap_iff2( snap ) )
+      error++;
+
+    if( rzx_stop_recording() ) error++;
+    unlink( filename );
+  }
+
+  settings_current.rzx_autosaves = old_autosaves;
+  if( error ) printf( "rzx_retrigger_autosave_test failed\n" );
+  return error;
+}
 
 static int
 contention_test( void )
@@ -252,6 +390,112 @@ floating_bus_test( void )
 
 #define TEST_ASSERT(x) do { if( !(x) ) { printf("Test assertion failed at %s:%d: %s\n", __FILE__, __LINE__, #x ); return 1; } } while( 0 )
 
+static int
+blip_synth_level_test( void )
+{
+  Blip_Buffer *buffer = new_Blip_Buffer();
+  Blip_Synth *synth = new_Blip_Synth();
+  blip_sample_t output[ 128 ];
+  long count;
+  int i, nonzero;
+
+  TEST_ASSERT( buffer && synth );
+  blip_buffer_set_clock_rate( buffer, 1000000 );
+  TEST_ASSERT( !blip_buffer_set_sample_rate( buffer, 48000, 100 ) );
+  blip_buffer_set_bass_freq( buffer, 0 );
+  blip_synth_set_volume( synth, 1.0 );
+  blip_synth_set_output( synth, buffer );
+  blip_synth_set_treble_eq( synth, 0.0 );
+
+  blip_synth_set_level( synth, 1000 );
+  blip_synth_update( synth, 0, 1000 );
+  blip_buffer_end_frame( buffer, 2000 );
+  count = blip_buffer_read_samples( buffer, output, ARRAY_SIZE( output ), 0 );
+  TEST_ASSERT( count > 0 );
+  for( i = 0; i < count; i++ ) TEST_ASSERT( output[ i ] == 0 );
+
+  blip_synth_update( synth, 0, 2000 );
+  blip_buffer_end_frame( buffer, 2000 );
+  count = blip_buffer_read_samples( buffer, output, ARRAY_SIZE( output ), 0 );
+  nonzero = 0;
+  for( i = 0; i < count; i++ ) if( output[ i ] ) nonzero = 1;
+  TEST_ASSERT( nonzero );
+  TEST_ASSERT( buffer->reader_accum != 0 );
+
+  blip_buffer_clear( buffer, BLIP_BUFFER_DEF_ENTIRE_BUFF );
+  blip_synth_set_output( synth, buffer );
+  blip_synth_set_level( synth, 2000 );
+  TEST_ASSERT( buffer->reader_accum == 0 );
+  TEST_ASSERT( synth->impl.last_amp == 2000 );
+  blip_synth_update( synth, 0, 2000 );
+  blip_buffer_end_frame( buffer, 2000 );
+  count = blip_buffer_read_samples( buffer, output, ARRAY_SIZE( output ), 0 );
+  TEST_ASSERT( count > 0 );
+  for( i = 0; i < count; i++ ) TEST_ASSERT( output[ i ] == 0 );
+
+  delete_Blip_Synth( &synth );
+  delete_Blip_Buffer( &buffer );
+  return 0;
+}
+
+static double
+dc_filter_response( const dc_filter_t *filter, double frequency,
+                    int sample_rate )
+{
+  double omega = 2.0 * 3.14159265358979323846 * frequency / sample_rate;
+  double cosine = cos( omega );
+  double sine = sin( omega );
+  double numerator = filter->decay *
+                     hypot( 1.0 - cosine, sine );
+  double denominator = hypot( 1.0 - filter->decay * cosine,
+                              filter->decay * sine );
+
+  return numerator / denominator;
+}
+
+static int
+dc_filter_test( void )
+{
+  static const int sample_rates[] = { 44100, 48000, 96000 };
+  dc_filter_t filter;
+  double impulse[16];
+  int i, rate;
+
+  for( rate = 0; rate < ARRAY_SIZE( sample_rates ); rate++ ) {
+    TEST_ASSERT( !dc_filter_configure( &filter, sample_rates[rate] ) );
+    TEST_ASSERT( filter.decay > 0.0 && filter.decay < 1.0 );
+    TEST_ASSERT( dc_filter_response( &filter, 1.0,
+                                     sample_rates[rate] ) < 0.07 );
+    TEST_ASSERT( dc_filter_response( &filter, 16.0,
+                                     sample_rates[rate] ) > 0.70 );
+    TEST_ASSERT( dc_filter_response( &filter, 16.0,
+                                     sample_rates[rate] ) < 0.71 );
+    TEST_ASSERT( dc_filter_response( &filter, 1000.0,
+                                     sample_rates[rate] ) > 0.98 );
+  }
+
+  TEST_ASSERT( dc_filter_configure( &filter, 0 ) );
+  TEST_ASSERT( !dc_filter_configure( &filter, 48000 ) );
+  TEST_ASSERT( dc_filter_apply( &filter, 1234.0 ) == 0.0 );
+  TEST_ASSERT( dc_filter_apply( &filter, 1234.0 ) == 0.0 );
+  for( i = 0; i < ARRAY_SIZE( impulse ); i++ )
+    impulse[i] = dc_filter_apply( &filter, i == 0 ? 2234.0 : 1234.0 );
+  TEST_ASSERT( impulse[0] > 0.0 );
+
+  dc_filter_reset( &filter );
+  TEST_ASSERT( dc_filter_apply( &filter, 1234.0 ) == 0.0 );
+  for( i = 0; i < ARRAY_SIZE( impulse ); i++ )
+    TEST_ASSERT( impulse[i] ==
+                 dc_filter_apply( &filter, i == 0 ? 2234.0 : 1234.0 ) );
+
+  dc_filter_reset( &filter );
+  TEST_ASSERT( dc_filter_apply( &filter, 0.0 ) == 0.0 );
+  TEST_ASSERT( fabs( dc_filter_apply( &filter, 1.0e-30 ) ) < 1.0e-20 );
+  TEST_ASSERT( filter.state == 0.0 );
+
+  return 0;
+}
+
 static double
 speaker_filter_response( const speaker_filter_t *filter, double frequency,
                          int sample_rate )
@@ -281,9 +525,7 @@ speaker_filter_test( void )
   int i, rate;
 
   for( rate = 0; rate < ARRAY_SIZE( sample_rates ); rate++ ) {
-    TEST_ASSERT( !speaker_filter_configure( &filter, sample_rates[ rate ],
-                                            SPEAKER_FILTER_DEFAULT_FREQUENCY,
-                                            SPEAKER_FILTER_DEFAULT_Q ) );
+    TEST_ASSERT( !speaker_filter_configure( &filter, sample_rates[ rate ] ) );
     TEST_ASSERT( isfinite( filter.b0 ) && isfinite( filter.b1 ) &&
                  isfinite( filter.b2 ) && isfinite( filter.a1 ) &&
                  isfinite( filter.a2 ) );
@@ -311,21 +553,88 @@ speaker_filter_test( void )
                                            sample_rates[ rate ] ) > 0.98 );
   }
 
-  TEST_ASSERT( speaker_filter_configure( &filter, 48000, 0.0,
-                                         SPEAKER_FILTER_DEFAULT_Q ) );
-  TEST_ASSERT( speaker_filter_configure( &filter, 48000,
-                                         SPEAKER_FILTER_DEFAULT_FREQUENCY,
-                                         0.0 ) );
+  TEST_ASSERT( speaker_filter_configure( &filter, 0 ) );
 
-  TEST_ASSERT( !speaker_filter_configure( &filter, 48000,
-                                          SPEAKER_FILTER_DEFAULT_FREQUENCY,
-                                          SPEAKER_FILTER_DEFAULT_Q ) );
+  TEST_ASSERT( !speaker_filter_configure( &filter, 48000 ) );
+  TEST_ASSERT( speaker_filter_apply( &filter, 1234.0 ) == 0.0 );
+  TEST_ASSERT( fabs( speaker_filter_apply( &filter, 1234.0 ) ) < 1.0e-12 );
   for( i = 0; i < ARRAY_SIZE( output ); i++ )
-    output[ i ] = speaker_filter_apply( &filter, i == 0 ? 1.0 : 0.0 );
+    output[ i ] = speaker_filter_apply( &filter,
+                                         i == 0 ? 2234.0 : 1234.0 );
+  TEST_ASSERT( output[ 0 ] != 0.0 );
+
   speaker_filter_reset( &filter );
+  TEST_ASSERT( speaker_filter_apply( &filter, 1234.0 ) == 0.0 );
+  TEST_ASSERT( fabs( speaker_filter_apply( &filter, 1234.0 ) ) < 1.0e-12 );
   for( i = 0; i < ARRAY_SIZE( output ); i++ )
-    TEST_ASSERT( output[ i ] == speaker_filter_apply( &filter,
-                                                       i == 0 ? 1.0 : 0.0 ) );
+    TEST_ASSERT( output[ i ] == speaker_filter_apply(
+                                   &filter, i == 0 ? 2234.0 : 1234.0 ) );
+
+  return 0;
+}
+
+static double
+tv_filter_response( const tv_filter_t *filter, double frequency,
+                    int sample_rate )
+{
+  double omega = 2.0 * 3.14159265358979323846 * frequency / sample_rate;
+  double complex_z_real = cos( omega );
+  double complex_z_imaginary = -sin( omega );
+  double one_minus_z_real = 1.0 - complex_z_real;
+  double one_minus_z_imaginary = -complex_z_imaginary;
+  double hp_den_real = 1.0 - filter->high_pass_decay * complex_z_real;
+  double hp_den_imaginary = -filter->high_pass_decay * complex_z_imaginary;
+  double lp_decay = 1.0 - filter->low_pass_alpha;
+  double lp_den_real = 1.0 - lp_decay * complex_z_real;
+  double lp_den_imaginary = -lp_decay * complex_z_imaginary;
+  double hp = filter->high_pass_decay *
+              hypot( one_minus_z_real, one_minus_z_imaginary ) /
+              hypot( hp_den_real, hp_den_imaginary );
+  double lp = filter->low_pass_alpha /
+              hypot( lp_den_real, lp_den_imaginary );
+
+  return hp * lp;
+}
+
+static int
+tv_filter_test( void )
+{
+  static const int sample_rates[] = { 44100, 48000, 96000 };
+  tv_filter_t filter;
+  double impulse[16];
+  int i, rate;
+
+  for( rate = 0; rate < ARRAY_SIZE( sample_rates ); rate++ ) {
+    TEST_ASSERT( !tv_filter_configure( &filter, sample_rates[rate] ) );
+    TEST_ASSERT( filter.high_pass_decay > 0.0 &&
+                 filter.high_pass_decay < 1.0 );
+    TEST_ASSERT( filter.low_pass_alpha > 0.0 &&
+                 filter.low_pass_alpha < 1.0 );
+    TEST_ASSERT( tv_filter_response( &filter, 10.0,
+                                     sample_rates[rate] ) < 0.11 );
+    TEST_ASSERT( tv_filter_response( &filter, 1000.0,
+                                     sample_rates[rate] ) > 0.9 );
+    TEST_ASSERT( tv_filter_response( &filter, 20000.0,
+                                     sample_rates[rate] ) < 0.65 );
+  }
+
+  TEST_ASSERT( tv_filter_configure( &filter, 0 ) );
+  TEST_ASSERT( tv_filter_configure( &filter, 20000 ) );
+  TEST_ASSERT( !tv_filter_configure( &filter, 48000 ) );
+  TEST_ASSERT( tv_filter_apply( &filter, 1234.0 ) == 0.0 );
+  for( i = 0; i < ARRAY_SIZE( impulse ); i++ )
+    impulse[i] = tv_filter_apply( &filter, i == 0 ? 2234.0 : 1234.0 );
+  tv_filter_reset( &filter );
+  TEST_ASSERT( tv_filter_apply( &filter, 1234.0 ) == 0.0 );
+  for( i = 0; i < ARRAY_SIZE( impulse ); i++ )
+    TEST_ASSERT( impulse[i] ==
+                 tv_filter_apply( &filter, i == 0 ? 2234.0 : 1234.0 ) );
+
+  tv_filter_reset( &filter );
+  TEST_ASSERT( tv_filter_apply( &filter, 0.0 ) == 0.0 );
+  TEST_ASSERT( fabs( tv_filter_apply( &filter, 1.0e-30 ) ) < 1.0e-20 );
+  TEST_ASSERT( filter.high_pass_state == 0.0 );
+  TEST_ASSERT( filter.low_pass_state == 0.0 );
 
   return 0;
 }
@@ -401,6 +710,44 @@ ula_filter_test( void )
 }
 
 static int
+sound_source_routes_test( void )
+{
+  int beeper = LIBSPECTRUM_MACHINE_CAPABILITY_BEEPER;
+  int ay = LIBSPECTRUM_MACHINE_CAPABILITY_AY;
+  unsigned int tv_base = SOUND_ROUTE_ULA_MIC | SOUND_ROUTE_USPEECH;
+
+  TEST_ASSERT( sound_resolve_speaker_type( SOUND_SPEAKER_TYPE_AUTOMATIC,
+                                           beeper, 0 ) ==
+               SOUND_SPEAKER_TYPE_BEEPER );
+  TEST_ASSERT( sound_resolve_speaker_type( SOUND_SPEAKER_TYPE_AUTOMATIC,
+                                           beeper, 1 ) ==
+               SOUND_SPEAKER_TYPE_TV );
+  TEST_ASSERT( sound_resolve_speaker_type( SOUND_SPEAKER_TYPE_AUTOMATIC,
+                                           0, 0 ) == SOUND_SPEAKER_TYPE_TV );
+  TEST_ASSERT( sound_resolve_speaker_type( SOUND_SPEAKER_TYPE_BEEPER,
+                                           0, 1 ) ==
+               SOUND_SPEAKER_TYPE_BEEPER );
+
+  TEST_ASSERT( sound_tv_source_routes( SOUND_SPEAKER_TYPE_TV, 0 ) ==
+               tv_base );
+  TEST_ASSERT( sound_tv_source_routes( SOUND_SPEAKER_TYPE_TV, ay ) ==
+               ( tv_base | SOUND_ROUTE_BUILTIN_AY ) );
+  TEST_ASSERT( sound_tv_source_routes( SOUND_SPEAKER_TYPE_BEEPER,
+                                       beeper | ay ) == 0 );
+  TEST_ASSERT( sound_tv_source_routes( SOUND_SPEAKER_TYPE_UNFILTERED,
+                                       beeper | ay ) == 0 );
+  /* Unfiltered processes only the separate ULA stream; AY remains in the
+   * unprocessed main mix rather than entering the routed TV bus. */
+  TEST_ASSERT( !( sound_tv_source_routes( SOUND_SPEAKER_TYPE_UNFILTERED, ay ) &
+                  SOUND_ROUTE_BUILTIN_AY ) );
+
+  /* Covox, SpecDrum and external AY deliberately have no TV route bits. */
+  TEST_ASSERT( ( tv_base | SOUND_ROUTE_BUILTIN_AY ) == 0x0d );
+
+  return 0;
+}
+
+static int
 ula_sound_levels_test( void )
 {
   int mic_ampl, beeper_ampl;
@@ -443,6 +790,31 @@ ula_sound_levels_test( void )
   sound_ula_levels( 1, 1, &mic_ampl, &beeper_ampl ); /* 10 -> 11 */
   TEST_ASSERT( mic_ampl == SOUND_AMPL_BEEPER + SOUND_AMPL_TAPE );
   TEST_ASSERT( beeper_ampl == SOUND_AMPL_BEEPER + SOUND_AMPL_TAPE );
+
+  return 0;
+}
+
+static int
+source_volume_test( void )
+{
+  double v;
+
+  /* Below range clamps to silence (0.0) */
+  v = source_volume( -1 ); TEST_ASSERT( v == 0.0 );
+
+  /* Exact lower boundary is silence (0.0) */
+  v = source_volume( 0 ); TEST_ASSERT( v == 0.0 );
+
+  /* In-range values scale linearly (percent / 100) */
+  v = source_volume( 50 ); TEST_ASSERT( v == 0.5 );
+  v = source_volume( 25 ); TEST_ASSERT( v == 0.25 );
+
+  /* Exact upper boundary is full gain (1.0) */
+  v = source_volume( 100 ); TEST_ASSERT( v == 1.0 );
+
+  /* Above range clamps to full gain (1.0) */
+  v = source_volume( 101 ); TEST_ASSERT( v == 1.0 );
+  v = source_volume( 10000 ); TEST_ASSERT( v == 1.0 );
 
   return 0;
 }
@@ -724,6 +1096,31 @@ keyboard_read_test( void )
 }
 
 static int
+keyboard_synthetic_test( void )
+{
+  keyboard_release_all();
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST );
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_DISCIPLE );
+
+  keyboard_synthetic_press( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST, KEYBOARD_Caps );
+  keyboard_synthetic_press( KEYBOARD_SYNTHETIC_DISCIPLE, KEYBOARD_a );
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xfe );
+  TEST_ASSERT( keyboard_read( 0xfd ) == 0xfe );
+
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_PHANTOM_TYPIST );
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xff );
+  TEST_ASSERT( keyboard_read( 0xfd ) == 0xfe );
+
+  keyboard_press( KEYBOARD_a );
+  keyboard_synthetic_release_all( KEYBOARD_SYNTHETIC_DISCIPLE );
+  TEST_ASSERT( keyboard_read( 0xfd ) == 0xfe );
+  keyboard_release( KEYBOARD_a );
+  TEST_ASSERT( keyboard_read( 0xfd ) == 0xff );
+
+  return 0;
+}
+
+static int
 keyboard_simulate_keypress_test( void )
 {
   /* 'a' is in half-row 1, bit 0x01.  keyboard_simulate_keypress checks
@@ -741,6 +1138,89 @@ keyboard_simulate_keypress_test( void )
   /* An unknown/unmapped key should return 0xff unchanged. */
   TEST_ASSERT( keyboard_simulate_keypress( 0x00, KEYBOARD_NONE ) == 0xff );
 
+  return 0;
+}
+
+static int
+keyboard_shifted_arrows_test( void )
+{
+  /* Regression test for bug #470: with keyboard_arrows_shifted enabled,
+     holding two cursor keys must keep Caps Shift pressed until the last
+     cursor key is released.  Previously releasing one of two held cursor
+     keys dropped Caps Shift while the other was still held. */
+  input_event_t event;
+  int old_shifted = settings_current.keyboard_arrows_shifted;
+
+  settings_current.keyboard_arrows_shifted = 1;
+  keyboard_release_all();
+
+  /* Caps Shift lives in half-row 0, bit 0x01, so keyboard_read( 0xfe )
+     (selecting only half-row 0) reflects whether Caps Shift is pressed. */
+
+  /* Press Up: KEYBOARD_7 plus Caps Shift */
+  event.type = INPUT_EVENT_KEYPRESS;
+  event.types.key.native_key = INPUT_KEY_Up;
+  event.types.key.spectrum_key = INPUT_KEY_Up;
+  input_event( &event );
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xfe ); /* Caps Shift pressed */
+
+  /* Press Left while Up is still held: KEYBOARD_5 plus Caps Shift */
+  event.type = INPUT_EVENT_KEYPRESS;
+  event.types.key.native_key = INPUT_KEY_Left;
+  event.types.key.spectrum_key = INPUT_KEY_Left;
+  input_event( &event );
+
+  /* Release Up: Caps Shift must stay pressed because Left is still held */
+  event.type = INPUT_EVENT_KEYRELEASE;
+  event.types.key.native_key = INPUT_KEY_Up;
+  event.types.key.spectrum_key = INPUT_KEY_Up;
+  input_event( &event );
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xfe );
+
+  /* Release Left: last cursor key released, Caps Shift released */
+  event.type = INPUT_EVENT_KEYRELEASE;
+  event.types.key.native_key = INPUT_KEY_Left;
+  event.types.key.spectrum_key = INPUT_KEY_Left;
+  input_event( &event );
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xff );
+
+  settings_current.keyboard_arrows_shifted = old_shifted;
+  return 0;
+}
+
+static int
+keyboard_shifted_arrows_release_all_test( void )
+{
+  /* Regression test for the edge case of bug #470: releasing all keys
+     (e.g. focus loss or emulation pause) must also reset the shifted-arrow
+     tracking state.  Otherwise a later cursor-key press would be treated
+     as already held and Caps Shift would not be re-pressed. */
+  input_event_t event;
+  int old_shifted = settings_current.keyboard_arrows_shifted;
+
+  settings_current.keyboard_arrows_shifted = 1;
+  keyboard_release_all();
+
+  /* Press Up: Caps Shift pressed */
+  event.type = INPUT_EVENT_KEYPRESS;
+  event.types.key.native_key = INPUT_KEY_Up;
+  event.types.key.spectrum_key = INPUT_KEY_Up;
+  input_event( &event );
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xfe );
+
+  /* Release all keys (e.g. focus loss / pause): Caps Shift released */
+  keyboard_release_all();
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xff );
+
+  /* Press Up again: Caps Shift must be re-pressed (state was reset) */
+  event.type = INPUT_EVENT_KEYPRESS;
+  event.types.key.native_key = INPUT_KEY_Up;
+  event.types.key.spectrum_key = INPUT_KEY_Up;
+  input_event( &event );
+  TEST_ASSERT( keyboard_read( 0xfe ) == 0xfe );
+
+  keyboard_release_all();
+  settings_current.keyboard_arrows_shifted = old_shifted;
   return 0;
 }
 
@@ -765,6 +1245,102 @@ utils_safe_strdup_test( void )
   libspectrum_free( result );
 
   return 0;
+}
+
+static int
+psg_unittest( void )
+{
+  static const unsigned char header[] = "PSG\x1a";
+  char temporary_path[] = "/tmp/fuse-psg-test-XXXXXX";
+  unsigned char expected[ 26 ];
+  unsigned char read_back[ 26 ];
+  FILE *file;
+  int fd, saved_recording;
+  size_t length;
+  int i, r = 0;
+
+  /* mkdtemp is not provided by MinGW; use mkstemp to obtain a unique
+     filename prefix instead. */
+  fd = mkstemp( temporary_path );
+  if( fd < 0 ) return 1;
+  close( fd );
+  unlink( temporary_path );
+
+  saved_recording = psg_recording;
+  psg_recording = 0;
+
+  /* Calls while not recording are harmless no-ops, and stopping a recording
+     that was never started fails */
+  if( psg_frame() || psg_write_register( 7, 0x40 ) ||
+      psg_stop_recording() != 1 ) r++;
+
+  /* Starting a recording writes the header and refuses a second start */
+  if( psg_start_recording( temporary_path ) || !psg_recording ||
+      psg_start_recording( temporary_path ) != 1 ) r++;
+
+  /* Six empty frames are accumulated in the pending empty-frame counter; a
+     register write marked afterwards is emitted with the register data, and
+     registers 14 and 15 (I/O ports) are never part of the frame data */
+  for( i = 0; i < 6; i++ ) if( psg_frame() ) r++;
+  if( psg_write_register( 7, 0x40 ) || psg_write_register( 14, 0xff ) ) r++;
+  if( psg_frame() ) r++;
+
+  /* Two more empty frames */
+  if( psg_frame() || psg_frame() ) r++;
+
+  /* Stopping flushes the pending empty frames */
+  if( psg_stop_recording() || psg_recording ) r++;
+
+  /* header (4 bytes + 12 padding) + FE 01 FF FF FF 07 40 + FE 01:
+     7 pending empty frames are encoded as a 4-frame block plus three
+     single-frame markers before the register data */
+  memcpy( expected, header, sizeof( header ) );
+  memset( expected + 4, 0, 12 );
+  expected[ 16 ] = 0xfe; expected[ 17 ] = 0x01;
+  expected[ 18 ] = 0xff; expected[ 19 ] = 0xff; expected[ 20 ] = 0xff;
+  expected[ 21 ] = 0x07; expected[ 22 ] = 0x40;
+  expected[ 23 ] = 0xfe; expected[ 24 ] = 0x01;
+  length = 25;
+
+  file = fopen( temporary_path, "rb" );
+  if( !file ) {
+    r++;
+  } else {
+    memset( read_back, 0, sizeof( read_back ) );
+    if( fread( read_back, 1, length, file ) != length || fgetc( file ) != EOF ||
+        memcmp( read_back, expected, length ) ) r++;
+    fclose( file );
+  }
+
+  /* A long run of empty frames is encoded with the multi-frame marker and a
+     count byte capped at 0xff empty frames */
+  if( psg_start_recording( temporary_path ) ) r++;
+  for( i = 0; i < 1020; i++ ) if( psg_frame() ) r++;
+  if( psg_write_register( 1, 0x20 ) ) r++;
+  if( psg_stop_recording() ) r++;
+
+  /* header + FE FF (0xff-frame block) FF 01 20 + FF */
+  memcpy( expected, header, sizeof( header ) );
+  memset( expected + 4, 0, 12 );
+  expected[ 16 ] = 0xfe; expected[ 17 ] = 0xff;
+  expected[ 18 ] = 0xff; expected[ 19 ] = 0x01; expected[ 20 ] = 0x20;
+  expected[ 21 ] = 0xff;
+  length = 22;
+
+  file = fopen( temporary_path, "rb" );
+  if( !file ) {
+    r++;
+  } else {
+    memset( read_back, 0, sizeof( read_back ) );
+    if( fread( read_back, 1, length, file ) != length || fgetc( file ) != EOF ||
+        memcmp( read_back, expected, length ) ) r++;
+    fclose( file );
+  }
+
+  unlink( temporary_path );
+  psg_recording = saved_recording;
+  if( r ) printf( "psg_unittest failed\n" );
+  return r;
 }
 
 static int
@@ -885,55 +1461,9 @@ mempool_test( void )
 }
 
 static int
-assert_page( libspectrum_word base, libspectrum_word length, int source, int page )
-{
-  int base_index = base / MEMORY_PAGE_SIZE;
-  int i;
-
-  for( i = 0; i < length / MEMORY_PAGE_SIZE; i++ ) {
-    TEST_ASSERT( memory_map_read[ base_index + i ].source == source );
-    TEST_ASSERT( memory_map_read[ base_index + i ].page_num == page );
-    TEST_ASSERT( memory_map_write[ base_index + i ].source == source );
-    TEST_ASSERT( memory_map_write[ base_index + i ].page_num == page );
-  }
-
-  return 0;
-}
-
-int
-unittests_assert_2k_page( libspectrum_word base, int source, int page )
-{
-  return assert_page( base, 0x0800, source, page );
-}
-
-int
-unittests_assert_4k_page( libspectrum_word base, int source, int page )
-{
-  return assert_page( base, 0x1000, source, page );
-}
-
-int
-unittests_assert_8k_page( libspectrum_word base, int source, int page )
-{
-  return assert_page( base, 0x2000, source, page );
-}
-
-int
-unittests_assert_16k_page( libspectrum_word base, int source, int page )
-{
-  return assert_page( base, 0x4000, source, page );
-}
-
-static int
 assert_16k_rom_page( libspectrum_word base, int page )
 {
   return unittests_assert_16k_page( base, memory_source_rom, page );
-}
-
-int
-unittests_assert_16k_ram_page( libspectrum_word base, int page )
-{
-  return unittests_assert_16k_page( base, memory_source_ram, page );
 }
 
 static int
@@ -971,17 +1501,6 @@ paging_test_16( void )
   r += unittests_assert_16k_ram_page( 0x4000, 5 );
   r += unittests_assert_16k_page( 0x8000, memory_source_none, 0 );
   r += unittests_assert_16k_page( 0xc000, memory_source_none, 0 );
-
-  return r;
-}
-
-int
-unittests_paging_test_48( int ram8000 )
-{
-  int r = 0;
-
-  r += assert_16k_pages( 0, 5, ram8000, 0 );
-  TEST_ASSERT( memory_current_screen == 5 );
 
   return r;
 }
@@ -1788,6 +2307,116 @@ utils_file_read_failure_test( void )
 }
 
 static int
+create_rom_fixture( char *filename, size_t length, libspectrum_byte value )
+{
+  libspectrum_byte buffer[0x4000];
+  int fd;
+
+  memset( buffer, value, length );
+  fd = mkstemp( filename );
+  if( fd < 0 ) return 1;
+  if( write( fd, buffer, length ) != length ) {
+    close( fd );
+    unlink( filename );
+    return 1;
+  }
+
+  return close( fd );
+}
+
+static int
+machine_load_rom_bank_with_sizes_test( void )
+{
+  static const size_t allowed_lengths[] = { 0x2000, 0x4000 };
+  char rom8[] = "/tmp/fuse-rom-8k-XXXXXX";
+  char rom16[] = "/tmp/fuse-rom-16k-XXXXXX";
+  char rom_bad[] = "/tmp/fuse-rom-bad-XXXXXX";
+  const char *missing_rom = "/tmp/fuse-rom-does-not-exist";
+  memory_page map[MEMORY_PAGES_IN_16K];
+  libspectrum_byte snapshot_rom[0x4000];
+  size_t loaded_length = 0;
+  int r = 0;
+
+  memset( map, 0, sizeof( map ) );
+  if( create_rom_fixture( rom8, 0x2000, 0x08 ) ||
+      create_rom_fixture( rom16, 0x4000, 0x16 ) ||
+      create_rom_fixture( rom_bad, 0x3000, 0x30 ) ) {
+    printf( "machine_load_rom_bank_with_sizes_test: failed to create fixtures\n" );
+    r++;
+    goto cleanup;
+  }
+
+  if( machine_load_rom_bank_with_sizes(
+        map, 0, rom16, rom8, allowed_lengths,
+        ARRAY_SIZE( allowed_lengths ), &loaded_length ) ||
+      loaded_length != 0x4000 || map[7].page[0] != 0x16 ||
+      !map[0].save_to_snapshot )
+    r++;
+
+  /* An unsupported custom ROM should fall back to the default 8K image. */
+  if( machine_load_rom_bank_with_sizes(
+        map, 0, rom_bad, rom8, allowed_lengths,
+        ARRAY_SIZE( allowed_lengths ), &loaded_length ) ||
+      loaded_length != 0x2000 || map[0].page[0] != 0x08 ||
+      map[0].save_to_snapshot )
+    r++;
+
+  /* A missing custom ROM should also fall back to the default. */
+  if( machine_load_rom_bank_with_sizes(
+        map, 0, missing_rom, rom8, allowed_lengths,
+        ARRAY_SIZE( allowed_lengths ), &loaded_length ) ||
+      loaded_length != 0x2000 || map[0].page[0] != 0x08 ||
+      map[0].save_to_snapshot )
+    r++;
+
+  if( !machine_load_rom_bank_with_sizes(
+         map, 0, rom_bad, NULL, allowed_lengths,
+         ARRAY_SIZE( allowed_lengths ), &loaded_length ) )
+    r++;
+
+  /* The result length is optional, but the list of accepted sizes is not. */
+  if( machine_load_rom_bank_with_sizes(
+        map, 0, rom8, NULL, allowed_lengths,
+        ARRAY_SIZE( allowed_lengths ), NULL ) ||
+      !machine_load_rom_bank_with_sizes(
+         map, 0, rom8, NULL, NULL, 0, &loaded_length ) ||
+      loaded_length != 0 )
+    r++;
+
+  /* Keep the original fixed-size API on the same common loading path. */
+  if( machine_load_rom_bank( map, 0, rom8, NULL, 0x2000 ) ||
+      map[0].page[0] != 0x08 ||
+      !machine_load_rom_bank( map, 0, rom_bad, NULL, 0x2000 ) )
+    r++;
+
+  memset( snapshot_rom, 0x5a, sizeof( snapshot_rom ) );
+  if( machine_load_rom_bank_from_snapshot( map, 0, snapshot_rom,
+                                           sizeof( snapshot_rom ), 1 ) ||
+      machine_load_rom_bank_with_sizes(
+        map, 0, rom8, NULL, allowed_lengths,
+        ARRAY_SIZE( allowed_lengths ), &loaded_length ) ||
+      loaded_length != sizeof( snapshot_rom ) || map[7].page[0] != 0x5a )
+    r++;
+  machine_clear_snapshot_rom_bank( map, 0 );
+
+  /* A cached snapshot ROM must satisfy the same size constraints as a file. */
+  if( machine_load_rom_bank_from_snapshot( map, 0, snapshot_rom, 0x3000, 1 ) ||
+      !machine_load_rom_bank_with_sizes(
+         map, 0, rom8, NULL, allowed_lengths,
+         ARRAY_SIZE( allowed_lengths ), &loaded_length ) ||
+      loaded_length != 0 )
+    r++;
+  machine_clear_snapshot_rom_bank( map, 0 );
+
+cleanup:
+  unlink( rom8 );
+  unlink( rom16 );
+  unlink( rom_bad );
+  if( r ) printf( "machine_load_rom_bank_with_sizes_test failed\n" );
+  return r;
+}
+
+static int
 utils_file_lifecycle_test( void )
 {
   char filename[] = "/tmp/fuse-utils-file-XXXXXX";
@@ -1821,11 +2450,52 @@ utils_file_lifecycle_test( void )
   utils_file_free( &file );
   if( file.filename || file.buffer || file.length ||
       file.type != LIBSPECTRUM_ID_UNKNOWN ||
-      file.class != LIBSPECTRUM_CLASS_UNKNOWN ) r++;
+      file.file_class != LIBSPECTRUM_CLASS_UNKNOWN ) r++;
 
   compat_file_set_vtable( &utils_file_previous_vtable );
   unlink( filename );
   if( r ) printf( "utils_file_lifecycle_test failed\n" );
+  return r;
+}
+
+static int
+utils_file_harddisk_identify_test( void )
+{
+  char temporary_path[] = "/tmp/fuse-utils-hdf-XXXXXX";
+  char filename[ PATH_MAX ];
+  compat_file_vtable_t vtable;
+  utils_file file;
+  unsigned char header[ 128 ] = "RS-IDE\x1a";
+  int fd, r = 0;
+
+  fd = mkstemp( temporary_path );
+  snprintf( filename, sizeof( filename ), "%s.hdf", temporary_path );
+  if( fd < 0 || write( fd, header, sizeof( header ) ) != sizeof( header ) ||
+      close( fd ) || rename( temporary_path, filename ) ) {
+    if( fd >= 0 ) close( fd );
+    unlink( temporary_path );
+    unlink( filename );
+    printf( "utils_file_harddisk_identify_test: failed to create fixture\n" );
+    return 1;
+  }
+
+  compat_file_get_vtable( &utils_file_previous_vtable );
+  vtable = utils_file_previous_vtable;
+  vtable.open = utils_file_test_open;
+  vtable.read = utils_file_test_read;
+  utils_file_test_path = filename;
+  utils_file_open_count = utils_file_read_count = 0;
+  compat_file_set_vtable( &vtable );
+
+  utils_file_init( &file, filename );
+  if( utils_file_identify( &file ) ||
+      file.file_class != LIBSPECTRUM_CLASS_HARDDISK || file.buffer ||
+      utils_file_open_count != 1 || utils_file_read_count != 1 ) r++;
+
+  utils_file_free( &file );
+  compat_file_set_vtable( &utils_file_previous_vtable );
+  unlink( filename );
+  if( r ) printf( "utils_file_harddisk_identify_test failed\n" );
   return r;
 }
 
@@ -1851,7 +2521,7 @@ utils_open_loaded_file_test( void )
   memcpy( file.buffer, tap, sizeof( tap ) );
   file.length = sizeof( tap );
   file.type = LIBSPECTRUM_ID_TAPE_TAP;
-  file.class = LIBSPECTRUM_CLASS_TAPE;
+  file.file_class = LIBSPECTRUM_CLASS_TAPE;
 
   if( utils_open_loaded_file( &file, 0, NULL ) ||
       utils_file_open_count || utils_file_read_count ) r++;
@@ -1938,11 +2608,20 @@ utils_open_loaded_microdrive_test( void )
 {
   compat_file_vtable_t vtable;
   utils_file file;
-  const char *filename = "lib/tests/success.mdr";
+  const char *srcdir;
+  char *filename;
   int r = 0;
+
+  srcdir = getenv( "FUSE_TEST_SRCDIR" );
+  if( !srcdir ) srcdir = ".";
+  filename = libspectrum_new( char,
+                              strlen( srcdir ) +
+                                sizeof( "/lib/tests/success.mdr" ) );
+  sprintf( filename, "%s/lib/tests/success.mdr", srcdir );
 
   if( utils_read_file( filename, &file ) ) {
     printf( "utils_open_loaded_microdrive_test: failed to read fixture\n" );
+    libspectrum_free( filename );
     return 1;
   }
 
@@ -1960,6 +2639,7 @@ utils_open_loaded_microdrive_test( void )
   if1_mdr_eject( 0 );
   compat_file_set_vtable( &utils_file_previous_vtable );
   utils_file_free( &file );
+  libspectrum_free( filename );
   if( r ) printf( "utils_open_loaded_microdrive_test failed\n" );
   return r;
 }
@@ -1985,6 +2665,8 @@ utils_open_loaded_disk_test( void )
   utils_file_init( &file, filename );
   file.length = 40 * 10 * 512;
   file.buffer = libspectrum_new0( unsigned char, file.length );
+  file.type = LIBSPECTRUM_ID_DISK_IMG;
+  file.file_class = LIBSPECTRUM_CLASS_DISK_PLUSD;
   if( disk_open_loaded( &disk, &file, 0, 0 ) != DISK_OK ||
       utils_file_open_count || utils_file_read_count ) r++;
 
@@ -1993,6 +2675,49 @@ utils_open_loaded_disk_test( void )
   compat_file_set_vtable( &utils_file_previous_vtable );
   if( r ) printf( "utils_open_loaded_disk_test failed\n" );
   return r;
+}
+
+static int
+utils_open_loaded_compressed_disk_test( void )
+{
+#ifdef HAVE_ZLIB_H
+  static const unsigned char compressed[] = {
+    31, 139, 8, 0, 0, 0, 0, 0, 2, 255, 237, 193, 1, 13, 0, 0,
+    0, 194, 160, 247, 79, 109, 15, 7, 20, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 79,
+    6, 63, 79, 55, 213, 0, 32, 3, 0,
+  };
+  utils_file file;
+  disk_t disk;
+  int r = 0;
+
+  memset( &disk, 0, sizeof( disk ) );
+  utils_file_init( &file, "compressed.img.gz" );
+  file.buffer = libspectrum_new( unsigned char, sizeof( compressed ) );
+  memcpy( file.buffer, compressed, sizeof( compressed ) );
+  file.length = sizeof( compressed );
+  if( utils_file_identify( &file ) ||
+      file.type != LIBSPECTRUM_ID_DISK_IMG ||
+      disk_open_loaded( &disk, &file, 0, 0 ) != DISK_OK ) r++;
+
+  disk_close( &disk );
+  utils_file_free( &file );
+  if( r ) printf( "utils_open_loaded_compressed_disk_test failed\n" );
+  return r;
+#else
+  return 0;
+#endif
 }
 
 static int
@@ -2037,6 +2762,8 @@ utils_open_loaded_disk_merge_test( void )
   utils_file_init( &file, filename_a );
   file.buffer = data;
   file.length = 40 * 10 * 512;
+  file.type = LIBSPECTRUM_ID_DISK_IMG;
+  file.file_class = LIBSPECTRUM_CLASS_DISK_PLUSD;
   saved_ask_merge = settings_current.disk_ask_merge;
   settings_current.disk_ask_merge = 0;
   if( disk_open_loaded( &disk, &file, 0, 1 ) != DISK_OK ||
@@ -2052,8 +2779,99 @@ utils_open_loaded_disk_merge_test( void )
   return r;
 }
 
+/* A brand new blank disk image cannot be saved as a classic CPCEMU .dsk
+   image: the format cannot store unformatted tracks, and the image Fuse
+   used to write could not be reopened (bug #415) */
+static int
+disk_write_blank_disk_cpc_save_test( void )
+{
+  char temporary_path[] = "/tmp/fuse-disk-blank-cpc-XXXXXX";
+  char filename[ PATH_MAX ];
+  disk_t disk;
+  int fd, r = 0;
+
+  /* mkdtemp is not provided by MinGW; use mkstemp to obtain a unique
+     filename prefix instead. */
+  fd = mkstemp( temporary_path );
+  if( fd < 0 ) return 1;
+  close( fd );
+  unlink( temporary_path );
+  snprintf( filename, sizeof( filename ), "%s.dsk", temporary_path );
+
+  /* A new blank disk image, as created by the media menu's "Insert New"
+     item: every track is unformatted */
+  memset( &disk, 0, sizeof( disk ) );
+  if( disk_new( &disk, 2, 80, DISK_DENS_AUTO, DISK_UDI ) != DISK_OK ) r++;
+
+  /* Saving as a classic CPCEMU .dsk image must be refused */
+  disk.type = DISK_TYPE_NONE;
+  if( disk_write( &disk, filename ) != DISK_GEOM ) r++;
+
+  disk_close( &disk );
+  unlink( filename );
+
+  if( r ) printf( "disk_write_blank_disk_cpc_save_test failed\n" );
+  return r;
+}
+
+/* Write a blank UDI disk image and reopen it: the UDI writer and reader
+   previously had no direct test coverage */
+static int
+disk_write_open_udi_roundtrip_test( void )
+{
+  char temporary_path[] = "/tmp/fuse-disk-roundtrip-XXXXXX";
+  char filename[ PATH_MAX ];
+  disk_t write_disk, open_disk;
+  int fd, i, r = 0;
+  const int sides = 2, cylinders = 40;
+
+  /* mkdtemp is not provided by MinGW; use mkstemp to obtain a unique
+     filename prefix instead. */
+  fd = mkstemp( temporary_path );
+  if( fd < 0 ) return 1;
+  close( fd );
+  unlink( temporary_path );
+  snprintf( filename, sizeof( filename ), "%s.udi", temporary_path );
+
+  memset( &write_disk, 0, sizeof( write_disk ) );
+  if( disk_new( &write_disk, sides, cylinders, DISK_DENS_AUTO,
+                DISK_UDI ) != DISK_OK )
+    r++;
+
+  if( disk_write( &write_disk, filename ) != DISK_OK ) r++;
+
+  memset( &open_disk, 0, sizeof( open_disk ) );
+  if( !r && disk_open( &open_disk, filename, 0, 0 ) != DISK_OK ) r++;
+
+  if( !r && ( open_disk.sides != sides || open_disk.cylinders != cylinders ||
+              open_disk.type != DISK_UDI || open_disk.status != DISK_OK ) )
+    r++;
+
+  /* Every track must come back with the same type, length and contents */
+  if( !r ) {
+    disk_t *w = &write_disk, *o = &open_disk;
+    for( i = 0; i < sides * cylinders; i++ ) {
+      DISK_SET_TRACK_IDX( w, i );
+      DISK_SET_TRACK_IDX( o, i );
+      if( w->track[-1] != o->track[-1] || w->c_bpt != o->c_bpt ||
+          memcmp( w->track, o->track,
+                  o->c_bpt + 3 * DISK_CLEN( o->c_bpt ) ) ) {
+        r++;
+        break;
+      }
+    }
+  }
+
+  disk_close( &write_disk );
+  disk_close( &open_disk );
+  unlink( filename );
+
+  if( r ) printf( "disk_write_open_udi_roundtrip_test failed\n" );
+  return r;
+}
+
 static FILE compat_file_test_file;
-static int compat_file_test_calls[ 6 ];
+static int compat_file_test_calls[ 7 ];
 
 static compat_fd compat_file_test_open( const char *path GCC_UNUSED,
                                         int write GCC_UNUSED )
@@ -2071,13 +2889,16 @@ static int compat_file_test_close( compat_fd fd GCC_UNUSED )
 { compat_file_test_calls[ 4 ]++; return 0; }
 static int compat_file_test_exists( const char *path GCC_UNUSED )
 { compat_file_test_calls[ 5 ]++; return 1; }
+static int compat_file_test_unlink( const char *path GCC_UNUSED )
+{ compat_file_test_calls[ 6 ]++; return 0; }
 
 static int
 compat_file_vtable_test( void )
 {
   compat_file_vtable_t vtable = {
     compat_file_test_open, compat_file_test_get_length, compat_file_test_read,
-    compat_file_test_write, compat_file_test_close, compat_file_test_exists
+    compat_file_test_write, compat_file_test_close, compat_file_test_exists,
+    compat_file_test_unlink
   };
   compat_file_vtable_t previous_vtable;
   utils_file file;
@@ -2094,10 +2915,10 @@ compat_file_vtable_test( void )
   if( fd != &compat_file_test_file || compat_file_get_length( fd ) != 42 ||
       compat_file_read( fd, &file ) ||
       compat_file_write( fd, &buffer, 1 ) || compat_file_close( fd ) ||
-      !compat_file_exists( "test" ) ) r++;
+      !compat_file_exists( "test" ) || compat_file_unlink( "test" ) ) r++;
 
   compat_file_set_vtable( &previous_vtable );
-  for( i = 0; i < 6; i++ ) if( compat_file_test_calls[ i ] != 1 ) r++;
+  for( i = 0; i < 7; i++ ) if( compat_file_test_calls[ i ] != 1 ) r++;
   if( r ) printf( "compat_file_vtable_test failed\n" );
   return r;
 }
@@ -2108,10 +2929,19 @@ unittests_run( void )
   int r = 0;
 
   r += contention_test();
+  r += rzx_post_interrupt_autosave_test();
+  r += rzx_retrigger_autosave_test();
   r += floating_bus_test();
+  r += loader_unittest();
+  r += tape_unittest();
+  r += blip_synth_level_test();
+  r += dc_filter_test();
   r += speaker_filter_test();
+  r += tv_filter_test();
   r += ula_filter_test();
+  r += sound_source_routes_test();
   r += ula_sound_levels_test();
+  r += source_volume_test();
   r += floating_bus_merge_test();
   r += snapshot_copy_from_releases_keyboard_test();
   r += snapshot_custom_rom_is_replaced_by_soft_reset_test();
@@ -2119,10 +2949,14 @@ unittests_run( void )
   r += slt_screen_is_cleared_by_reset_test();
   r += spec_se_dock_ram_reset_test();
   r += keyboard_read_test();
+  r += keyboard_synthetic_test();
   r += keyboard_simulate_keypress_test();
+  r += keyboard_shifted_arrows_test();
+  r += keyboard_shifted_arrows_release_all_test();
   r += utils_safe_strdup_test();
   r += bitmap_ops_test();
   r += mempool_test();
+  r += psg_unittest();
   r += paging_test();
   r += pokefinder_unittest();
   r += debugger_disassemble_unittest();
@@ -2131,14 +2965,19 @@ unittests_run( void )
   r += rectangle_realloc_test();
   r += scaler_for_size_test();
   r += compat_file_vtable_test();
+  r += machine_load_rom_bank_with_sizes_test();
   r += utils_file_lifecycle_test();
   r += utils_file_read_failure_test();
+  r += utils_file_harddisk_identify_test();
   r += utils_open_loaded_file_test();
   r += utils_open_loaded_if2_test();
   r += utils_open_loaded_dck_test();
   r += utils_open_loaded_microdrive_test();
   r += utils_open_loaded_disk_test();
+  r += utils_open_loaded_compressed_disk_test();
   r += utils_open_loaded_disk_merge_test();
+  r += disk_write_blank_disk_cpc_save_test();
+  r += disk_write_open_udi_roundtrip_test();
 
   printf("Final return value: %d (should be 0)\n", r);
 

@@ -2224,7 +2224,6 @@ disk_open_buffer( disk_t *d, const utils_file *file, int preindex )
   buffer_t buffer;
   const char *filename = file->filename;
   libspectrum_id_t type;
-  int error;
 
 #ifdef GEKKO		/* Wii doesn't have access() */
   d->wrprot = 0;
@@ -2238,9 +2237,7 @@ disk_open_buffer( disk_t *d, const utils_file *file, int preindex )
   buffer.file = *file;              /* borrowed: never close this buffer */
   buffer.index = 0;
 
-  error = libspectrum_identify_file_raw( &type, filename,
-                                         buffer.file.buffer, buffer.file.length );
-  if( error ) return d->status = DISK_OPEN;
+  type = file->type;
   d->type = DISK_TYPE_NONE;
 #ifdef CPC_DEBUG
 fprintf( stderr, "\n::::%s:::: ", filename );
@@ -2762,7 +2759,14 @@ write_cpc( FILE *file, disk_t *d )
   size_t len;
 
   i = check_disk_geom( d, &sbase, &sectors, &seclen, &mfm, &cyl );
-  if( i & DISK_SECLEN_VARI || i & DISK_SPT_VARI || i & DISK_WEAK_DATA )
+
+  /* Classic CPCEMU DSK images cannot store unformatted tracks, and a disk
+     with no formatted sectors at all (e.g. a brand new blank disk) has no
+     sector geometry to write; refuse instead of writing an image which
+     Fuse itself cannot reopen */
+  if( sbase == -1 || seclen == -1 ||
+      i & DISK_SECLEN_VARI || i & DISK_SPT_VARI || i & DISK_WEAK_DATA ||
+      i & DISK_UNFORMATTED_TRACK )
     return d->status = DISK_GEOM;
 
   if( i & DISK_MFM_VARI )

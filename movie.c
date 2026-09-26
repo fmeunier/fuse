@@ -27,6 +27,9 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef HAVE_STRINGS_STRCASECMP
+#include <strings.h>
+#endif				/* #ifdef HAVE_STRINGS_STRCASECMP */
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -339,11 +342,33 @@ movie_start_fmf( const char *name )
 void
 movie_start( const char *name )	/* some init, open file (name)*/
 {
+  char *name_with_ext = NULL;
+
   frame_no = slice_no = 0;
-  if( name == NULL || *name == '\0' )
+  if( name == NULL || *name == '\0' ) {
     name = "fuse.fmf";			/* fuse movie file */
+  } else if( strlen( name ) < 4 ||
+             strcasecmp( name + strlen( name ) - 4, ".fmf" ) ) {
+    name_with_ext = libspectrum_malloc( strlen( name ) + 5 );
+    sprintf( name_with_ext, "%s.fmf", name );
+    name = name_with_ext;
+  }
+
+  if( compat_file_exists( name ) ) {
+    const char *basename = strrchr( name, FUSE_DIR_SEP_CHR );
+    basename = basename ? basename + 1 : name;
+
+    if( !ui_query( "%s already exists.\nDo you want to overwrite it?",
+                   basename ) ) {
+      libspectrum_free( name_with_ext );
+      return;
+    }
+  }
 
   movie_start_fmf( name );
+  libspectrum_free( name_with_ext );
+  if( of == NULL ) return;
+
   movie_recording = 1;
   ui_menu_activate( UI_MENU_ITEM_FILE_MOVIE_RECORDING, 1 );
   ui_menu_activate( UI_MENU_ITEM_FILE_MOVIE_PAUSE, 1 );

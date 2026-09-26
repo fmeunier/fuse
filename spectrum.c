@@ -102,6 +102,7 @@ spectrum_do_frame_end( void )
   psg_frame();
   spectrum_frame();
   z80_interrupt();
+  rzx_frame_interrupt_complete();
   ui_joystick_poll();
   timer_estimate_speed();
   debugger_add_time_events();
@@ -110,8 +111,8 @@ spectrum_do_frame_end( void )
   event_frame_end = 0;
 }
 
-static libspectrum_dword
-get_frame_count( void )
+libspectrum_dword
+spectrum_get_frame_count( void )
 {
   return frames_since_reset;
 }
@@ -125,7 +126,7 @@ spectrum_init( void *context )
   module_register( &module_info );
 
   debugger_system_variable_register( debugger_type_string,
-      frame_count_name, get_frame_count, NULL );
+      frame_count_name, spectrum_get_frame_count, NULL );
 
   return 0;
 }
