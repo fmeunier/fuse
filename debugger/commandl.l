@@ -64,7 +64,7 @@ del|dele|delet|delete { return DEBUGGER_DELETE; }
 di|dis|disa|disas|disass|disasse|disassm|disassmb|diasassmbl|disassemble {
 	                                                  return DISASSEMBLE; }
 ev|eve|even|event { return EVENT; }
- /*ex|exi|exit { return EXIT; } Not good on OS X as main thread doesn't hear about exiting till it's too late */
+ex|exi|exit { return EXIT; }
 fi|fin|fini|finis|finish { return FINISH; }
 if { return IF; }
 ig|ign|igno|ignor|ignore { return DEBUGGER_IGNORE; }
