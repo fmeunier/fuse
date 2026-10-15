@@ -53,7 +53,8 @@ cocoaui_find_disk_drive( int which )
   for( controller = UI_MEDIA_CONTROLLER_PLUS3;
        controller <= UI_MEDIA_CONTROLLER_DIDAKTIK; controller++ ) {
     ui_media_drive_info_t *drive = ui_media_drive_find( controller, which );
-    if( drive ) return drive;
+    if( drive && drive->is_available && drive->is_available() )
+      return drive;
   }
 
   return NULL;
