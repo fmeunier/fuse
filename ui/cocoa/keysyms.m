@@ -107,6 +107,8 @@ keysyms_map_t recreated_keysyms_map[] = {
   { 47,         INPUT_KEY_period       },
   { 33,         INPUT_KEY_bracketleft  },
   { 30,         INPUT_KEY_bracketright },
+  { 27,         INPUT_KEY_minus        },
+  { 24,         INPUT_KEY_equal        },
   
   { 0, 0 }			/* End marker: DO NOT MOVE! */
   
