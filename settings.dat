@@ -96,7 +96,7 @@ sound_device, string, NULL,, 'd'
 sound, boolean, 1
 sound_load, boolean, 1,,,, loading-sound
 stereo_ay, string, "None", option_enumerate_string_sound_stereo_ay,, separation
-sound_force_8bit, boolean, 0
+sound_force_8bit, null, 0
 sound_freq, numeric, 44100,, 'f'
 speaker_type, string, "TV speaker", option_enumerate_string_sound_speaker_type
 volume_ay, numeric, 100
@@ -113,7 +113,7 @@ joystick_1_output, numeric, 0
 joystick_2_output, numeric, 0
 joystick_keyboard_output, numeric, 0
 joystick_1_fire_1, numeric, 4096
-joystick_1_fire_2, numeric, 4096
+joystick_1_fire_2, numeric, 4097
 joystick_1_fire_3, numeric, 4096
 joystick_1_fire_4, numeric, 4096
 joystick_1_fire_5, numeric, 4096
@@ -130,7 +130,7 @@ joystick_1_fire_15, numeric, 4096
 joystick_2, string, NULL
 joy1_xaxis, numeric, 0,,, joy1x
 joystick_2_fire_1, numeric, 4096
-joystick_2_fire_2, numeric, 4096
+joystick_2_fire_2, numeric, 4097
 joystick_2_fire_3, numeric, 4096
 joystick_2_fire_4, numeric, 4096
 joystick_2_fire_5, numeric, 4096
@@ -212,7 +212,6 @@ printer_text_filename, string, "printout.txt",,, textfile
 aspect_hint, boolean, 1
 fb_mode, numeric, 320,, 'v', fbmode
 svga_modes, null, 0
-sdl_fullscreen_mode, string, NULL
 doublescan_mode, numeric, 1,, 'D', doublescan-mode
 
 start_scaler_mode, string, "normal",, 'g', graphics-filter
