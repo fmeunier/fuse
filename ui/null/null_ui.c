@@ -287,6 +287,7 @@ uidisplay_plot16( int x, int y, libspectrum_word data,
                   libspectrum_byte ink, libspectrum_byte paper )
 {
   int i, j;
+  if( !framebuffer ) return;
   x <<= 4;
   y <<= 1;
   for( j = 0; j < 2; j++ ) for( i = 0; i < 16; i++ )
@@ -298,6 +299,7 @@ uidisplay_plot8( int x, int y, libspectrum_byte data,
                  libspectrum_byte ink, libspectrum_byte paper )
 {
   int i, j, scale = machine_current->timex ? 2 : 1;
+  if( !framebuffer ) return;
   x *= 8 * scale;
   y *= scale;
   for( j = 0; j < scale; j++ ) for( i = 0; i < 8; i++ ) {
@@ -311,6 +313,7 @@ void
 uidisplay_putpixel( int x, int y, int colour )
 {
   int i, j, scale = machine_current->timex ? 2 : 1;
+  if( !framebuffer ) return;
   x *= scale;
   y *= scale;
   for( j = 0; j < scale; j++ ) for( i = 0; i < scale; i++ )

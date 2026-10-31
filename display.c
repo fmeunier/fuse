@@ -46,6 +46,10 @@ int display_ui_initialised = 0;
 libspectrum_dword
   display_last_screen[ DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT ];
 
+/* Force UI redraws independently of the image consumed by movie recording. */
+libspectrum_byte
+  display_force_redraw[ DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT ];
+
 /* Offsets as to where the data and the attributes for each pixel
    line start */
 libspectrum_word display_line_start[ DISPLAY_HEIGHT ];
@@ -76,6 +80,8 @@ display_init( int *argc, char ***argv )
                             ( DISPLAY_WIDTH_COLS * ( y / 8 ) );
   }
 
+  /* A defined blank image, also before the first frame has been rendered. */
+  memset( display_last_screen, 0, sizeof( display_last_screen ) );
   display_render_init();
 
   display_refresh_all();
@@ -168,9 +174,9 @@ display_refresh_all( void )
   display_refresh_main_screen();
   display_dirty_refresh_all();
 
-  memset( display_last_screen, 0xff,
-          DISPLAY_SCREEN_WIDTH_COLS * DISPLAY_SCREEN_HEIGHT
-          * sizeof( libspectrum_dword ) );
+  /* Readers such as FMF recording still need the last rendered image while
+     the cache is being refreshed (notably at embedded RZX snapshots). */
+  memset( display_force_redraw, 1, sizeof( display_force_redraw ) );
 }
 
 /* Fetch pixel (x, y). On a Timex this will be a point on a 640x480 canvas,

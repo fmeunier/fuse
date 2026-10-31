@@ -1,4 +1,4 @@
-The Free Unix Spectrum Emulator (Fuse) 1.10.0
+The Free Unix Spectrum Emulator (Fuse) 1.10.1
 ============================================
 
 Fuse (the Free Unix Spectrum Emulator) was originally, and somewhat
@@ -17,7 +17,7 @@ What Fuse does have:
   Scorpion ZS 256 emulation.
 * Runs at true Speccy speed on any computer you're likely to try it on.
 * Support for loading from .tzx files, including accelerated loading.
-* Sound (on systems supporting the Open Sound System, SDL, OpenBSD/
+* Sound (on systems supporting the Open Sound System, SDL2, OpenBSD/
   Solaris's /dev/audio, CoreAudio or PulseAudio).
 * Emulation of most of the common joysticks used on the Spectrum
   (including Kempston, Sinclair and Cursor joysticks).
@@ -51,7 +51,7 @@ Unix, Linux, BSD, etc.
 
 Required:
 
-* X, SDL or framebuffer support. If you have GTK, you'll get
+* X, SDL2 or framebuffer support. If you have GTK, you'll get
   a (much) nicer user interface under X.
 * libspectrum: this is available from
   https://fuse-emulator.sourceforge.net/libspectrum.php
@@ -72,13 +72,12 @@ itself. See https://fuse-emulator.sourceforge.net/ for details.
 macOS
 
 * Either the native port by Fredrick Meunier, or the original version
-  will compile on macOS 10.3 (Panther) or later.
-* On macOS Lion you will need to use clang as gcc-llvm-4.2.1 fails to
-  correctly compile z80_ops.c.
+  will compile on macOS 14.4 (Panther) or later.
+* Use clang; historical gcc-llvm-4.2.1 fails to correctly compile z80_ops.c.
 
 Windows
 
-* The Win32 and SDL UIs can be used under Windows.
+* The Win32 and SDL2 UIs can be used under Windows.
 * pthreads-win32 library will give the ability to use posix threads, needed by
   some peripherals.
 
@@ -116,4 +115,4 @@ Usenet newsgroup `comp.sys.sinclair' or the World of Spectrum forums
 <http://www.worldofspectrum.org/forums/>.
 
 Philip Kendall <philip-fuse@shadowmagic.org.uk>
-24th September, 2026
+31th October, 2026

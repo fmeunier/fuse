@@ -105,8 +105,10 @@ display_write_if_dirty_timex( int x, int y )
                       ( data2 << 8 ) | data;
   /* And draw it if it is different to what was there last time */
   index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
-  if( display_last_screen[ index ] != last_chunk_detail ) {
+  if( display_force_redraw[ index ] ||
+      display_last_screen[ index ] != last_chunk_detail ) {
     libspectrum_byte ink, paper;
+    display_force_redraw[ index ] = 0;
     if( scld_last_dec.name.hires ) {
       /* In hires mode the attr byte is not in data2, so we must look it up. */
       display_parse_attr( display_get_attr_byte( x, y ), &ink, &paper );
@@ -182,7 +184,9 @@ display_write_if_dirty_pentagon_16_col( int x, int y )
   /* And draw it if it is different to what was there last time */
   index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
 
-  if( display_last_screen[ index ] != last_chunk_detail ) {
+  if( display_force_redraw[ index ] ||
+      display_last_screen[ index ] != last_chunk_detail ) {
+    display_force_redraw[ index ] = 0;
     /* Print pixel 1 & 2 from screen_page_2 base, pixel 3 & 4 from
        screen_page_1 base, pixel 5 & 6 from screen_page_2 ALTDFILE_OFFSET,
        pixel 7 & 8 from screen_page_1 ALTDFILE_OFFSET */
@@ -231,8 +235,10 @@ display_write_if_dirty_sinclair( int x, int y )
   last_chunk_detail = ( display_flash_reversed << 24 ) | ( data2 << 8 ) | data;
   /* And draw it if it is different to what was there last time */
   index = beam_x + beam_y * DISPLAY_SCREEN_WIDTH_COLS;
-  if( display_last_screen[ index ] != last_chunk_detail ) {
+  if( display_force_redraw[ index ] ||
+      display_last_screen[ index ] != last_chunk_detail ) {
     libspectrum_byte ink, paper;
+    display_force_redraw[ index ] = 0;
     display_parse_attr( data2, &ink, &paper );
     uidisplay_plot8( beam_x, beam_y, data, ink, paper );
 

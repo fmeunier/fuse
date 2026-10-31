@@ -45,6 +45,7 @@
 #include "sound.h"
 #include "spectrum.h"
 #include "tape.h"
+#include "tape_internals.h"
 #include "timer/timer.h"
 #include "ui/ui.h"
 #include "ui/uijoystick.h"
@@ -155,6 +156,7 @@ spectrum_frame( void )
   frame_length = rzx_playback ? tstates
 			      : machine_current->timings.tstates_per_frame;
 
+  tape_record_frame( frame_length );
   event_frame( frame_length );
   debugger_breakpoint_reduce_tstates( frame_length );
   tstates -= frame_length;
@@ -286,11 +288,13 @@ spectrum_unattached_port( void )
 
     /* Attribute bytes */
     case 5: column++;
+    /* fall through */
     case 3:
       return RAM[ memory_current_screen ][ display_attr_start[line] + column ];
 
     /* Screen data */
     case 4: column++;
+    /* fall through */
     case 2:
       return RAM[ memory_current_screen ][ display_line_start[line] + column ];
 

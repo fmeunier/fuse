@@ -142,7 +142,9 @@ set_border( int y, int start, int end, int colour )
 
   for( ; start < end; start++ ) {
     /* Draw it if it is different to what was there last time. */
-    if( display_last_screen[ index ] != chunk_detail ) {
+    if( display_force_redraw[ index ] ||
+        display_last_screen[ index ] != chunk_detail ) {
+      display_force_redraw[ index ] = 0;
       uidisplay_plot8( start, y, 0x00, 0, colour );
       display_last_screen[ index ] = chunk_detail;
       display_mark_screen_dirty( start, y );
