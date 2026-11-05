@@ -138,6 +138,14 @@ static int settings_command_line( settings_info *settings, int *first_arg,
 
 static void settings_copy_internal( settings_info *dest, settings_info *src );
 
+/* Empty Cocoa ROM fields select the default; do not pass NULL ROM paths
+   into the core. Other optional string settings retain their own semantics. */
+static const char *
+settings_rom_path_value( NSString *path, const char *default_path )
+{
+  return [path length] ? [path UTF8String] : default_path;
+}
+
 /* Called on emulator startup */
 int
 settings_init( int *first_arg, int argc, char **argv )
@@ -250,6 +258,15 @@ CODE
     } elsif( $type eq 'string' ) {
 
       if( !defined $fileAssoc{$name} ) {
+
+        if( $name =~ /^rom_/ ) {
+          print << "CODE";
+  settings_set_string( &settings->$name,
+    settings_rom_path_value( [defaults stringForKey:@"$options{$name}->{configfile}"],
+                             settings_default.$name ) );
+CODE
+          next;
+        }
 
 	    print << "CODE";
   if( [[defaults stringForKey:@"$options{$name}->{configfile}"] isEqualToString:@""] == YES ) {
@@ -709,6 +726,14 @@ machineroms_compare( id dict1, id dict2, void *context )
   return retval;
 }
 
+/* Unset ROM paths must remain editable rather than raising an exception
+   when Cocoa boxes a NULL C string. */
+static NSString *
+settings_rom_path_string( const char *path )
+{
+  return path ? @(path) : @"";
+}
+
 /* Fill a NSMutableArray with rom information suitable for use with Cocoa
    bindings */
 NSMutableArray*
@@ -734,7 +759,7 @@ foreach my $machine ( sort keys %machineRoms ) {
   print '    [Machine machineForType:machine_get_type("'.$machine.'")], @"machine",'."\n";
   print '    [[Machine machineForType:machine_get_type("'.$machine.'")] machineName], @"display_name",' . "\n";
   for( my $i = 0; $i <= $#{ $machineRoms{$machine} }; $i++ ) {
-    print '    @(settings->rom_'.$machine."_".$i.'), @"rom'.$i."\",\n";
+    print '    settings_rom_path_string( settings->rom_'.$machine."_".$i.' ), @"rom'.$i."\",\n";
     print '    @(settings_default.rom_'.$machine."_".$i.'), @"default_rom'.$i."\",\n";
   }
   print "    NULL];\n";
@@ -750,7 +775,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Beta 128", @"display_name",
     @"beta128", @"special_type",
-    @(settings->rom_beta128), @"rom0",
+    settings_rom_path_string( settings->rom_beta128 ), @"rom0",
     @(settings_default.rom_beta128), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -758,7 +783,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Didaktik 80", @"display_name",
     @"didaktik80", @"special_type",
-    @(settings->rom_didaktik80), @"rom0",
+    settings_rom_path_string( settings->rom_didaktik80 ), @"rom0",
     @(settings_default.rom_didaktik80), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -766,7 +791,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"DISCiPLE", @"display_name",
     @"disciple", @"special_type",
-    @(settings->rom_disciple), @"rom0",
+    settings_rom_path_string( settings->rom_disciple ), @"rom0",
     @(settings_default.rom_disciple), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -774,7 +799,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Sinclair Interface 1", @"display_name",
     @"interface1", @"special_type",
-    @(settings->rom_interface1), @"rom0",
+    settings_rom_path_string( settings->rom_interface1 ), @"rom0",
     @(settings_default.rom_interface1), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -782,7 +807,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Multiface One", @"display_name",
     @"multiface1", @"special_type",
-    @(settings->rom_multiface1), @"rom0",
+    settings_rom_path_string( settings->rom_multiface1 ), @"rom0",
     @(settings_default.rom_multiface1), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -790,7 +815,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Multiface 128", @"display_name",
     @"multiface128", @"special_type",
-    @(settings->rom_multiface128), @"rom0",
+    settings_rom_path_string( settings->rom_multiface128 ), @"rom0",
     @(settings_default.rom_multiface128), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -798,7 +823,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Multiface 3", @"display_name",
     @"multiface3", @"special_type",
-    @(settings->rom_multiface3), @"rom0",
+    settings_rom_path_string( settings->rom_multiface3 ), @"rom0",
     @(settings_default.rom_multiface3), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -806,7 +831,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Opus Discovery", @"display_name",
     @"opus", @"special_type",
-    @(settings->rom_opus), @"rom0",
+    settings_rom_path_string( settings->rom_opus ), @"rom0",
     @(settings_default.rom_opus), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -814,7 +839,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"+D", @"display_name",
     @"plusd", @"special_type",
-    @(settings->rom_plusd), @"rom0",
+    settings_rom_path_string( settings->rom_plusd ), @"rom0",
     @(settings_default.rom_plusd), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -822,9 +847,9 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Currah \u03bcSpeech", @"display_name",
     @"uspeech", @"special_type",
-    @(settings->rom_uspeech), @"rom0",
+    settings_rom_path_string( settings->rom_uspeech ), @"rom0",
     @(settings_default.rom_uspeech), @"default_rom0",
-    @(settings->rom_sp0256), @"rom1",
+    settings_rom_path_string( settings->rom_sp0256 ), @"rom1",
     @(settings_default.rom_sp0256), @"default_rom1",
     NULL];
   [machineroms addObject:roms];
@@ -832,7 +857,7 @@ print << 'CODE';
   roms = [NSMutableDictionary dictionaryWithObjectsAndKeys:
     @"Currah \u03bcSource", @"display_name",
     @"usource", @"special_type",
-    @(settings->rom_usource), @"rom0",
+    settings_rom_path_string( settings->rom_usource ), @"rom0",
     @(settings_default.rom_usource), @"default_rom0",
     NULL];
   [machineroms addObject:roms];
@@ -854,7 +879,21 @@ settings_get_rom_array( settings_info *settings, NSArray *machineroms )
   }
 CODE
 
-print "  for ( roms in machineroms ) {\n";
+print << 'CODE';
+  for ( roms in machineroms ) {
+    int i;
+
+    /* Normalise only the exported copy, leaving presentation values intact. */
+    roms = [[roms mutableCopy] autorelease];
+    for( i = 0; i < 4; i++ ) {
+      NSString *key = [NSString stringWithFormat:@"rom%d", i];
+      NSString *default_key = [@"default_" stringByAppendingString:key];
+      NSString *value = [roms objectForKey:key];
+      NSString *default_value = [roms objectForKey:default_key];
+      if( value && ![value length] && default_value )
+        [roms setObject:default_value forKey:key];
+    }
+CODE
 print "    Machine *machine = [roms valueForKey:@\"machine\"];\n";
 print "    NSString *special_type = [roms valueForKey:@\"special_type\"];\n";
 print "    NSString *display_name = [roms valueForKey:@\"display_name\"];\n\n";
